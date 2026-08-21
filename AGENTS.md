@@ -139,6 +139,25 @@ In-repo research findings captured under `docs/research/`:
 - `pydantic-ai-mcp-integration.md` — v0.5 agent SDK decisions.
 - `mcp-python-sdk-hitl-patterns.md` — v0.6 HITL proposal mediator patterns.
 
+### Globally-installed skills
+
+The following skills are installed at the user level (`~/.agents/skills/`) and
+are auto-discovered by opencode sessions. They are NOT in the repo and NOT
+re-installed by `npm install` in `.opencode/`. To re-install on a fresh
+machine:
+
+```powershell
+npx -y skills@latest add wshobson/agents@e2e-testing-patterns -g -y
+```
+
+- `e2e-testing-patterns` (`wshobson/agents`, 21,252 installs at install time).
+  Authoritative Playwright + Cypress patterns for E2E suites. Useful when v0.2
+  schemas need real HTTP-level coverage or when v0.7 reliability introduces
+  failure-injection. Note: AegisBank has no public UI today, so this skill
+  applies to API-level E2E (httpx + pytest-httpx + respx) rather than
+  browser-level E2E. The skill still informs contract, isolation, and
+  flakiness-handling patterns.
+
 ### MCP smoke evidence
 
 E2E handshake evidence lives at `.intelligence/smoke/mcp-smoke.json`. To
