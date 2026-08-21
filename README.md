@@ -29,26 +29,41 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.1.0 - Project Charter`
+**Current milestone:** `v0.2.0 - Core Banking Mock`
 
-The repository currently contains governance and scope documentation only. No
-banking API, model, RAG pipeline, agent, MCP server, cloud resource, or deployable
-application has been implemented.
+`v0.2` provides a local FastAPI backend with explicit contracts, SQLAlchemy
+persistence, deterministic synthetic fixtures, correlation IDs, structured
+errors, and automated unit/integration tests. It contains no AI functionality.
 
 | Version | Milestone | Status |
 | --- | --- | --- |
-| `v0.1` | Project Charter | Charter ready; review pending |
-| `v0.2` | Core Banking Mock | Planned; requires approval |
-| `v0.3` | ML/NLP Baseline | Planned |
-| `v0.4` | RAG | Planned |
-| `v0.5` | Agent and read-only tools | Planned |
-| `v0.6` | MCP and HITL | Planned |
-| `v0.7` | Reliability and Messaging | Planned |
-| `v0.8` | Quality and Evaluations | Planned |
-| `v0.9` | Azure Deployment | Planned |
-| `v1.0` | Enterprise Hardening | Planned |
+| `v0.1` | Project Charter | COMPLETE |
+| `v0.2` | Core Banking Mock | COMPLETE |
+| `v0.3` | ML/NLP Baseline | NOT STARTED |
+| `v0.4` | RAG | NOT STARTED |
+| `v0.5` | Agent and read-only tools | NOT STARTED |
+| `v0.6` | MCP and HITL | NOT STARTED |
+| `v0.7` | Reliability and Messaging | NOT STARTED |
+| `v0.8` | Quality and Evaluations | NOT STARTED |
+| `v0.9` | Azure Deployment | NOT STARTED |
+| `v1.0` | Enterprise Hardening | NOT STARTED |
 | `v1.1` | AKS experiment | Optional after `v1.0` |
 | `v1.2` | Multi-agent experiment | Optional after `v1.0` |
+
+## Implemented In v0.2
+
+- One modular-monolith FastAPI service under [`services/mock-core-banking`](services/mock-core-banking/README.md).
+- `Customer`, `Loan`, `Installment`, and `ServiceRequest` relational entities only.
+- Three synthetic customers, four synthetic loans, ten synthetic installments,
+  and two initial synthetic service requests.
+- Versioned read endpoints under `/api/v1` and one internal service-request write.
+- Decimal monetary values, relational constraints, transaction rollback, and isolated test databases.
+- Stable error envelopes plus `X-Correlation-ID` on every HTTP response.
+- Liveness, datastore readiness, OpenAPI, unit, and API integration coverage.
+
+The write endpoint does not include HITL in this milestone and must not be exposed
+to an agent. HITL remains required before tool exposure in `v0.6`; idempotency and
+reliability remain deferred to `v0.7`.
 
 ## Project Rules
 
@@ -73,7 +88,7 @@ The approved product boundary is defined by these documents:
 - [Success criteria](docs/charter/05-success-criteria.md)
 - [Repository operating rules](AGENTS.md)
 
-## Initial Structure
+## Repository Structure
 
 ```text
 aegisbank-ai-platform/
@@ -81,26 +96,38 @@ aegisbank-ai-platform/
 |-- AGENTS.md
 |-- .gitignore
 |-- docs/
-|   `-- charter/
-|       |-- 01-vision.md
-|       |-- 02-scope.md
-|       |-- 03-use-cases.md
-|       |-- 04-non-goals.md
-|       `-- 05-success-criteria.md
+|   |-- charter/
+|   |   |-- 01-vision.md
+|   |   |-- 02-scope.md
+|   |   |-- 03-use-cases.md
+|   |   |-- 04-non-goals.md
+|   |   `-- 05-success-criteria.md
+|   `-- architecture/
+|       `-- adr/
+|           |-- ADR-001-modular-monolith-first.md
+|           `-- ADR-002-local-sqlite-before-postgresql.md
 |-- .intelligence/        # Pre-existing project knowledge scaffold
 |-- .opencode/            # Pre-existing local OpenCode support files
 |-- contracts/            # Pre-existing OpenCode support schemas
-`-- opencode.json          # Pre-existing OpenCode bootstrap config
+|-- services/
+|   `-- mock-core-banking/
+|       |-- pyproject.toml
+|       |-- README.md
+|       |-- src/mock_core_banking/
+|       `-- tests/
+|-- opencode.json          # Pre-existing OpenCode bootstrap config
 ```
 
 ## How To Continue
 
-1. Read and review the five charter documents.
-2. Record any requested scope change before implementation begins.
-3. Start `v0.2 - Core Banking Mock` only after explicit approval.
-4. Implement and validate only that milestone; do not advance automatically.
+1. Follow the [Mock Core Banking setup](services/mock-core-banking/README.md#setup).
+2. Run the documented tests and quality checks locally.
+3. Inspect the `v0.2` ADRs and generated OpenAPI contract.
+4. Record any requested scope change before implementation begins.
+5. Start `v0.3 - ML/NLP Baseline` only after explicit approval.
 
-There are no application dependencies or runtime commands in `v0.1.0`.
+No Docker, Azure, RAG, model, agent, MCP, HITL workflow, messaging, retry policy,
+or circuit breaker has been implemented.
 
 ## Reference Baseline
 

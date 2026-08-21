@@ -42,3 +42,9 @@ build/
 .terraform/
 *.tfstate
 *.tfstate.*
+
+# Mock Core Banking - SQLite DB
+services/mock-core-banking/data/local/*.db
+services/mock-core-banking/data/local/*.db-journal
+services/mock-core-banking/data/local/*.db-wal
+services/mock-core-banking/data/local/*.db-shm
