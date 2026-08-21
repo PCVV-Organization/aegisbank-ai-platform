@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-21T19:14:26.894Z",
+  "generated_at": "2026-08-21T23:00:13.339Z",
   "opencodeProfile": "minimax-plus",
   "results": [
     {
@@ -14,8 +14,8 @@
       "toolNames": [
         "sequentialthinking"
       ],
-      "initMs": 344,
-      "listMs": 17
+      "initMs": 376,
+      "listMs": 16
     },
     {
       "name": "filesystem",
@@ -42,8 +42,8 @@
         "get_file_info",
         "list_allowed_directories"
       ],
-      "initMs": 363,
-      "listMs": 20
+      "initMs": 468,
+      "listMs": 18
     },
     {
       "name": "git",
@@ -84,8 +84,8 @@
         "git_worktree",
         "git_wrapup_instructions"
       ],
-      "initMs": 599,
-      "listMs": 82
+      "initMs": 744,
+      "listMs": 84
     },
     {
       "name": "everything",
@@ -111,8 +111,8 @@
         "trigger-long-running-operation",
         "simulate-research-query"
       ],
-      "initMs": 387,
-      "listMs": 9
+      "initMs": 1716,
+      "listMs": 13
     },
     {
       "name": "context7",

@@ -118,6 +118,73 @@ block in `opencode.json`:
 Disable automatic LSP downloads (CI / air-gapped) with
 `OPENCODE_DISABLE_LSP_DOWNLOAD=true`.
 
+### Permissions
+
+OpenCode defaults are wide-open. This project narrows them via the
+`permission` block in `opencode.json` to reduce accidental destruction in
+the `build` agent (which has full tool access by default):
+
+- `edit` / `read` / `webfetch` — `allow`
+- `skill` — `allow` for the registered skill names; `*` allow for future
+  skills loaded via the auto-walk
+- `bash`:
+  - **Allow** (read-only git + safe ops): `git status`, `git log*`,
+    `git diff*`, `git show*`, `git branch*`, `git remote*`, `git fetch*`,
+    `git stash*`, `git blame*`, `git reflog*`, `git add*`, `git commit*`,
+    `git checkout*`, `npm *`, `npx *`, `node *`, `pwsh *`, `powershell *`,
+    `python *`, `pytest*`, `ruff *`, `uv *`,
+    `Get-Command *`, `Test-Path *`, `Get-ChildItem *`, `Get-Content *`
+  - **Ask** (catch-all + network): `*` (default catch), `git switch*`,
+    `curl *`, `Invoke-WebRequest *`, `wget *`
+  - **Deny** (irreversible): `git push*`, `git reset --hard*`, `git clean*`,
+    `git filter-branch*`, `git update-ref*`, `Test-Connection *`
+- `external_directory`:
+  - **Deny** by default (`*`)
+  - **Allow** only `~/projects/aegisbank*` and `~/config/opencode`
+
+The `*` rule first + specific overrides after means last-matching-rule-wins
+keeps the boundary narrow.
+
+### Formatters
+
+OpenCode formatters are disabled by default. This project enables:
+
+- `ruff` → `ruff format $FILE` for `.py` / `.pyi`
+- `ruff-check` → `ruff check --fix $FILE` for `.py` / `.pyi`
+
+Both require `ruff` on PATH (declared in `services/mock-core-banking/pyproject.toml`
+and any future Python service). When the v0.2 scaffold lands, `pip install -e .`
+materializes the binary. Until then, formatting is a no-op (the formatter
+config validates but the binary is missing).
+
+### Commands
+
+Project-scoped slash commands registered in `opencode.json` → `command`:
+
+| Command | Purpose |
+|---|---|
+| `/smoke-mcp` | Runs `.opencode/scripts/smoke-mcp.mjs`; reports per-server ok/failed + tool counts. Read-only. |
+| `/check-contracts` | Validates every `contracts/*.schema.json` parses and is JSON Schema 2020-12. Read-only. |
+| `/lint-adr-links` | Verifies every markdown link between ADRs resolves to an existing file. Read-only. |
+| `/charter-summary` | One-paragraph summary of the five charter docs, naming the product boundary and the seven permanent rules. Read-only. |
+
+All four commands are **read-only by design** — they exist to give the
+agent a quick lens on project state without granting write capability.
+
+### Subagent depth
+
+`subagent_depth: 1` is set explicitly (matches the opencode default). This
+allows primary agents to launch subagents but prevents subagents from
+launching additional subagents — protects against accidental recursion in
+the `general` and `explore` subagents.
+
+### Plan agent override
+
+The built-in `plan` agent is overridden in `opencode.json` → `agent.plan`
+with the AegisBank permanent rules baked into its system prompt. The
+override keeps the default `mode: primary` and inherits the model from the
+profile (`minimax-plus` → `minimax/MiniMax-M3`).
+
 ### Retrieval policy
 
 `.ai-env/retrieval-policy.json` adopts the codebase-memory router for this

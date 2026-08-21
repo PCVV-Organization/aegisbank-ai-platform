@@ -61,5 +61,103 @@
       ],
       "extensions": [".py", ".pyi"]
     }
+  },
+  "permission": {
+    "edit": "allow",
+    "read": "allow",
+    "webfetch": "allow",
+    "skill": {
+      "*": "allow",
+      "e2e-testing-patterns": "allow"
+    },
+    "bash": {
+      "*": "ask",
+      "git status": "allow",
+      "git log*": "allow",
+      "git diff*": "allow",
+      "git show*": "allow",
+      "git branch*": "allow",
+      "git remote*": "allow",
+      "git fetch*": "allow",
+      "git stash*": "allow",
+      "git blame*": "allow",
+      "git reflog*": "allow",
+      "git add*": "allow",
+      "git commit*": "allow",
+      "git checkout*": "allow",
+      "git switch*": "ask",
+      "git push*": "deny",
+      "git reset --hard*": "deny",
+      "git clean*": "deny",
+      "git filter-branch*": "deny",
+      "git update-ref*": "deny",
+      "npm *": "allow",
+      "npx *": "allow",
+      "node *": "allow",
+      "pwsh *": "allow",
+      "powershell *": "allow",
+      "python *": "allow",
+      "pytest*": "allow",
+      "ruff *": "allow",
+      "uv *": "allow",
+      "Get-Command *": "allow",
+      "Test-Path *": "allow",
+      "Get-ChildItem *": "allow",
+      "Get-Content *": "allow",
+      "Test-Connection *": "deny",
+      "curl *": "ask",
+      "Invoke-WebRequest *": "ask",
+      "wget *": "ask"
+    },
+    "external_directory": {
+      "*": "deny",
+      "~/projects/aegisbank*": "allow",
+      "~/config/opencode": "allow"
+    }
+  },
+  "formatter": {
+    "ruff": {
+      "command": [
+        "ruff",
+        "format",
+        "$FILE"
+      ],
+      "extensions": [".py", ".pyi"]
+    },
+    "ruff-check": {
+      "command": [
+        "ruff",
+        "check",
+        "--fix",
+        "$FILE"
+      ],
+      "extensions": [".py", ".pyi"]
+    }
+  },
+  "command": {
+    "smoke-mcp": {
+      "description": "Run E2E smoke for the 5 wired MCP servers",
+      "template": "Execute `node .opencode/scripts/smoke-mcp.mjs` from the project root. Report per-server ok/failed, tool counts, and any errors. Do not modify any source file."
+    },
+    "check-contracts": {
+      "description": "Validate contract JSON schemas against schema files in contracts/",
+      "template": "Walk `contracts/` and verify every `.schema.json` is itself valid JSON Schema 2020-12. If `check-jsonschema` is on PATH, run it. Otherwise read each schema with the JSON parser and report. Do not modify any source file."
+    },
+    "lint-adr-links": {
+      "description": "Verify every ADR cross-reference resolves to an existing ADR file",
+      "template": "Read each file under `docs/architecture/adr/ADR-*.md`, extract every markdown link to another ADR, and confirm the target file exists. Report any broken links. Do not modify any source file."
+    },
+    "charter-summary": {
+      "description": "Show a one-paragraph summary of the v0.1 charter from docs/charter/",
+      "template": "Read `docs/charter/01-vision.md`, `02-scope.md`, `03-use-cases.md`, `04-non-goals.md`, and `05-success-criteria.md`. Produce a single-paragraph summary that names the product boundary, the synthetic-data rule, the HITL-first rule, the one-agent modular-monolith rule, and the local-first / Azure-last rule. Do not modify any source file."
+    }
+  },
+  "subagent_depth": 1,
+  "agent": {
+    "plan": {
+      "mode": "primary",
+      "description": "Read-only analysis with AegisBank-specific context (HITL-first, synthetic data only, no paid Azure, one agent modular monolith)",
+      "prompt": "You are in plan mode for the AegisBank AI Platform. Apply these non-negotiable constraints to every analysis:\n\n1. All data must be synthetic and reproducible. Real customer, banking, or credential data is prohibited.\n2. The LLM interprets and proposes; deterministic identity, policy, authorization, validation, and business rules decide.\n3. State-changing operations require explicit HITL approval.\n4. Local first; Docker, CI, and Azure are gated behind explicit approval. Do not propose creating Azure resources.\n5. Start with one agent and a modular monolith. Multi-agent and AKS are out of scope until v1.1+.\n6. A dependency or technology is added only when it resolves a requirement, reduces a risk, or demonstrates a defined competency.\n7. Re-read `AGENTS.md` for the full permanent rules before proposing any change.\n\nFocus on security, permission boundaries, testability, and observability. Propose changes without making edits; rely on the user to commit."
+    }
   }
 }
