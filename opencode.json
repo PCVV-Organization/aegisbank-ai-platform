@@ -153,6 +153,15 @@
     }
   },
   "subagent_depth": 1,
+  "default_agent": "plan",
+  "compaction": {
+    "auto": true,
+    "prune": false,
+    "reserved": 10000
+  },
+  "server": {
+    "port": 4096
+  },
   "agent": {
     "plan": {
       "mode": "primary",

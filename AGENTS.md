@@ -185,6 +185,17 @@ with the AegisBank permanent rules baked into its system prompt. The
 override keeps the default `mode: primary` and inherits the model from the
 profile (`minimax-plus` → `minimax/MiniMax-M3`).
 
+### Default agent, compaction, and server
+
+- `default_agent: "plan"` — opens every session in the overridden plan
+  agent. Forces HITL-first thinking before any edit. Switch to `build`
+  with the **Tab** key when full-tool work is intended.
+- `compaction.auto: true`, `prune: false`, `reserved: 10000` — auto-
+  compact when context fills; never prune tool outputs (needed for audit
+  trail); keep a 10 000-token buffer for the compaction itself.
+- `server.port: 4096` — explicit local server port for `opencode` web / IDE
+  integration. Hostname defaults to loopback.
+
 ### Retrieval policy
 
 `.ai-env/retrieval-policy.json` adopts the codebase-memory router for this
