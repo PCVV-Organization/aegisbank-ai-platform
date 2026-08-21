@@ -1,0 +1,65 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "./AGENTS.md"
+  ],
+  "mcp": {
+    "sequential-thinking": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/aegisbank-ai-platform/.opencode/node_modules/@modelcontextprotocol/server-sequential-thinking/dist/index.js"
+      ],
+      "enabled": true
+    },
+    "filesystem": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/aegisbank-ai-platform/.opencode/node_modules/@modelcontextprotocol/server-filesystem/dist/index.js",
+        "C:/aegisbank-ai-platform"
+      ],
+      "enabled": true
+    },
+    "git": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/aegisbank-ai-platform/.opencode/node_modules/@cyanheads/git-mcp-server/dist/index.js"
+      ],
+      "enabled": true,
+      "env": {
+        "GIT_MCP_REPO_PATH": "C:/aegisbank-ai-platform"
+      }
+    },
+    "everything": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/aegisbank-ai-platform/.opencode/node_modules/@modelcontextprotocol/server-everything/dist/index.js"
+      ],
+      "enabled": true
+    },
+    "context7": {
+      "type": "local",
+      "command": [
+        "node",
+        "C:/aegisbank-ai-platform/.opencode/node_modules/@upstash/context7-mcp/dist/index.js"
+      ],
+      "enabled": true,
+      "env": {
+        "CONTEXT7_API_KEY": "ctx7sk-PLACEHOLDER-ROTATE-AT-DASHBOARD"
+      }
+    }
+  },
+  "lsp": {
+    "pyright": {
+      "command": [
+        "node",
+        "C:/aegisbank-ai-platform/.opencode/node_modules/pyright/langserver.index.js",
+        "--stdio"
+      ],
+      "extensions": [".py", ".pyi"]
+    }
+  }
+}

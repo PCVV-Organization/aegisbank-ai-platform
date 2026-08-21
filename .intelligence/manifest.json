@@ -1,0 +1,23 @@
+{
+  "id": "aegisbank-ai-platform",
+  "schema_version": "1.0.0",
+  "routing_keywords": [
+    "project"
+  ],
+  "stack": {
+    "opencode": ">=1.17.0",
+    "runtime": "project-defined"
+  },
+  "runtime_opts": {
+    "OPENCODE_CONFIG_DIR_REL": ".opencode/"
+  },
+  "mcp_allowlist": [],
+  "skill_allowlist": [],
+  "schema_versions": {
+    "manifest": "1.0.0",
+    "index": "1.0.0",
+    "graph_node": "1.0.0",
+    "session_event": "1.0.0"
+  },
+  "generated_at": "2026-08-21T04:06:43Z"
+}

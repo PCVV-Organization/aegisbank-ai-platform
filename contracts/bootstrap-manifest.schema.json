@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:opencode-global:contracts:bootstrap-manifest:v1",
+  "title": "BootstrapManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bootstrap_version",
+    "project_id",
+    "created_at",
+    "updated_at",
+    "initializer",
+    "options",
+    "ownership",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "bootstrap_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "project_id": { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "initializer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!\\\\)[A-Za-z0-9._/-]+$"
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "include_intelligence",
+        "include_contracts",
+        "include_profile_commands",
+        "include_bootstrap_manifest",
+        "force"
+      ],
+      "properties": {
+        "include_intelligence": { "type": "boolean" },
+        "include_contracts": { "type": "boolean" },
+        "include_profile_commands": { "type": "boolean" },
+        "include_bootstrap_manifest": { "type": "boolean" },
+        "force": { "type": "boolean" }
+      }
+    },
+    "ownership": { "const": "project" },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "artifact_type", "source", "observed_state", "ownership"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(?![A-Za-z]:)(?!/)(?!\\\\)(?!.*\\.\\./)[A-Za-z0-9._/-]+$"
+          },
+          "artifact_type": {
+            "type": "string",
+            "enum": ["config", "intelligence", "contract", "command", "manifest"]
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(generated|global-contract|global-command):[A-Za-z0-9._/-]+$"
+          },
+          "checksum_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "observed_state": {
+            "type": "string",
+            "enum": ["created", "copied", "present", "missing", "diverged", "unmanaged", "skipped"]
+          },
+          "ownership": { "const": "project" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:opencode-global:contracts:manifest:v1",
+  "title": "IntelligenceManifest",
+  "type": "object",
+  "required": ["id", "schema_version", "routing_keywords", "stack"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "schema_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "routing_keywords": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1, "maxLength": 64 }
+    },
+    "stack": {
+      "type": "object",
+      "required": ["opencode"],
+      "additionalProperties": true,
+      "properties": {
+        "opencode": { "type": "string", "minLength": 1 },
+        "runtime":  { "type": "string" }
+      }
+    },
+    "runtime_opts": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "OPENCODE_CONFIG_DIR_REL": { "type": "string", "pattern": "^\\.opencode/" },
+        "constitution_path":      { "type": "string" },
+        "skill_root":             { "type": "string" },
+        "command_root":           { "type": "string" },
+        "agent_root":             { "type": "string" },
+        "mcp_stateful":           { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "mcp_allowlist": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "skill_allowlist": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" }
+    },
+    "schema_versions": {
+      "type": "object",
+      "required": ["manifest", "index", "graph_node", "session_event"],
+      "additionalProperties": false,
+      "properties": {
+        "manifest":      { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "index":         { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "graph_node":    { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "session_event": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "constitution_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "generated_at":         { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:opencode-global:contracts:graph:v1",
+  "title": "GraphLine",
+  "description": "NDJSON line shape for .intelligence/graph.jsonl. Each line is either a node or an edge; discriminated by `kind`.",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["kind", "id", "path", "mtime"],
+      "additionalProperties": true,
+      "properties": {
+        "kind":  { "const": "node" },
+        "id":    { "type": "string", "minLength": 1, "maxLength": 128 },
+        "path":  { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "mtime": { "type": "string", "format": "date-time" },
+        "type":  { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "maxLength": 200 }
+      }
+    },
+    {
+      "type": "object",
+      "required": ["kind", "from", "to", "rel"],
+      "additionalProperties": true,
+      "properties": {
+        "kind": { "const": "edge" },
+        "from": { "type": "string", "minLength": 1 },
+        "to":   { "type": "string", "minLength": 1 },
+        "rel":  { "enum": ["imports", "references", "owns", "depends_on"] }
+      }
+    }
+  ]
+}

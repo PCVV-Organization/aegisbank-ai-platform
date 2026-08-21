@@ -25,6 +25,9 @@ htmlcov/
 # JavaScript tooling
 node_modules/
 
+# Local smoke-test scratch directories
+.opencode/tmp-*/
+
 # IDE and OS files
 .idea/
 .vscode/

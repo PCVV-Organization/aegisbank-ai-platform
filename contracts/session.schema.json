@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:opencode-global:contracts:session:v1",
+  "title": "SessionEvent",
+  "description": "NDJSON line shape for .intelligence/sessions/<id>.jsonl.",
+  "type": "object",
+  "required": ["ts", "role", "kind", "payload"],
+  "additionalProperties": true,
+  "properties": {
+    "ts":      { "type": "string", "format": "date-time" },
+    "role":    { "enum": ["orchestrator", "dev", "qa", "infra"] },
+    "kind":    { "enum": ["plan", "validate", "decide", "execute"] },
+    "payload": { "type": "object" }
+  }
+}

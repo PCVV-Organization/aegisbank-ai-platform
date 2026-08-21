@@ -29,16 +29,15 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.2.0 - Core Banking Mock`
+**Current milestone:** `v0.1.0 - Project Charter + Local Tooling`
 
-`v0.2` provides a local FastAPI backend with explicit contracts, SQLAlchemy
-persistence, deterministic synthetic fixtures, correlation IDs, structured
-errors, and automated unit/integration tests. It contains no AI functionality.
+`v0.1` covers the project charter plus the local OpenCode tooling required to
+develop the project incrementally. No AI functionality has been implemented.
 
 | Version | Milestone | Status |
 | --- | --- | --- |
-| `v0.1` | Project Charter | COMPLETE |
-| `v0.2` | Core Banking Mock | COMPLETE |
+| `v0.1` | Project Charter + Local Tooling | COMPLETE |
+| `v0.2` | Core Banking Mock | PROPOSED — code in working tree, awaiting explicit approval before commit |
 | `v0.3` | ML/NLP Baseline | NOT STARTED |
 | `v0.4` | RAG | NOT STARTED |
 | `v0.5` | Agent and read-only tools | NOT STARTED |
@@ -50,20 +49,22 @@ errors, and automated unit/integration tests. It contains no AI functionality.
 | `v1.1` | AKS experiment | Optional after `v1.0` |
 | `v1.2` | Multi-agent experiment | Optional after `v1.0` |
 
-## Implemented In v0.2
+## What `v0.1` Includes
 
-- One modular-monolith FastAPI service under [`services/mock-core-banking`](services/mock-core-banking/README.md).
-- `Customer`, `Loan`, `Installment`, and `ServiceRequest` relational entities only.
-- Three synthetic customers, four synthetic loans, ten synthetic installments,
-  and two initial synthetic service requests.
-- Versioned read endpoints under `/api/v1` and one internal service-request write.
-- Decimal monetary values, relational constraints, transaction rollback, and isolated test databases.
-- Stable error envelopes plus `X-Correlation-ID` on every HTTP response.
-- Liveness, datastore readiness, OpenAPI, unit, and API integration coverage.
+- Five charter documents defining the product boundary (`docs/charter/`).
+- `AGENTS.md` repository operating rules and milestone workflow.
+- Bootstrap-manifest and contract schemas (`contracts/`).
+- Knowledge scaffold (`docs/architecture/adr/`, `docs/research/`).
+- OpenCode-native local tooling wired in `opencode.json`:
+  - 4 MCP servers (`sequential-thinking`, `filesystem`, `git`, `everything`).
+  - 1 declared LSP (`pyright`, local install); Red Hat `yaml-ls` auto-installs.
+  - Retrieval policy adopted via `.ai-env/retrieval-policy.json`.
 
-The write endpoint does not include HITL in this milestone and must not be exposed
-to an agent. HITL remains required before tool exposure in `v0.6`; idempotency and
-reliability remain deferred to `v0.7`.
+A working `services/mock-core-banking/` directory exists in the working tree
+from an earlier autonomous session and is **not yet committed**. It claims to
+include 82 passing tests, ruff-clean, valid OpenAPI 0.2.0. Review and an
+explicit approval are required before any `v0.2` commit. Until then,
+`v0.2` is **PROPOSED**, not COMPLETE.
 
 ## Project Rules
 
@@ -88,6 +89,13 @@ The approved product boundary is defined by these documents:
 - [Success criteria](docs/charter/05-success-criteria.md)
 - [Repository operating rules](AGENTS.md)
 
+## Architecture Decisions
+
+- [ADR-001](docs/architecture/adr/ADR-001-modular-monolith-first.md) — Modular monolith first.
+- [ADR-002](docs/architecture/adr/ADR-002-local-sqlite-before-postgresql.md) — Local SQLite before PostgreSQL.
+- [ADR-003](docs/architecture/adr/ADR-003-agent-sdk-pydantic-ai.md) — Agent SDK choice (v0.5): pydantic-ai.
+- [ADR-004](docs/architecture/adr/ADR-004-vector-store-chromadb-in-process.md) — Vector store choice (v0.4): chromadb in-process.
+
 ## Repository Structure
 
 ```text
@@ -95,39 +103,36 @@ aegisbank-ai-platform/
 |-- README.md
 |-- AGENTS.md
 |-- .gitignore
-|-- docs/
-|   |-- charter/
-|   |   |-- 01-vision.md
-|   |   |-- 02-scope.md
-|   |   |-- 03-use-cases.md
-|   |   |-- 04-non-goals.md
-|   |   `-- 05-success-criteria.md
-|   `-- architecture/
-|       `-- adr/
-|           |-- ADR-001-modular-monolith-first.md
-|           `-- ADR-002-local-sqlite-before-postgresql.md
+|-- .opencode/            # MCP / LSP local installs (npm)
+|-- .ai-env/              # Retrieval policy adopted from OpenCode
 |-- .intelligence/        # Pre-existing project knowledge scaffold
-|-- .opencode/            # Pre-existing local OpenCode support files
-|-- contracts/            # Pre-existing OpenCode support schemas
-|-- services/
-|   `-- mock-core-banking/
-|       |-- pyproject.toml
-|       |-- README.md
-|       |-- src/mock_core_banking/
-|       `-- tests/
-|-- opencode.json          # Pre-existing OpenCode bootstrap config
+|-- contracts/            # JSON Schema files
+|-- docs/
+|   |-- charter/          # v0.1 charter (5 docs)
+|   |-- architecture/adr/ # Architecture Decision Records
+|   `-- research/         # Library / pattern research notes
+|-- opencode.json         # OpenCode-native config (MCP, LSP, instructions)
+`-- tui.json              # TUI-only overrides (theme)
 ```
 
 ## How To Continue
 
-1. Follow the [Mock Core Banking setup](services/mock-core-banking/README.md#setup).
-2. Run the documented tests and quality checks locally.
-3. Inspect the `v0.2` ADRs and generated OpenAPI contract.
+1. Run the OpenCode launcher to confirm wiring:
+   ```powershell
+   pwsh "$env:USERPROFILE\.config\opencode\scripts\opencode-launcher.ps1" `
+        -Profile minimax-plus `
+        -TargetDir $PWD `
+        -PrintRouting -DryRun
+   ```
+2. Review the four ADRs. None of them commits the project to a specific
+   implementation outside its milestone.
+3. Decide whether to approve the uncommitted `v0.2` proposal (see
+   "What `v0.1` Includes" above). Do not start `v0.3` automatically.
 4. Record any requested scope change before implementation begins.
 5. Start `v0.3 - ML/NLP Baseline` only after explicit approval.
 
-No Docker, Azure, RAG, model, agent, MCP, HITL workflow, messaging, retry policy,
-or circuit breaker has been implemented.
+No Docker, Azure, RAG, model, agent, MCP server of our own, HITL workflow,
+messaging, retry policy, or circuit breaker has been implemented.
 
 ## Reference Baseline
 

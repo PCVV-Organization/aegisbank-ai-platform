@@ -57,3 +57,98 @@ git status --short
 
 Use milestone-specific format, lint, type, test, security, evaluation, and build
 commands once those toolchains exist.
+
+## Local Tooling
+
+OpenCode-native configuration lives in `opencode.json`. Anything below is
+project-owned and reproducible via `npm install` in `.opencode/`.
+
+### MCP servers
+
+Project-owned MCP servers (all `type: "local"`, all launched via `node` against
+paths inside `.opencode/node_modules/`; no `npx -y` re-downloads):
+
+- `sequential-thinking` (`@modelcontextprotocol/server-sequential-thinking@2026.7.4`).
+  Pre-installed in v0.1 ahead of need for the reasoning substrate `v0.5 - Agent
+  and read-only tools` will rely on for HITL proposal decomposition.
+  Justified under the "defined competency" clause.
+- `filesystem` (`@modelcontextprotocol/server-filesystem@2026.7.10`,
+  scoped to `C:/aegisbank-ai-platform`). Read-only base for read tools in v0.5.
+  Justified under the "defined competency" clause.
+- `git` (`@cyanheads/git-mcp-server@2.15.1` — substitute because
+  `@modelcontextprotocol/server-git` is not published to npm; same MCP
+  contract). `env.GIT_MCP_REPO_PATH` scoped to the project root.
+- `everything` (`@modelcontextprotocol/server-everything@2026.8.18`).
+  Anthropic's reference MCP server used as smoke-test target to validate
+  the host MCP transport. Has echo, add, longRunningOperation, sampleLLM,
+  getTinyImage, annotatedMessage, and structuredContent tools. Not for
+  production agent calls.
+- `context7` (`@upstash/context7-mcp@4.0.3`). Live library docs in-session.
+  **Inert until `CONTEXT7_API_KEY` is rotated** — the env shipped in
+  `opencode.json` is a placeholder; opencode logs "Request timed out" until
+  the user replaces it. Rotate via the user's own secret store; never commit
+  a real key.
+
+Re-materialize after a clean checkout:
+
+```powershell
+Set-Location 'C:\aegisbank-ai-platform\.opencode'
+npm install --no-audit --no-fund
+```
+
+### LSP servers
+
+OpenCode LSP is disabled by default. This repository enables it via the `lsp`
+block in `opencode.json`:
+
+- `pyright` — handles `.py`, `.pyi`. Explicit `command` points to the local
+  `pyright` install (`pyright@1.1.413`). Will be consumed by the v0.2
+  `services/mock-core-banking/` codebase.
+- `yaml-ls` — built-in; **not declared** in `opencode.json` (the validator
+  requires `command` for any declared LSP, but built-ins auto-install when
+  YAML files are detected). Red Hat yaml-language-server will appear on
+  first `.yaml` / `.yml` open. Reserved for future Docker Compose / Azure
+  configs.
+- `powershell` — **not declared** either. `PowerShellEditorServices` is no
+  longer distributed on PSGallery and has no npm equivalent; the PowerShell
+  VSCode extension remains the supported distribution. Revisit when an
+  upstream distribution re-emerges — at that point it can be added as a
+  custom LSP with explicit `command`.
+
+Disable automatic LSP downloads (CI / air-gapped) with
+`OPENCODE_DISABLE_LSP_DOWNLOAD=true`.
+
+### Retrieval policy
+
+`.ai-env/retrieval-policy.json` adopts the codebase-memory router for this
+project. Strategies wired:
+
+- `exact` → `ripgrep` (or `git grep` fallback)
+- `symbol` → `lsp` (pyright)
+- `architecture` → `lsp` (re-points the `codebase-memory` stub to the
+  working `pyright` LSP until a real codebase-memory provider ships)
+- `knowledge` → `filesystem`, restricted to `AGENTS.md`, `.ai-env/**`,
+  `docs/**`, `specs/**`, `docs/architecture/adr/**`, `README*`, `CHANGELOG*`,
+  `PROGRESS.md`, `MIGRATION_CONTROL*`, `HANDOFF_NEXT_RUN*`
+- `semantic` → disabled (default)
+
+### Research notes
+
+In-repo research findings captured under `docs/research/`:
+
+- `pydantic-ai-mcp-integration.md` — v0.5 agent SDK decisions.
+- `mcp-python-sdk-hitl-patterns.md` — v0.6 HITL proposal mediator patterns.
+
+### MCP smoke evidence
+
+E2E handshake evidence lives at `.intelligence/smoke/mcp-smoke.json`. To
+re-run after any MCP change:
+
+```powershell
+Set-Location 'C:\aegisbank-ai-platform\.opencode'
+node scripts/smoke-mcp.mjs
+```
+
+The script uses `@modelcontextprotocol/sdk` over stdio; the report lists
+each server, `tools/list` results, and connect timing. Re-run before any
+change to the `mcp` block of `opencode.json`.

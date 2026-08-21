@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-08-21T05:03:13.946Z",
+  "summary": "Graph index with 0 nodes and 0 edges.",
+  "counts": {
+    "nodes": 0,
+    "edges": 0,
+    "by_type": {
+      "entity": 0,
+      "decision": 0,
+      "pattern": 0,
+      "convention": 0,
+      "observation": 0,
+      "experiment": 0
+    }
+  },
+  "recent": []
+}

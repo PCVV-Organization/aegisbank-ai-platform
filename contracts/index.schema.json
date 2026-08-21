@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:opencode-global:contracts:index:v1",
+  "title": "IntelligenceIndex",
+  "type": "object",
+  "required": ["generated_at", "summary", "counts"],
+  "additionalProperties": true,
+  "properties": {
+    "generated_at": { "type": "string", "format": "date-time" },
+    "summary":      { "type": "string", "maxLength": 4096 },
+    "counts": {
+      "type": "object",
+      "required": ["nodes", "edges", "by_type"],
+      "additionalProperties": false,
+      "properties": {
+        "nodes": { "type": "integer", "minimum": 0 },
+        "edges": { "type": "integer", "minimum": 0 },
+        "by_type": {
+          "type": "object",
+          "required": ["entity", "decision", "pattern", "convention", "observation", "experiment"],
+          "additionalProperties": false,
+          "properties": {
+            "entity":      { "type": "integer", "minimum": 0 },
+            "decision":    { "type": "integer", "minimum": 0 },
+            "pattern":     { "type": "integer", "minimum": 0 },
+            "convention":  { "type": "integer", "minimum": 0 },
+            "observation": { "type": "integer", "minimum": 0 },
+            "experiment":  { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "recent": {
+      "type": "array",
+      "maxItems": 20,
+      "items": { "type": "object" }
+    }
+  }
+}
