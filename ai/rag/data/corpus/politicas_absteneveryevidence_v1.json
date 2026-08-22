@@ -1,0 +1,11 @@
+{
+  "document_id": "politicas_absteneveryevidence",
+  "version": "v1",
+  "title": "Política de abstención por evidencia insuficiente",
+  "topic": "politicas",
+  "effective_from": "2026-02-15",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/politicas",
+  "body": "Cuando una consulta al asistente Aegis no puede responderse con evidencia presente en la base de conocimiento sintética o en las herramientas autorizadas, el sistema debe abstenerse y declarar explícitamente la abstención. La política aplica también cuando la evidencia existe pero está en estado distinto de activo, cuando pertenece a una versión ya sin efecto, o cuando el cliente ficticio no existe en los datos sintéticos. El asistente no debe inventar respuestas, completar información faltante ni extrapolar datos. La abstención se reporta como una respuesta controlada, no como un fallo, y nunca se ofrece una respuesta aproximada."
+}

@@ -1,0 +1,1635 @@
+{
+  "aggregates": {
+    "dense_local_lsa": {
+      "mrr_at_5": {
+        "max": 1.0,
+        "mean": 0.532407407407,
+        "min": 0.0,
+        "std": 0.445431966173
+      },
+      "ndcg_at_5": {
+        "max": 0.967467983489,
+        "mean": 0.352323088669,
+        "min": 0.0,
+        "std": 0.291762113197
+      },
+      "precision_at_5": {
+        "max": 0.6,
+        "mean": 0.188888888889,
+        "min": 0.0,
+        "std": 0.16960375025
+      },
+      "recall_at_5": {
+        "max": 1.0,
+        "mean": 0.351851851852,
+        "min": 0.0,
+        "std": 0.31860463952
+      }
+    },
+    "hybrid_rrf": {
+      "mrr_at_5": {
+        "max": 1.0,
+        "mean": 0.532407407407,
+        "min": 0.0,
+        "std": 0.445431966173
+      },
+      "ndcg_at_5": {
+        "max": 0.967467983489,
+        "mean": 0.352323088669,
+        "min": 0.0,
+        "std": 0.291762113197
+      },
+      "precision_at_5": {
+        "max": 0.6,
+        "mean": 0.188888888889,
+        "min": 0.0,
+        "std": 0.16960375025
+      },
+      "recall_at_5": {
+        "max": 1.0,
+        "mean": 0.351851851852,
+        "min": 0.0,
+        "std": 0.31860463952
+      }
+    },
+    "lexical_tfidf": {
+      "mrr_at_5": {
+        "max": 1.0,
+        "mean": 0.532407407407,
+        "min": 0.0,
+        "std": 0.445431966173
+      },
+      "ndcg_at_5": {
+        "max": 0.967467983489,
+        "mean": 0.352323088669,
+        "min": 0.0,
+        "std": 0.291762113197
+      },
+      "precision_at_5": {
+        "max": 0.6,
+        "mean": 0.188888888889,
+        "min": 0.0,
+        "std": 0.16960375025
+      },
+      "recall_at_5": {
+        "max": 1.0,
+        "mean": 0.351851851852,
+        "min": 0.0,
+        "std": 0.31860463952
+      }
+    }
+  },
+  "category_breakdown": {
+    "dense_local_lsa": {
+      "direct": {
+        "mrr_at_5": 0.690476190476,
+        "ndcg_at_5": 0.463146827354,
+        "precision_at_5": 0.257142857143,
+        "recall_at_5": 0.47619047619
+      },
+      "ood": {
+        "mrr_at_5": 0.0,
+        "ndcg_at_5": 0.0,
+        "precision_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "paraphrase": {
+        "mrr_at_5": 0.35,
+        "ndcg_at_5": 0.233915065998,
+        "precision_at_5": 0.16,
+        "recall_at_5": 0.266666666667
+      },
+      "version": {
+        "mrr_at_5": 1.0,
+        "ndcg_at_5": 0.643404158188,
+        "precision_at_5": 0.266666666667,
+        "recall_at_5": 0.555555555556
+      }
+    },
+    "hybrid_rrf": {
+      "direct": {
+        "mrr_at_5": 0.690476190476,
+        "ndcg_at_5": 0.463146827354,
+        "precision_at_5": 0.257142857143,
+        "recall_at_5": 0.47619047619
+      },
+      "ood": {
+        "mrr_at_5": 0.0,
+        "ndcg_at_5": 0.0,
+        "precision_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "paraphrase": {
+        "mrr_at_5": 0.35,
+        "ndcg_at_5": 0.233915065998,
+        "precision_at_5": 0.16,
+        "recall_at_5": 0.266666666667
+      },
+      "version": {
+        "mrr_at_5": 1.0,
+        "ndcg_at_5": 0.643404158188,
+        "precision_at_5": 0.266666666667,
+        "recall_at_5": 0.555555555556
+      }
+    },
+    "lexical_tfidf": {
+      "direct": {
+        "mrr_at_5": 0.690476190476,
+        "ndcg_at_5": 0.463146827354,
+        "precision_at_5": 0.257142857143,
+        "recall_at_5": 0.47619047619
+      },
+      "ood": {
+        "mrr_at_5": 0.0,
+        "ndcg_at_5": 0.0,
+        "precision_at_5": 0.0,
+        "recall_at_5": 0.0
+      },
+      "paraphrase": {
+        "mrr_at_5": 0.35,
+        "ndcg_at_5": 0.233915065998,
+        "precision_at_5": 0.16,
+        "recall_at_5": 0.266666666667
+      },
+      "version": {
+        "mrr_at_5": 1.0,
+        "ndcg_at_5": 0.643404158188,
+        "precision_at_5": 0.266666666667,
+        "recall_at_5": 0.555555555556
+      }
+    }
+  },
+  "experiment_name": "aegisbank-synthetic-spanish-rag-retrieval",
+  "experiment_version": "0.4.0",
+  "misclassified": {
+    "dense_local_lsa": [
+      {
+        "query_id": "q003",
+        "retrieved": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ],
+        "text": "¿Qué tipos de comisiones simuladas existen en AegisBank?"
+      },
+      {
+        "query_id": "q009",
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_tiposyaplicacion__v1__c002_de199b7323d9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8"
+        ],
+        "text": "Explícame cómo se calcula lo que pago cada mes en un crédito ficticio."
+      },
+      {
+        "query_id": "q010",
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "text": "¿Qué cobros extra pueden aparecer en el cronograma?"
+      },
+      {
+        "query_id": "q016",
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ],
+        "text": "¿Cuál es el tipo de cambio del dólar hoy?"
+      },
+      {
+        "query_id": "q017",
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ],
+        "text": "¿Cuál es la temperatura actual en Lima?"
+      },
+      {
+        "query_id": "q018",
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "text": "¿Quién ganó el partido de fútbol ayer?"
+      }
+    ],
+    "hybrid_rrf": [
+      {
+        "query_id": "q003",
+        "retrieved": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ],
+        "text": "¿Qué tipos de comisiones simuladas existen en AegisBank?"
+      },
+      {
+        "query_id": "q009",
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_tiposyaplicacion__v1__c002_de199b7323d9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8"
+        ],
+        "text": "Explícame cómo se calcula lo que pago cada mes en un crédito ficticio."
+      },
+      {
+        "query_id": "q010",
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "text": "¿Qué cobros extra pueden aparecer en el cronograma?"
+      },
+      {
+        "query_id": "q016",
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ],
+        "text": "¿Cuál es el tipo de cambio del dólar hoy?"
+      },
+      {
+        "query_id": "q017",
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ],
+        "text": "¿Cuál es la temperatura actual en Lima?"
+      },
+      {
+        "query_id": "q018",
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "text": "¿Quién ganó el partido de fútbol ayer?"
+      }
+    ],
+    "lexical_tfidf": [
+      {
+        "query_id": "q003",
+        "retrieved": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ],
+        "text": "¿Qué tipos de comisiones simuladas existen en AegisBank?"
+      },
+      {
+        "query_id": "q009",
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_tiposyaplicacion__v1__c002_de199b7323d9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8"
+        ],
+        "text": "Explícame cómo se calcula lo que pago cada mes en un crédito ficticio."
+      },
+      {
+        "query_id": "q010",
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "text": "¿Qué cobros extra pueden aparecer en el cronograma?"
+      },
+      {
+        "query_id": "q016",
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ],
+        "text": "¿Cuál es el tipo de cambio del dólar hoy?"
+      },
+      {
+        "query_id": "q017",
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ],
+        "text": "¿Cuál es la temperatura actual en Lima?"
+      },
+      {
+        "query_id": "q018",
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "text": "¿Quién ganó el partido de fútbol ayer?"
+      }
+    ]
+  },
+  "per_method": {
+    "dense_local_lsa": [
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.5,
+          "ndcg_at_5": 0.2960819109658652,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q001",
+        "relevant": [
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.3333333333333333,
+          "ndcg_at_5": 0.5706417189553201,
+          "precision_at_5": 0.4,
+          "recall_at_5": 1.0
+        },
+        "query_id": "q002",
+        "relevant": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q003",
+        "relevant": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_6a76c2c8c438",
+          "chk_comisiones_tiposyaplicacion__v1__c002_d1ec5fb66de7",
+          "chk_comisiones_tiposyaplicacion__v1__c003_d60ca0c0efff"
+        ],
+        "retrieved": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.9674679834891693,
+          "precision_at_5": 0.6,
+          "recall_at_5": 1.0
+        },
+        "query_id": "q004",
+        "relevant": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3"
+        ],
+        "retrieved": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_productos_requisitosycondiciones__v1__c003_ca71ae150bc3"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q005",
+        "relevant": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+        ],
+        "retrieved": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_absteneveryevidence__v1__c002_3c8b95c423b4",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q006",
+        "relevant": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_tasa_de_interes__v1__c002_f580e45311f3",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_requisitosycondiciones__v1__c002_055c48408f1c",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q007",
+        "relevant": [
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_politicas_absteneveryevidence__v1__c002_3c8b95c423b4",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e"
+        ],
+        "retrieved": [
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.25,
+          "ndcg_at_5": 0.20210734650054757,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q008",
+        "relevant": [
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e"
+        ],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q009",
+        "relevant": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_tiposyaplicacion__v1__c002_de199b7323d9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q010",
+        "relevant": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_6a76c2c8c438",
+          "chk_comisiones_tiposyaplicacion__v1__c002_d1ec5fb66de7",
+          "chk_comisiones_tiposyaplicacion__v1__c003_d60ca0c0efff"
+        ],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q011",
+        "relevant": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+        ],
+        "retrieved": [
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.5,
+          "ndcg_at_5": 0.49818925746641285,
+          "precision_at_5": 0.4,
+          "recall_at_5": 0.6666666666666666
+        },
+        "query_id": "q012",
+        "relevant": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3"
+        ],
+        "retrieved": [
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.7039180890341347,
+          "precision_at_5": 0.4,
+          "recall_at_5": 0.6666666666666666
+        },
+        "query_id": "q013",
+        "relevant": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5
+        },
+        "query_id": "q014",
+        "relevant": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_productos_requisitosycondiciones__v1__c002_055c48408f1c",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5
+        },
+        "query_id": "q015",
+        "relevant": [
+          "chk_creditos_producto_general__v1__c003_d9c7db165c4f",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_categoriasyestados__v1__c002_1759d988022c"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q016",
+        "relevant": [],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q017",
+        "relevant": [],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q018",
+        "relevant": [],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ]
+      }
+    ],
+    "hybrid_rrf": [
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.5,
+          "ndcg_at_5": 0.2960819109658652,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q001",
+        "relevant": [
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.3333333333333333,
+          "ndcg_at_5": 0.5706417189553201,
+          "precision_at_5": 0.4,
+          "recall_at_5": 1.0
+        },
+        "query_id": "q002",
+        "relevant": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q003",
+        "relevant": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_6a76c2c8c438",
+          "chk_comisiones_tiposyaplicacion__v1__c002_d1ec5fb66de7",
+          "chk_comisiones_tiposyaplicacion__v1__c003_d60ca0c0efff"
+        ],
+        "retrieved": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.9674679834891693,
+          "precision_at_5": 0.6,
+          "recall_at_5": 1.0
+        },
+        "query_id": "q004",
+        "relevant": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3"
+        ],
+        "retrieved": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_productos_requisitosycondiciones__v1__c003_ca71ae150bc3"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q005",
+        "relevant": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+        ],
+        "retrieved": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_absteneveryevidence__v1__c002_3c8b95c423b4",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q006",
+        "relevant": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_tasa_de_interes__v1__c002_f580e45311f3",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_requisitosycondiciones__v1__c002_055c48408f1c",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q007",
+        "relevant": [
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_politicas_absteneveryevidence__v1__c002_3c8b95c423b4",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e"
+        ],
+        "retrieved": [
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.25,
+          "ndcg_at_5": 0.20210734650054757,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q008",
+        "relevant": [
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e"
+        ],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q009",
+        "relevant": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_tiposyaplicacion__v1__c002_de199b7323d9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q010",
+        "relevant": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_6a76c2c8c438",
+          "chk_comisiones_tiposyaplicacion__v1__c002_d1ec5fb66de7",
+          "chk_comisiones_tiposyaplicacion__v1__c003_d60ca0c0efff"
+        ],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q011",
+        "relevant": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+        ],
+        "retrieved": [
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.5,
+          "ndcg_at_5": 0.49818925746641285,
+          "precision_at_5": 0.4,
+          "recall_at_5": 0.6666666666666666
+        },
+        "query_id": "q012",
+        "relevant": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3"
+        ],
+        "retrieved": [
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_productos_requisitosycondiciones__v1__c003_ca71ae150bc3"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.7039180890341347,
+          "precision_at_5": 0.4,
+          "recall_at_5": 0.6666666666666666
+        },
+        "query_id": "q013",
+        "relevant": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5
+        },
+        "query_id": "q014",
+        "relevant": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_productos_requisitosycondiciones__v1__c002_055c48408f1c",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5
+        },
+        "query_id": "q015",
+        "relevant": [
+          "chk_creditos_producto_general__v1__c003_d9c7db165c4f",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_categoriasyestados__v1__c002_1759d988022c"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q016",
+        "relevant": [],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q017",
+        "relevant": [],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q018",
+        "relevant": [],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ]
+      }
+    ],
+    "lexical_tfidf": [
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.5,
+          "ndcg_at_5": 0.2960819109658652,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q001",
+        "relevant": [
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.3333333333333333,
+          "ndcg_at_5": 0.5706417189553201,
+          "precision_at_5": 0.4,
+          "recall_at_5": 1.0
+        },
+        "query_id": "q002",
+        "relevant": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q003",
+        "relevant": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_6a76c2c8c438",
+          "chk_comisiones_tiposyaplicacion__v1__c002_d1ec5fb66de7",
+          "chk_comisiones_tiposyaplicacion__v1__c003_d60ca0c0efff"
+        ],
+        "retrieved": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.9674679834891693,
+          "precision_at_5": 0.6,
+          "recall_at_5": 1.0
+        },
+        "query_id": "q004",
+        "relevant": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3"
+        ],
+        "retrieved": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_productos_requisitosycondiciones__v1__c003_ca71ae150bc3"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q005",
+        "relevant": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+        ],
+        "retrieved": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_absteneveryevidence__v1__c002_3c8b95c423b4",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q006",
+        "relevant": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_tasa_de_interes__v1__c002_f580e45311f3",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_requisitosycondiciones__v1__c002_055c48408f1c",
+          "chk_productos_requisitosycondiciones__v1__c001_72893fe01b1b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "direct",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q007",
+        "relevant": [
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_politicas_absteneveryevidence__v1__c002_3c8b95c423b4",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e"
+        ],
+        "retrieved": [
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.25,
+          "ndcg_at_5": 0.20210734650054757,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q008",
+        "relevant": [
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e"
+        ],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q009",
+        "relevant": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4"
+        ],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_comisiones_tiposyaplicacion__v1__c002_de199b7323d9",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q010",
+        "relevant": [
+          "chk_comisiones_tiposyaplicacion__v1__c001_6a76c2c8c438",
+          "chk_comisiones_tiposyaplicacion__v1__c002_d1ec5fb66de7",
+          "chk_comisiones_tiposyaplicacion__v1__c003_d60ca0c0efff"
+        ],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+          "chk_comisiones_tiposyaplicacion__v1__c001_8834edff20b1",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.46927872602275644,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.3333333333333333
+        },
+        "query_id": "q011",
+        "relevant": [
+          "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+        ],
+        "retrieved": [
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+          "chk_reclamos_categoriasyestados__v1__c001_b04b584b8095",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "paraphrase",
+        "metrics": {
+          "mrr_at_5": 0.5,
+          "ndcg_at_5": 0.49818925746641285,
+          "precision_at_5": 0.4,
+          "recall_at_5": 0.6666666666666666
+        },
+        "query_id": "q012",
+        "relevant": [
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3"
+        ],
+        "retrieved": [
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff",
+          "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+          "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_productos_requisitosycondiciones__v1__c003_ca71ae150bc3"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 3,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.7039180890341347,
+          "precision_at_5": 0.4,
+          "recall_at_5": 0.6666666666666666
+        },
+        "query_id": "q013",
+        "relevant": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5
+        },
+        "query_id": "q014",
+        "relevant": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_productos_requisitosycondiciones__v1__c002_055c48408f1c",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70",
+          "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 2,
+        "abstracted_top_k": 5,
+        "category": "version",
+        "metrics": {
+          "mrr_at_5": 1.0,
+          "ndcg_at_5": 0.6131471927654584,
+          "precision_at_5": 0.2,
+          "recall_at_5": 0.5
+        },
+        "query_id": "q015",
+        "relevant": [
+          "chk_creditos_producto_general__v1__c003_d9c7db165c4f",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+        ],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+          "chk_reclamos_categoriasyestados__v1__c002_1759d988022c"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q016",
+        "relevant": [],
+        "retrieved": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_comisiones_trazaeimpuestos__v1__c001_d9e81e3255a8",
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c002_c9194274baff"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q017",
+        "relevant": [],
+        "retrieved": [
+          "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+        ]
+      },
+      {
+        "abstracted_relevant_count": 0,
+        "abstracted_top_k": 5,
+        "category": "ood",
+        "metrics": {
+          "mrr_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_5": 0.0
+        },
+        "query_id": "q018",
+        "relevant": [],
+        "retrieved": [
+          "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4",
+          "chk_comisiones_trazaeimpuestos__v1__c003_b9ff2bab4cc4",
+          "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3",
+          "chk_reclamos_categoriasyestados__v1__c003_582118741d1e",
+          "chk_creditos_producto_general__v2__c002_713389f34d0d"
+        ]
+      }
+    ]
+  },
+  "primary_metric": "ndcg_at_5",
+  "qrels_evaluated": 18,
+  "queries_evaluated": 18,
+  "random_state": 42,
+  "software": {
+    "numpy": "2.5.2",
+    "scikit_learn": "1.9.0"
+  },
+  "top_k": 5
+}

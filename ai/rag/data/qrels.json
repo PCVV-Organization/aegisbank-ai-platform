@@ -1,0 +1,150 @@
+{
+  "qrels": [
+    {
+      "query_id": "q001",
+      "category": "direct",
+      "relevant": [
+        "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+        "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+        "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e"
+      ]
+    },
+    {
+      "query_id": "q002",
+      "category": "direct",
+      "relevant": [
+        "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+        "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4"
+      ]
+    },
+    {
+      "query_id": "q003",
+      "category": "direct",
+      "relevant": [
+        "chk_comisiones_tiposyaplicacion__v1__c001_6a76c2c8c438",
+        "chk_comisiones_tiposyaplicacion__v1__c002_d1ec5fb66de7",
+        "chk_comisiones_tiposyaplicacion__v1__c003_d60ca0c0efff"
+      ]
+    },
+    {
+      "query_id": "q004",
+      "category": "direct",
+      "relevant": [
+        "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+        "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+        "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3"
+      ]
+    },
+    {
+      "query_id": "q005",
+      "category": "direct",
+      "relevant": [
+        "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+        "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+        "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+      ]
+    },
+    {
+      "query_id": "q006",
+      "category": "direct",
+      "relevant": [
+        "chk_creditos_tasa_de_interes__v1__c001_95d84c2f1160",
+        "chk_creditos_tasa_de_interes__v1__c002_f580e45311f3",
+        "chk_creditos_tasa_de_interes__v1__c003_8ad448eb3d70"
+      ]
+    },
+    {
+      "query_id": "q007",
+      "category": "direct",
+      "relevant": [
+        "chk_politicas_absteneveryevidence__v1__c001_d3b3c5baac00",
+        "chk_politicas_absteneveryevidence__v1__c002_3c8b95c423b4",
+        "chk_politicas_absteneveryevidence__v1__c003_6ddd62acdb5e"
+      ]
+    },
+    {
+      "query_id": "q008",
+      "category": "paraphrase",
+      "relevant": [
+        "chk_reclamos_procedimiento__v1__c001_ab6ba644d6c9",
+        "chk_reclamos_procedimiento__v1__c002_9ae4d27f1bc4",
+        "chk_reclamos_procedimiento__v1__c003_80c1ffc73c3e"
+      ]
+    },
+    {
+      "query_id": "q009",
+      "category": "paraphrase",
+      "relevant": [
+        "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948",
+        "chk_cuotas_calculoycronograma__v1__c002_598d332a14d4"
+      ]
+    },
+    {
+      "query_id": "q010",
+      "category": "paraphrase",
+      "relevant": [
+        "chk_comisiones_tiposyaplicacion__v1__c001_6a76c2c8c438",
+        "chk_comisiones_tiposyaplicacion__v1__c002_d1ec5fb66de7",
+        "chk_comisiones_tiposyaplicacion__v1__c003_d60ca0c0efff"
+      ]
+    },
+    {
+      "query_id": "q011",
+      "category": "paraphrase",
+      "relevant": [
+        "chk_politicas_separaciondeautoridad__v1__c001_f2291cbc425b",
+        "chk_politicas_separaciondeautoridad__v1__c002_f44a5353d925",
+        "chk_politicas_separaciondeautoridad__v1__c003_cede8386f479"
+      ]
+    },
+    {
+      "query_id": "q012",
+      "category": "paraphrase",
+      "relevant": [
+        "chk_productos_catalogoficticio__v1__c001_62a951d67d2e",
+        "chk_productos_catalogoficticio__v1__c002_204c554891bc",
+        "chk_productos_catalogoficticio__v1__c003_98dfdcfd52b3"
+      ]
+    },
+    {
+      "query_id": "q013",
+      "category": "version",
+      "relevant": [
+        "chk_creditos_producto_general__v2__c001_5818ccde2254",
+        "chk_creditos_producto_general__v2__c002_713389f34d0d",
+        "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+      ]
+    },
+    {
+      "query_id": "q014",
+      "category": "version",
+      "relevant": [
+        "chk_creditos_producto_general__v2__c001_5818ccde2254",
+        "chk_creditos_producto_general__v2__c002_713389f34d0d"
+      ]
+    },
+    {
+      "query_id": "q015",
+      "category": "version",
+      "relevant": [
+        "chk_creditos_producto_general__v1__c003_d9c7db165c4f",
+        "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+      ]
+    },
+    {
+      "query_id": "q016",
+      "category": "ood",
+      "relevant": []
+    },
+    {
+      "query_id": "q017",
+      "category": "ood",
+      "relevant": []
+    },
+    {
+      "query_id": "q018",
+      "category": "ood",
+      "relevant": []
+    }
+  ]
+}

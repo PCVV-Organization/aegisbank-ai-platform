@@ -1,0 +1,11 @@
+{
+  "document_id": "creditos_tasa_de_interes",
+  "version": "v1",
+  "title": "Tasa de interés aplicada a créditos ficticios",
+  "topic": "creditos",
+  "effective_from": "2026-03-01",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/creditos",
+  "body": "La tasa de interés simulada aplicada a un crédito ficticio en AegisBank se compone de una tasa base referencial más un componente por riesgo sintético, definidos al momento de la simulación inicial. La tasa es fija durante toda la vida del préstamo simulado y se documenta en el contrato ficticio. Cálculos de cuota, intereses moratorios y refinanciamiento utilizan exactamente la tasa registrada, sin aplicar recálculo retroactivo. Las tasas se almacenan como porcentaje anual con cuatro decimales y se imprimen con fines de trazabilidad. Toda mención a la tasa en una respuesta debe ir acompañada del número de contrato simulado correspondiente."
+}

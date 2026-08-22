@@ -29,14 +29,14 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.3.0 - ML/NLP Intent Classification Baseline` (COMPLETE)
+**Current milestone:** `v0.4.0 - RAG Retrieval & Evaluation Foundation` (COMPLETE)
 
 | Version | Milestone | Status |
 | --- | --- | --- |
 | `v0.1` | Project Charter + Local Tooling | COMPLETE |
 | `v0.2` | Core Banking Mock | COMPLETE |
 | `v0.3` | ML/NLP Intent Classification Baseline | COMPLETE |
-| `v0.4` | RAG | NOT STARTED |
+| `v0.4` | RAG Retrieval & Evaluation Foundation | COMPLETE |
 | `v0.5` | Agent + read-only tools | NOT STARTED |
 | `v0.6` | MCP + HITL | NOT STARTED |
 | `v0.7` | Reliability + Messaging | NOT STARTED |
@@ -62,6 +62,31 @@ All project data must be synthetic and reproducible.
   metrics checks).
 - Two architecture decision records: `ADR-006` (classical ML baseline) and
   `ADR-007` (group-aware synthetic evaluation).
+
+## What `v0.4` Includes
+
+- Synthetic Spanish banking corpus with versioned metadata
+  (`document_id`, `version`, `effective_from`, `effective_to`, `status`,
+  `source`) under `ai/rag/data/corpus/`.
+- Deterministic chunking into `chk__{document_id}__{version}__c{idx}_{digest}`
+  chunk IDs (`ai/rag/src/aegisbank_rag/chunking.py`).
+- Three retrievers behind a common `Retriever` interface:
+  `LexicalRetriever` (TF-IDF), `DenseLocalRetriever` (TF-IDF + TruncatedSVD
+  LSA, **not** equivalent to Azure AI Search embeddings), and
+  `HybridRRFRetriever` (Reciprocal Rank Fusion with frozen `k = 60`).
+- Synthetic query set plus qrels covering direct, paraphrase, version, and
+  out-of-domain categories (`ai/rag/data/queries.jsonl`,
+  `ai/rag/data/qrels.json`).
+- Offline evaluation that computes Precision@5, Recall@5, MRR@5, and
+  nDCG@5 for every method and persists the report to
+  `ai/rag/reports/retrieval-report.md` and the metrics to
+  `ai/rag/reports/retrieval-metrics.json`.
+- CLI with `index`, `search`, and `evaluate` subcommands.
+- 36 unit tests covering corpus invariants, chunking, lexical and dense
+  retrievers, RRF fusion, metrics, evaluation, citation metadata, and
+  reproducibility.
+- Two architecture decision records: `ADR-008` (local retrieval before
+  Azure AI Search) and `ADR-009` (hybrid retrieval with RRF).
 
 ## Project Rules
 
@@ -94,6 +119,8 @@ The approved product boundary is defined by these documents:
 - [ADR-005](docs/architecture/adr/ADR-005-deferred-tooling-evaluation.md) — Deferred tooling evaluation.
 - [ADR-006](docs/architecture/adr/ADR-006-classical-ml-intent-baseline.md) — Classical ML baseline for v0.3 (TF-IDF + Logistic Regression).
 - [ADR-007](docs/architecture/adr/ADR-007-group-aware-synthetic-evaluation.md) — Group-aware synthetic evaluation for v0.3 (`template_group_id`).
+- [ADR-008](docs/architecture/adr/ADR-008-local-retrieval-before-azure-ai-search.md) — Local retrieval foundation before Azure AI Search (v0.4).
+- [ADR-009](docs/architecture/adr/ADR-009-hybrid-retrieval-with-rrf.md) — Hybrid retrieval with Reciprocal Rank Fusion (`k=60`) for v0.4.
 
 ## Repository Structure
 
@@ -101,6 +128,8 @@ The approved product boundary is defined by these documents:
 aegisbank-ai-platform/
 |-- README.md               # this document
 |-- .gitignore
+|-- ai/
+|   `-- rag/                # v0.4 RAG retrieval foundation (Python package)
 |-- contracts/              # JSON Schema files
 |-- docs/
 |   |-- charter/            # v0.1 charter (5 docs)
@@ -121,15 +150,15 @@ itself remains a pure code-and-documentation repository.
 
 ## How To Continue
 
-1. Open `v0.4 - RAG` only after explicit approval. Do not start a new milestone
-   automatically.
-2. Review the seven ADRs. None of them commits the project to a specific
+1. Open `v0.5 - Agent + read-only tools` only after explicit approval. Do not
+   start a new milestone automatically.
+2. Review the nine ADRs. None of them commits the project to a specific
    implementation outside its declared milestone.
 3. Record any requested scope change before implementation begins.
 
-No Docker, Azure, RAG, model, agent, MCP server of our own, HITL workflow,
+No Docker, Azure, embedder, agent, MCP server of our own, HITL workflow,
 messaging, retry policy, or circuit breaker has been implemented beyond
-`v0.3`.
+`v0.4`.
 
 ## Reference Baseline
 

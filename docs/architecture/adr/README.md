@@ -21,6 +21,10 @@ Index:
   baseline for v0.3 (TF-IDF plus Logistic Regression).
 - [ADR-007](./ADR-007-group-aware-synthetic-evaluation.md) — Group-aware
   synthetic evaluation for v0.3 (`template_group_id`).
+- [ADR-008](./ADR-008-local-retrieval-before-azure-ai-search.md) — Local
+  retrieval foundation before any Azure AI Search deployment (v0.4).
+- [ADR-009](./ADR-009-hybrid-retrieval-with-rrf.md) — Hybrid retrieval via
+  Reciprocal Rank Fusion for v0.4 (`k = 60` frozen).
 
 Pending (no ADR yet — flagged here to ensure they don't get lost):
 

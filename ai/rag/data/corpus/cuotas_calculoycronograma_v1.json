@@ -1,0 +1,11 @@
+{
+  "document_id": "cuotas_calculoycronograma",
+  "version": "v1",
+  "title": "Cálculo y cronograma de cuotas",
+  "topic": "cuotas",
+  "effective_from": "2026-01-01",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/cuotas",
+  "body": "Una cuota está compuesta por una porción de capital, una porción de intereses calculados sobre el saldo insoluto y, cuando corresponde, cargos por mora simulada. El cronograma ficticio asocia a cada cuota su número, fecha de vencimiento, capital amortizado, interés, saldo residual y estado. AegisBank publica el cronograma como un artefacto determinístico generado a partir de los parámetros del préstamo simulado. Las consultas legítimas sobre el cronograma mencionan el número de cuota, la fecha o el saldo; el sistema no entrega cuotas de operaciones inexistentes."
+}

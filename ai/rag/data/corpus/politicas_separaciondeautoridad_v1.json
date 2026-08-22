@@ -1,0 +1,11 @@
+{
+  "document_id": "politicas_separaciondeautoridad",
+  "version": "v1",
+  "title": "Políticas de separación de autoridad",
+  "topic": "politicas",
+  "effective_from": "2026-01-01",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/politicas",
+  "body": "Las políticas de separación de autoridad de AegisBank establecen que el modelo de inteligencia artificial interpreta y propone; las decisiones de autorización son ejecutadas por componentes determinísticos de identidad, política, autorización, reglas de negocio y validación. Toda operación que modifique estado requiere aprobación humana explícita mediante un flujo HITL antes de su ejecución. Esta política aplica en todas las superficies del sistema, incluidos los flujos MCP, los servicios asíncronos y los reintentos. Un modelo nunca debe convertirse en la fuente final de autorización, especialmente para acciones sensibles como transferencias, pagos o modificaciones contractuales."
+}

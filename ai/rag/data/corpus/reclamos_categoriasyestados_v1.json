@@ -1,0 +1,11 @@
+{
+  "document_id": "reclamos_categoriasyestados",
+  "version": "v1",
+  "title": "Categorías y estados de reclamos ficticios",
+  "topic": "reclamos",
+  "effective_from": "2026-02-01",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/reclamos",
+  "body": "Las categorías de reclamos ficticios en AegisBank incluyen comisión no reconocida, pago no reflejado, error en el cronograma, cuota duplicada y revisión de intereses. Cada categoría tiene una descripción canónica y métricas simuladas de tiempo de resolución. Los estados válidos del reclamo son borrador, pendiente de aprobación, aprobado, rechazado, en seguimiento y cerrado. Las transiciones de estado son inmutables y se registran en la bitácora simulada con identificador de correlación y trazabilidad. Sólo el operador humano puede aprobar o rechazar; el asistente Aegis únicamente propone el borrador y la categoría."
+}

@@ -1,0 +1,11 @@
+{
+  "document_id": "comisiones_tiposyaplicacion",
+  "version": "v1",
+  "title": "Comisiones: tipos y aplicación",
+  "topic": "comisiones",
+  "effective_from": "2026-02-01",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/comisiones",
+  "body": "Las comisiones simuladas se clasifican en periódicas, por evento y por mora. Las comisiones periódicas se devengan en fechas predefinidas del cronograma. Las comisiones por evento se aplican al ocurrir una acción específica, como la modificación simulada del cronograma. La comisión por mora simulada se calcula sobre el capital vencido. Todas las comisiones se incluyen como partidas separadas en cada cuota y nunca se mezclan con el capital o los intereses. El cliente ficticio puede solicitar la trazabilidad de cada comisión mediante el identificador correspondiente."
+}

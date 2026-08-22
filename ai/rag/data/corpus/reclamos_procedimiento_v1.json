@@ -1,0 +1,11 @@
+{
+  "document_id": "reclamos_procedimiento",
+  "version": "v1",
+  "title": "Procedimiento de reclamos y solicitudes ficticias",
+  "topic": "reclamos",
+  "effective_from": "2026-01-01",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/reclamos",
+  "body": "Un reclamo o solicitud ficticia en AegisBank se crea únicamente a través de la API simulada de Core Banking, requiere la aprobación humana del operador y registra un identificador sintético con su estado y trazabilidad. El asistente Aegis puede proponer el borrador del reclamo pero no puede crearlo sin aprobación explícita. Cada reclamo tiene categoría, descripción, estado y eventos asociados. Los estados válidos incluyen borrador, pendiente de aprobación, aprobado, rechazado y cerrado. La creación se considera idempotente si se proporciona una clave de idempotencia."
+}

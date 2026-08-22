@@ -1,0 +1,115 @@
+{
+  "by_status": {
+    "active": 11,
+    "draft": 0,
+    "retired": 0,
+    "superseded": 1
+  },
+  "by_topic": {
+    "comisiones": 2,
+    "creditos": 3,
+    "cuotas": 1,
+    "politicas": 2,
+    "productos": 2,
+    "reclamos": 2
+  },
+  "document_count": 12,
+  "documents": [
+    {
+      "document_id": "comisiones_tiposyaplicacion",
+      "effective_from": "2026-02-01",
+      "effective_to": null,
+      "status": "active",
+      "topic": "comisiones",
+      "version": "v1"
+    },
+    {
+      "document_id": "comisiones_trazaeimpuestos",
+      "effective_from": "2026-03-15",
+      "effective_to": null,
+      "status": "active",
+      "topic": "comisiones",
+      "version": "v1"
+    },
+    {
+      "document_id": "creditos_producto_general",
+      "effective_from": "2026-01-01",
+      "effective_to": "2026-06-30",
+      "status": "superseded",
+      "topic": "creditos",
+      "version": "v1"
+    },
+    {
+      "document_id": "creditos_producto_general",
+      "effective_from": "2026-07-01",
+      "effective_to": null,
+      "status": "active",
+      "topic": "creditos",
+      "version": "v2"
+    },
+    {
+      "document_id": "creditos_tasa_de_interes",
+      "effective_from": "2026-03-01",
+      "effective_to": null,
+      "status": "active",
+      "topic": "creditos",
+      "version": "v1"
+    },
+    {
+      "document_id": "cuotas_calculoycronograma",
+      "effective_from": "2026-01-01",
+      "effective_to": null,
+      "status": "active",
+      "topic": "cuotas",
+      "version": "v1"
+    },
+    {
+      "document_id": "politicas_absteneveryevidence",
+      "effective_from": "2026-02-15",
+      "effective_to": null,
+      "status": "active",
+      "topic": "politicas",
+      "version": "v1"
+    },
+    {
+      "document_id": "politicas_separaciondeautoridad",
+      "effective_from": "2026-01-01",
+      "effective_to": null,
+      "status": "active",
+      "topic": "politicas",
+      "version": "v1"
+    },
+    {
+      "document_id": "productos_catalogoficticio",
+      "effective_from": "2026-01-15",
+      "effective_to": null,
+      "status": "active",
+      "topic": "productos",
+      "version": "v1"
+    },
+    {
+      "document_id": "productos_requisitosycondiciones",
+      "effective_from": "2026-03-01",
+      "effective_to": null,
+      "status": "active",
+      "topic": "productos",
+      "version": "v1"
+    },
+    {
+      "document_id": "reclamos_categoriasyestados",
+      "effective_from": "2026-02-01",
+      "effective_to": null,
+      "status": "active",
+      "topic": "reclamos",
+      "version": "v1"
+    },
+    {
+      "document_id": "reclamos_procedimiento",
+      "effective_from": "2026-01-01",
+      "effective_to": null,
+      "status": "active",
+      "topic": "reclamos",
+      "version": "v1"
+    }
+  ]
+}

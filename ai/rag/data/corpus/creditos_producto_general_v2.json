@@ -1,0 +1,11 @@
+{
+  "document_id": "creditos_producto_general",
+  "version": "v2",
+  "title": "Crédito bancario personal — descripción general (versión vigente)",
+  "topic": "creditos",
+  "effective_from": "2026-07-01",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/creditos",
+  "body": "El crédito personal simulado es un producto educativo de la plataforma AegisBank. Permite a un cliente ficticio solicitar un monto dentro del rango ampliado permitido por el simulador y acordar un plazo de amortización entre 6 y 60 meses. La modalidad de cálculo utiliza el sistema francés de cuotas constantes en el escenario ficticio, con desembolso representado mediante fixtures reproducibles. Toda decisión de aprobación final corresponde a un componente determinístico, no al modelo de inteligencia artificial. AegisBank no procesa clientes reales ni opera como entidad financiera. La versión v1 quedó sin efecto desde el 30 de junio de 2026."
+}

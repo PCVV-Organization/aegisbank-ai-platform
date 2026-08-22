@@ -1,0 +1,11 @@
+{
+  "document_id": "productos_catalogoficticio",
+  "version": "v1",
+  "title": "Catálogo de productos ficticios",
+  "topic": "productos",
+  "effective_from": "2026-01-15",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/productos",
+  "body": "AegisBank mantiene un catálogo de productos ficticios limitado y reproducible. Cada producto incluye nombre, descripción breve, requisitos simulados y condiciones de ejemplo. El catálogo contiene créditos personales, créditos para negocio, líneas de capital de trabajo y productos de activo fijo simulados. Todos los productos son estrictamente hipotéticos y se documentan para fines de evaluación. No existen equivalentes en entidades financieras reales. El sistema no permite operaciones reales sobre estos productos y el asistente Aegis los trata únicamente como material de demostración."
+}

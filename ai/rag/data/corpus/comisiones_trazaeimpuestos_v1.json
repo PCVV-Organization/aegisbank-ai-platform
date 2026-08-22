@@ -1,0 +1,11 @@
+{
+  "document_id": "comisiones_trazaeimpuestos",
+  "version": "v1",
+  "title": "Trazabilidad de las comisiones simuladas",
+  "topic": "comisiones",
+  "effective_from": "2026-03-15",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/comisiones",
+  "body": "Cada comisión simulada se registra con su identificador, tipo, monto y referencia a la cuota o al evento que la originó. La trazabilidad permite reconstruir el cálculo de la comisión a partir de los parámetros contractuales simulados. AegisBank expone un endpoint simulado para obtener la lista de comisiones asociadas a un préstamo ficticio. El asistente Aegis puede responder preguntas sobre comisiones indicando el identificador del préstamo y el período consultado. Si el identificador no existe en los datos sintéticos, el sistema se abstiene en lugar de inventar importes."
+}

@@ -1,0 +1,18 @@
+{"query_id": "q001", "category": "direct", "text": "¿Cuál es el procedimiento para crear un reclamo ficticio en AegisBank?"}
+{"query_id": "q002", "category": "direct", "text": "¿Cómo se compone una cuota de un préstamo simulado?"}
+{"query_id": "q003", "category": "direct", "text": "¿Qué tipos de comisiones simuladas existen en AegisBank?"}
+{"query_id": "q004", "category": "direct", "text": "¿Qué incluye el catálogo de productos ficticios?"}
+{"query_id": "q005", "category": "direct", "text": "¿Cuál es la política de separación de autoridad de AegisBank?"}
+{"query_id": "q006", "category": "direct", "text": "¿Qué tasa de interés se aplica a los créditos ficticios?"}
+{"query_id": "q007", "category": "direct", "text": "¿Cuándo debe abstenerse el asistente Aegis?"}
+{"query_id": "q008", "category": "paraphrase", "text": "Necesito saber cómo tramitar una queja sobre una operación bancaria simulada."}
+{"query_id": "q009", "category": "paraphrase", "text": "Explícame cómo se calcula lo que pago cada mes en un crédito ficticio."}
+{"query_id": "q010", "category": "paraphrase", "text": "¿Qué cobros extra pueden aparecer en el cronograma?"}
+{"query_id": "q011", "category": "paraphrase", "text": "¿Quién tiene permiso para aprobar una operación que cambia estado?"}
+{"query_id": "q012", "category": "paraphrase", "text": "Lista de productos que ofrece el banco ficticio."}
+{"query_id": "q013", "category": "version", "text": "¿Cuál es la versión vigente del documento general del crédito personal simulado?"}
+{"query_id": "q014", "category": "version", "text": "¿Qué rango de montos y plazo aplica actualmente al crédito personal simulado?"}
+{"query_id": "q015", "category": "version", "text": "¿Qué pasó con la versión v1 del documento general del crédito?"}
+{"query_id": "q016", "category": "ood", "text": "¿Cuál es el tipo de cambio del dólar hoy?"}
+{"query_id": "q017", "category": "ood", "text": "¿Cuál es la temperatura actual en Lima?"}
+{"query_id": "q018", "category": "ood", "text": "¿Quién ganó el partido de fútbol ayer?"}

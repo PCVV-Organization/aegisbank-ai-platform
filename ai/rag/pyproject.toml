@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aegisbank-rag"
+version = "0.4.0"
+description = "Local reproducible retrieval foundation for future AegisBank RAG"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "scikit-learn==1.9.0",
+    "numpy==2.5.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "ruff==0.16.4",
+]
+
+[project.scripts]
+aegisbank-rag = "aegisbank_rag.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aegisbank_rag"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-p no:cacheprovider"
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

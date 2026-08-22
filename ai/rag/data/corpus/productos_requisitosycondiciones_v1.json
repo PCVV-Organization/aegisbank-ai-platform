@@ -1,0 +1,11 @@
+{
+  "document_id": "productos_requisitosycondiciones",
+  "version": "v1",
+  "title": "Requisitos y condiciones de los productos ficticios",
+  "topic": "productos",
+  "effective_from": "2026-03-01",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/productos",
+  "body": "Los productos ficticios de AegisBank declaran requisitos simulados como antigüedad mínima, monto mínimo, score sintético y documentación requerida. Cada requisito se evalúa de forma determinística contra datos sintéticos del cliente ficticio. Las condiciones de ejemplo incluyen tasa referencial, plazo máximo, gastos administrativos simulados y comisiones aplicables. Toda comparación entre productos se publica explícitamente con los identificadores de los productos comparados y la fecha de vigencia del comparativo. El sistema no vende productos a clientes reales ni procesa pagos reales."
+}
