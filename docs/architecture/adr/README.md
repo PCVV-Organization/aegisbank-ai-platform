@@ -17,6 +17,10 @@ Index:
 - [ADR-005](./ADR-005-deferred-tooling-evaluation.md) — Evaluation of
   deferred local-tooling items (docker LSP, PowerShell LSP, context7, custom
   Aegis skills, codebase-memory, pydantic-ai, chromadb).
+- [ADR-006](./ADR-006-classical-ml-intent-baseline.md) — Classical ML intent
+  baseline for v0.3 (TF-IDF plus Logistic Regression).
+- [ADR-007](./ADR-007-group-aware-synthetic-evaluation.md) — Group-aware
+  synthetic evaluation for v0.3 (`template_group_id`).
 
 Pending (no ADR yet — flagged here to ensure they don't get lost):
 
