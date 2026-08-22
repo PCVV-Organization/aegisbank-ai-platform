@@ -29,42 +29,39 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.1.0 - Project Charter + Local Tooling`
-
-`v0.1` covers the project charter plus the local OpenCode tooling required to
-develop the project incrementally. No AI functionality has been implemented.
+**Current milestone:** `v0.3.0 - ML/NLP Intent Classification Baseline` (COMPLETE)
 
 | Version | Milestone | Status |
 | --- | --- | --- |
 | `v0.1` | Project Charter + Local Tooling | COMPLETE |
-| `v0.2` | Core Banking Mock | PROPOSED — code in working tree, awaiting explicit approval before commit |
-| `v0.3` | ML/NLP Baseline | NOT STARTED |
+| `v0.2` | Core Banking Mock | COMPLETE |
+| `v0.3` | ML/NLP Intent Classification Baseline | COMPLETE |
 | `v0.4` | RAG | NOT STARTED |
-| `v0.5` | Agent and read-only tools | NOT STARTED |
-| `v0.6` | MCP and HITL | NOT STARTED |
-| `v0.7` | Reliability and Messaging | NOT STARTED |
-| `v0.8` | Quality and Evaluations | NOT STARTED |
+| `v0.5` | Agent + read-only tools | NOT STARTED |
+| `v0.6` | MCP + HITL | NOT STARTED |
+| `v0.7` | Reliability + Messaging | NOT STARTED |
+| `v0.8` | Quality + Evaluations | NOT STARTED |
 | `v0.9` | Azure Deployment | NOT STARTED |
 | `v1.0` | Enterprise Hardening | NOT STARTED |
 | `v1.1` | AKS experiment | Optional after `v1.0` |
 | `v1.2` | Multi-agent experiment | Optional after `v1.0` |
 
-## What `v0.1` Includes
+## What `v0.3` Includes
 
-- Five charter documents defining the product boundary (`docs/charter/`).
-- `AGENTS.md` repository operating rules and milestone workflow.
-- Bootstrap-manifest and contract schemas (`contracts/`).
-- Knowledge scaffold (`docs/architecture/adr/`, `docs/research/`).
-- OpenCode-native local tooling wired in `opencode.json`:
-  - 4 MCP servers (`sequential-thinking`, `filesystem`, `git`, `everything`).
-  - 1 declared LSP (`pyright`, local install); Red Hat `yaml-ls` auto-installs.
-  - Retrieval policy adopted via `.ai-env/retrieval-policy.json`.
-
-A working `services/mock-core-banking/` directory exists in the working tree
-from an earlier autonomous session and is **not yet committed**. It claims to
-include 82 passing tests, ruff-clean, valid OpenAPI 0.2.0. Review and an
-explicit approval are required before any `v0.2` commit. Until then,
-`v0.2` is **PROPOSED**, not COMPLETE.
+- Deterministic synthetic Spanish banking intent dataset (500 records, 25
+  template groups per class, group-aware train/holdout split, SHA-256
+  fingerprint).
+- TF-IDF plus Logistic Regression baseline (`ml/intent-classifier/`).
+- Stratified-group cross-validation with zero group leakage across folds.
+- Trivial `DummyClassifier` floor for comparison.
+- Reproducible CLI (`generate`, `validate`, `evaluate`, `predict`) and a
+  frozen holdout evaluation report (`reports/baseline-metrics.json`,
+  `reports/baseline-report.md`).
+- 17 unit tests covering dataset invariants, pipeline configuration,
+  cross-validation behaviour, and reproducibility (97 deterministic
+  metrics checks).
+- Two architecture decision records: `ADR-006` (classical ML baseline) and
+  `ADR-007` (group-aware synthetic evaluation).
 
 ## Project Rules
 
@@ -87,7 +84,6 @@ The approved product boundary is defined by these documents:
 - [Use cases](docs/charter/03-use-cases.md)
 - [Non-goals](docs/charter/04-non-goals.md)
 - [Success criteria](docs/charter/05-success-criteria.md)
-- [Repository operating rules](AGENTS.md)
 
 ## Architecture Decisions
 
@@ -95,44 +91,45 @@ The approved product boundary is defined by these documents:
 - [ADR-002](docs/architecture/adr/ADR-002-local-sqlite-before-postgresql.md) — Local SQLite before PostgreSQL.
 - [ADR-003](docs/architecture/adr/ADR-003-agent-sdk-pydantic-ai.md) — Agent SDK choice (v0.5): pydantic-ai.
 - [ADR-004](docs/architecture/adr/ADR-004-vector-store-chromadb-in-process.md) — Vector store choice (v0.4): chromadb in-process.
+- [ADR-005](docs/architecture/adr/ADR-005-deferred-tooling-evaluation.md) — Deferred tooling evaluation.
+- [ADR-006](docs/architecture/adr/ADR-006-classical-ml-intent-baseline.md) — Classical ML baseline for v0.3 (TF-IDF + Logistic Regression).
+- [ADR-007](docs/architecture/adr/ADR-007-group-aware-synthetic-evaluation.md) — Group-aware synthetic evaluation for v0.3 (`template_group_id`).
 
 ## Repository Structure
 
 ```text
 aegisbank-ai-platform/
-|-- README.md
-|-- AGENTS.md
+|-- README.md               # this document
 |-- .gitignore
-|-- .opencode/            # MCP / LSP local installs (npm)
-|-- .ai-env/              # Retrieval policy adopted from OpenCode
-|-- .intelligence/        # Pre-existing project knowledge scaffold
-|-- contracts/            # JSON Schema files
+|-- contracts/              # JSON Schema files
 |-- docs/
-|   |-- charter/          # v0.1 charter (5 docs)
-|   |-- architecture/adr/ # Architecture Decision Records
-|   `-- research/         # Library / pattern research notes
-|-- opencode.json         # OpenCode-native config (MCP, LSP, instructions)
-`-- tui.json              # TUI-only overrides (theme)
+|   |-- charter/            # v0.1 charter (5 docs)
+|   |-- architecture/adr/   # Architecture Decision Records
+|   |-- chatgpt-prompts/    # Milestone bootstrap prompts
+|   |-- experiments/        # Reproducible experiment reports
+|   `-- research/           # Library / pattern research notes
+|-- ml/
+|   `-- intent-classifier/  # v0.3 ML baseline (Python package)
+`-- services/
+    `-- mock-core-banking/  # v0.2 Core Banking Mock (FastAPI)
 ```
+
+OpenCode runtime configuration (MCP servers, LSP servers, agent/permission
+boundaries, slash commands, retrieval policy, intelligence layer) is managed
+by the OpenCode AI-ENV wrapper at the parent directory level. The project
+itself remains a pure code-and-documentation repository.
 
 ## How To Continue
 
-1. Run the OpenCode launcher to confirm wiring:
-   ```powershell
-   pwsh "$env:USERPROFILE\.config\opencode\scripts\opencode-launcher.ps1" `
-        -Profile minimax-plus `
-        -TargetDir $PWD `
-        -PrintRouting -DryRun
-   ```
-2. Review the four ADRs. None of them commits the project to a specific
-   implementation outside its milestone.
-3. Decide whether to approve the uncommitted `v0.2` proposal (see
-   "What `v0.1` Includes" above). Do not start `v0.3` automatically.
-4. Record any requested scope change before implementation begins.
-5. Start `v0.3 - ML/NLP Baseline` only after explicit approval.
+1. Open `v0.4 - RAG` only after explicit approval. Do not start a new milestone
+   automatically.
+2. Review the seven ADRs. None of them commits the project to a specific
+   implementation outside its declared milestone.
+3. Record any requested scope change before implementation begins.
 
 No Docker, Azure, RAG, model, agent, MCP server of our own, HITL workflow,
-messaging, retry policy, or circuit breaker has been implemented.
+messaging, retry policy, or circuit breaker has been implemented beyond
+`v0.3`.
 
 ## Reference Baseline
 
