@@ -1,0 +1,419 @@
+{
+  "classification_report": {
+    "account_query": {
+      "f1-score": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 20.0
+    },
+    "accuracy": 1.0,
+    "informational": {
+      "f1-score": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 20.0
+    },
+    "macro avg": {
+      "f1-score": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 100.0
+    },
+    "sensitive_action": {
+      "f1-score": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 20.0
+    },
+    "service_request": {
+      "f1-score": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 20.0
+    },
+    "unsupported": {
+      "f1-score": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 20.0
+    },
+    "weighted avg": {
+      "f1-score": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 100.0
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "informational",
+      "account_query",
+      "service_request",
+      "sensitive_action",
+      "unsupported"
+    ],
+    "matrix": [
+      [
+        20,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        20,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        20,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        20,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        20
+      ]
+    ]
+  },
+  "cross_validation": {
+    "aggregate": {
+      "accuracy": {
+        "mean": 0.9975,
+        "std": 0.005
+      },
+      "macro_f1": {
+        "mean": 0.997497556207,
+        "std": 0.005004887586
+      },
+      "macro_precision": {
+        "mean": 0.997647058824,
+        "std": 0.004705882353
+      },
+      "macro_recall": {
+        "mean": 0.9975,
+        "std": 0.005
+      },
+      "weighted_f1": {
+        "mean": 0.997497556207,
+        "std": 0.005004887586
+      }
+    },
+    "folds": [
+      {
+        "fold": 1,
+        "group_overlap": 0,
+        "metrics": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "macro_precision": 1.0,
+          "macro_recall": 1.0,
+          "weighted_f1": 1.0
+        },
+        "train_group_count": 80,
+        "train_size": 320,
+        "validation_group_count": 20,
+        "validation_size": 80
+      },
+      {
+        "fold": 2,
+        "group_overlap": 0,
+        "metrics": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "macro_precision": 1.0,
+          "macro_recall": 1.0,
+          "weighted_f1": 1.0
+        },
+        "train_group_count": 80,
+        "train_size": 320,
+        "validation_group_count": 20,
+        "validation_size": 80
+      },
+      {
+        "fold": 3,
+        "group_overlap": 0,
+        "metrics": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "macro_precision": 1.0,
+          "macro_recall": 1.0,
+          "weighted_f1": 1.0
+        },
+        "train_group_count": 80,
+        "train_size": 320,
+        "validation_group_count": 20,
+        "validation_size": 80
+      },
+      {
+        "fold": 4,
+        "group_overlap": 0,
+        "metrics": {
+          "accuracy": 0.9875,
+          "macro_f1": 0.987487781036,
+          "macro_precision": 0.988235294118,
+          "macro_recall": 0.9875,
+          "weighted_f1": 0.987487781036
+        },
+        "train_group_count": 80,
+        "train_size": 320,
+        "validation_group_count": 20,
+        "validation_size": 80
+      },
+      {
+        "fold": 5,
+        "group_overlap": 0,
+        "metrics": {
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "macro_precision": 1.0,
+          "macro_recall": 1.0,
+          "weighted_f1": 1.0
+        },
+        "train_group_count": 80,
+        "train_size": 320,
+        "validation_group_count": 20,
+        "validation_size": 80
+      }
+    ],
+    "group_leakage_count": 0,
+    "splitter": {
+      "groups": "template_group_id",
+      "n_splits": 5,
+      "random_state": 42,
+      "shuffle": true,
+      "type": "StratifiedGroupKFold"
+    }
+  },
+  "dataset_sha256": "db250b5993e892610d29a2cc53bdafcff08d085df29deecf9a53515a13308664",
+  "dataset_size": 500,
+  "dummy_baseline": {
+    "configuration": {
+      "random_state": 42,
+      "strategy": "most_frequent",
+      "type": "DummyClassifier"
+    },
+    "cross_validation": {
+      "aggregate": {
+        "accuracy": {
+          "mean": 0.2,
+          "std": 0.0
+        },
+        "macro_f1": {
+          "mean": 0.066666666667,
+          "std": 0.0
+        },
+        "macro_precision": {
+          "mean": 0.04,
+          "std": 0.0
+        },
+        "macro_recall": {
+          "mean": 0.2,
+          "std": 0.0
+        },
+        "weighted_f1": {
+          "mean": 0.066666666667,
+          "std": 0.0
+        }
+      },
+      "folds": [
+        {
+          "fold": 1,
+          "group_overlap": 0,
+          "metrics": {
+            "accuracy": 0.2,
+            "macro_f1": 0.066666666667,
+            "macro_precision": 0.04,
+            "macro_recall": 0.2,
+            "weighted_f1": 0.066666666667
+          },
+          "train_group_count": 80,
+          "train_size": 320,
+          "validation_group_count": 20,
+          "validation_size": 80
+        },
+        {
+          "fold": 2,
+          "group_overlap": 0,
+          "metrics": {
+            "accuracy": 0.2,
+            "macro_f1": 0.066666666667,
+            "macro_precision": 0.04,
+            "macro_recall": 0.2,
+            "weighted_f1": 0.066666666667
+          },
+          "train_group_count": 80,
+          "train_size": 320,
+          "validation_group_count": 20,
+          "validation_size": 80
+        },
+        {
+          "fold": 3,
+          "group_overlap": 0,
+          "metrics": {
+            "accuracy": 0.2,
+            "macro_f1": 0.066666666667,
+            "macro_precision": 0.04,
+            "macro_recall": 0.2,
+            "weighted_f1": 0.066666666667
+          },
+          "train_group_count": 80,
+          "train_size": 320,
+          "validation_group_count": 20,
+          "validation_size": 80
+        },
+        {
+          "fold": 4,
+          "group_overlap": 0,
+          "metrics": {
+            "accuracy": 0.2,
+            "macro_f1": 0.066666666667,
+            "macro_precision": 0.04,
+            "macro_recall": 0.2,
+            "weighted_f1": 0.066666666667
+          },
+          "train_group_count": 80,
+          "train_size": 320,
+          "validation_group_count": 20,
+          "validation_size": 80
+        },
+        {
+          "fold": 5,
+          "group_overlap": 0,
+          "metrics": {
+            "accuracy": 0.2,
+            "macro_f1": 0.066666666667,
+            "macro_precision": 0.04,
+            "macro_recall": 0.2,
+            "weighted_f1": 0.066666666667
+          },
+          "train_group_count": 80,
+          "train_size": 320,
+          "validation_group_count": 20,
+          "validation_size": 80
+        }
+      ],
+      "group_leakage_count": 0,
+      "splitter": {
+        "groups": "template_group_id",
+        "n_splits": 5,
+        "random_state": 42,
+        "shuffle": true,
+        "type": "StratifiedGroupKFold"
+      }
+    },
+    "holdout": {
+      "accuracy": 0.2,
+      "macro_f1": 0.066666666667,
+      "macro_precision": 0.04,
+      "macro_recall": 0.2,
+      "weighted_f1": 0.066666666667
+    }
+  },
+  "experiment_name": "aegisbank-synthetic-spanish-intent-baseline",
+  "experiment_version": "0.3.0",
+  "holdout": {
+    "evaluated_once_after_configuration_freeze": true,
+    "metrics": {
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "weighted_f1": 1.0
+    },
+    "misclassified_count": 0,
+    "misclassified_examples": [],
+    "per_class": {
+      "account_query": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 20
+      },
+      "informational": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 20
+      },
+      "sensitive_action": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 20
+      },
+      "service_request": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 20
+      },
+      "unsupported": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 20
+      }
+    },
+    "post_holdout_tuning": false
+  },
+  "holdout_size": 100,
+  "hypothesis": "H1: A TF-IDF + Logistic Regression pipeline will clearly outperform a trivial baseline in macro-F1 on synthetic banking queries across five intent classes.",
+  "labels": [
+    "informational",
+    "account_query",
+    "service_request",
+    "sensitive_action",
+    "unsupported"
+  ],
+  "pipeline_configuration": {
+    "logistic_regression": {
+      "C": 1.0,
+      "l1_ratio": 0.0,
+      "max_iter": 1000,
+      "random_state": 42,
+      "solver": "lbfgs",
+      "tol": 0.0001
+    },
+    "steps": [
+      "TfidfVectorizer",
+      "LogisticRegression"
+    ],
+    "tfidf": {
+      "lowercase": true,
+      "max_df": 1.0,
+      "min_df": 1,
+      "ngram_range": [
+        1,
+        2
+      ],
+      "norm": "l2",
+      "stop_words": null,
+      "sublinear_tf": true,
+      "token_pattern": "(?u)\\b\\w\\w+\\b"
+    }
+  },
+  "primary_metric": "macro_f1",
+  "python_version": "3.14.4",
+  "random_state": 42,
+  "scikit_learn_version": "1.9.0",
+  "software": {
+    "numpy": "2.5.2",
+    "scipy": "1.18.0"
+  },
+  "train_size": 400
+}

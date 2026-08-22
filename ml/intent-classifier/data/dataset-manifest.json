@@ -1,0 +1,23 @@
+{
+  "class_distribution": {
+    "account_query": 100,
+    "informational": 100,
+    "sensitive_action": 100,
+    "service_request": 100,
+    "unsupported": 100
+  },
+  "generation_version": "1.0.0",
+  "holdout_count": 100,
+  "random_state": 42,
+  "record_count": 500,
+  "sha256": "db250b5993e892610d29a2cc53bdafcff08d085df29deecf9a53515a13308664",
+  "template_group_count": 125,
+  "template_group_distribution": {
+    "account_query": 25,
+    "informational": 25,
+    "sensitive_action": 25,
+    "service_request": 25,
+    "unsupported": 25
+  },
+  "train_count": 400
+}

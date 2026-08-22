@@ -1,0 +1,500 @@
+{"example_id":"EX-0001","text":"¿Qué significa un crédito para negocio?","label":"informational","template_group_id":"informational_credito_negocio_01","split":"train"}
+{"example_id":"EX-0002","text":"Explícame de manera general cómo funciona un crédito para negocio.","label":"informational","template_group_id":"informational_credito_negocio_01","split":"train"}
+{"example_id":"EX-0003","text":"Quisiera conocer las características de un crédito para negocio.","label":"informational","template_group_id":"informational_credito_negocio_01","split":"train"}
+{"example_id":"EX-0004","text":"Dame información institucional sobre un crédito para negocio.","label":"informational","template_group_id":"informational_credito_negocio_01","split":"train"}
+{"example_id":"EX-0005","text":"¿Qué significa una tasa de interés?","label":"informational","template_group_id":"informational_tasa_interes_02","split":"train"}
+{"example_id":"EX-0006","text":"Explícame de manera general cómo funciona una tasa de interés.","label":"informational","template_group_id":"informational_tasa_interes_02","split":"train"}
+{"example_id":"EX-0007","text":"Quisiera conocer las características de una tasa de interés.","label":"informational","template_group_id":"informational_tasa_interes_02","split":"train"}
+{"example_id":"EX-0008","text":"Dame información institucional sobre una tasa de interés.","label":"informational","template_group_id":"informational_tasa_interes_02","split":"train"}
+{"example_id":"EX-0009","text":"¿Qué significa una comisión bancaria?","label":"informational","template_group_id":"informational_comision_bancaria_03","split":"train"}
+{"example_id":"EX-0010","text":"Explícame de manera general cómo funciona una comisión bancaria.","label":"informational","template_group_id":"informational_comision_bancaria_03","split":"train"}
+{"example_id":"EX-0011","text":"Quisiera conocer las características de una comisión bancaria.","label":"informational","template_group_id":"informational_comision_bancaria_03","split":"train"}
+{"example_id":"EX-0012","text":"Dame información institucional sobre una comisión bancaria.","label":"informational","template_group_id":"informational_comision_bancaria_03","split":"train"}
+{"example_id":"EX-0013","text":"¿Qué significa el capital de un préstamo?","label":"informational","template_group_id":"informational_capital_prestamo_04","split":"train"}
+{"example_id":"EX-0014","text":"Explícame de manera general cómo funciona el capital de un préstamo.","label":"informational","template_group_id":"informational_capital_prestamo_04","split":"train"}
+{"example_id":"EX-0015","text":"Quisiera conocer las características de el capital de un préstamo.","label":"informational","template_group_id":"informational_capital_prestamo_04","split":"train"}
+{"example_id":"EX-0016","text":"Dame información institucional sobre el capital de un préstamo.","label":"informational","template_group_id":"informational_capital_prestamo_04","split":"train"}
+{"example_id":"EX-0017","text":"¿Qué significa el plazo de un crédito?","label":"informational","template_group_id":"informational_plazo_credito_05","split":"train"}
+{"example_id":"EX-0018","text":"Explícame de manera general cómo funciona el plazo de un crédito.","label":"informational","template_group_id":"informational_plazo_credito_05","split":"train"}
+{"example_id":"EX-0019","text":"Quisiera conocer las características de el plazo de un crédito.","label":"informational","template_group_id":"informational_plazo_credito_05","split":"train"}
+{"example_id":"EX-0020","text":"Dame información institucional sobre el plazo de un crédito.","label":"informational","template_group_id":"informational_plazo_credito_05","split":"train"}
+{"example_id":"EX-0021","text":"¿Qué significa una garantía crediticia?","label":"informational","template_group_id":"informational_garantia_crediticia_06","split":"train"}
+{"example_id":"EX-0022","text":"Explícame de manera general cómo funciona una garantía crediticia.","label":"informational","template_group_id":"informational_garantia_crediticia_06","split":"train"}
+{"example_id":"EX-0023","text":"Quisiera conocer las características de una garantía crediticia.","label":"informational","template_group_id":"informational_garantia_crediticia_06","split":"train"}
+{"example_id":"EX-0024","text":"Dame información institucional sobre una garantía crediticia.","label":"informational","template_group_id":"informational_garantia_crediticia_06","split":"train"}
+{"example_id":"EX-0025","text":"¿Qué significa un cronograma de pagos?","label":"informational","template_group_id":"informational_cronograma_pagos_07","split":"train"}
+{"example_id":"EX-0026","text":"Explícame de manera general cómo funciona un cronograma de pagos.","label":"informational","template_group_id":"informational_cronograma_pagos_07","split":"train"}
+{"example_id":"EX-0027","text":"Quisiera conocer las características de un cronograma de pagos.","label":"informational","template_group_id":"informational_cronograma_pagos_07","split":"train"}
+{"example_id":"EX-0028","text":"Dame información institucional sobre un cronograma de pagos.","label":"informational","template_group_id":"informational_cronograma_pagos_07","split":"train"}
+{"example_id":"EX-0029","text":"¿Qué significa una cuota de préstamo?","label":"informational","template_group_id":"informational_cuota_prestamo_08","split":"train"}
+{"example_id":"EX-0030","text":"Explícame de manera general cómo funciona una cuota de préstamo.","label":"informational","template_group_id":"informational_cuota_prestamo_08","split":"train"}
+{"example_id":"EX-0031","text":"Quisiera conocer las características de una cuota de préstamo.","label":"informational","template_group_id":"informational_cuota_prestamo_08","split":"train"}
+{"example_id":"EX-0032","text":"Dame información institucional sobre una cuota de préstamo.","label":"informational","template_group_id":"informational_cuota_prestamo_08","split":"train"}
+{"example_id":"EX-0033","text":"¿Qué significa el interés moratorio?","label":"informational","template_group_id":"informational_interes_moratorio_09","split":"train"}
+{"example_id":"EX-0034","text":"Explícame de manera general cómo funciona el interés moratorio.","label":"informational","template_group_id":"informational_interes_moratorio_09","split":"train"}
+{"example_id":"EX-0035","text":"Quisiera conocer las características de el interés moratorio.","label":"informational","template_group_id":"informational_interes_moratorio_09","split":"train"}
+{"example_id":"EX-0036","text":"Dame información institucional sobre el interés moratorio.","label":"informational","template_group_id":"informational_interes_moratorio_09","split":"train"}
+{"example_id":"EX-0037","text":"¿Qué significa el refinanciamiento?","label":"informational","template_group_id":"informational_refinanciamiento_10","split":"train"}
+{"example_id":"EX-0038","text":"Explícame de manera general cómo funciona el refinanciamiento.","label":"informational","template_group_id":"informational_refinanciamiento_10","split":"train"}
+{"example_id":"EX-0039","text":"Quisiera conocer las características de el refinanciamiento.","label":"informational","template_group_id":"informational_refinanciamiento_10","split":"train"}
+{"example_id":"EX-0040","text":"Dame información institucional sobre el refinanciamiento.","label":"informational","template_group_id":"informational_refinanciamiento_10","split":"train"}
+{"example_id":"EX-0041","text":"¿Qué significa el prepago de una deuda?","label":"informational","template_group_id":"informational_prepago_deuda_11","split":"train"}
+{"example_id":"EX-0042","text":"Explícame de manera general cómo funciona el prepago de una deuda.","label":"informational","template_group_id":"informational_prepago_deuda_11","split":"train"}
+{"example_id":"EX-0043","text":"Quisiera conocer las características de el prepago de una deuda.","label":"informational","template_group_id":"informational_prepago_deuda_11","split":"train"}
+{"example_id":"EX-0044","text":"Dame información institucional sobre el prepago de una deuda.","label":"informational","template_group_id":"informational_prepago_deuda_11","split":"train"}
+{"example_id":"EX-0045","text":"¿Qué significa el seguro de desgravamen?","label":"informational","template_group_id":"informational_seguro_desgravamen_12","split":"train"}
+{"example_id":"EX-0046","text":"Explícame de manera general cómo funciona el seguro de desgravamen.","label":"informational","template_group_id":"informational_seguro_desgravamen_12","split":"train"}
+{"example_id":"EX-0047","text":"Quisiera conocer las características de el seguro de desgravamen.","label":"informational","template_group_id":"informational_seguro_desgravamen_12","split":"train"}
+{"example_id":"EX-0048","text":"Dame información institucional sobre el seguro de desgravamen.","label":"informational","template_group_id":"informational_seguro_desgravamen_12","split":"train"}
+{"example_id":"EX-0049","text":"¿Qué significa un desembolso de crédito?","label":"informational","template_group_id":"informational_desembolso_credito_13","split":"train"}
+{"example_id":"EX-0050","text":"Explícame de manera general cómo funciona un desembolso de crédito.","label":"informational","template_group_id":"informational_desembolso_credito_13","split":"train"}
+{"example_id":"EX-0051","text":"Quisiera conocer las características de un desembolso de crédito.","label":"informational","template_group_id":"informational_desembolso_credito_13","split":"train"}
+{"example_id":"EX-0052","text":"Dame información institucional sobre un desembolso de crédito.","label":"informational","template_group_id":"informational_desembolso_credito_13","split":"train"}
+{"example_id":"EX-0053","text":"¿Qué significa una evaluación crediticia?","label":"informational","template_group_id":"informational_evaluacion_crediticia_14","split":"train"}
+{"example_id":"EX-0054","text":"Explícame de manera general cómo funciona una evaluación crediticia.","label":"informational","template_group_id":"informational_evaluacion_crediticia_14","split":"train"}
+{"example_id":"EX-0055","text":"Quisiera conocer las características de una evaluación crediticia.","label":"informational","template_group_id":"informational_evaluacion_crediticia_14","split":"train"}
+{"example_id":"EX-0056","text":"Dame información institucional sobre una evaluación crediticia.","label":"informational","template_group_id":"informational_evaluacion_crediticia_14","split":"train"}
+{"example_id":"EX-0057","text":"¿Qué significa los requisitos generales para solicitar crédito?","label":"informational","template_group_id":"informational_requisitos_credito_15","split":"train"}
+{"example_id":"EX-0058","text":"Explícame de manera general cómo funciona los requisitos generales para solicitar crédito.","label":"informational","template_group_id":"informational_requisitos_credito_15","split":"train"}
+{"example_id":"EX-0059","text":"Quisiera conocer las características de los requisitos generales para solicitar crédito.","label":"informational","template_group_id":"informational_requisitos_credito_15","split":"train"}
+{"example_id":"EX-0060","text":"Dame información institucional sobre los requisitos generales para solicitar crédito.","label":"informational","template_group_id":"informational_requisitos_credito_15","split":"train"}
+{"example_id":"EX-0061","text":"¿Qué significa un crédito en moneda extranjera?","label":"informational","template_group_id":"informational_credito_moneda_extranjera_16","split":"train"}
+{"example_id":"EX-0062","text":"Explícame de manera general cómo funciona un crédito en moneda extranjera.","label":"informational","template_group_id":"informational_credito_moneda_extranjera_16","split":"train"}
+{"example_id":"EX-0063","text":"Quisiera conocer las características de un crédito en moneda extranjera.","label":"informational","template_group_id":"informational_credito_moneda_extranjera_16","split":"train"}
+{"example_id":"EX-0064","text":"Dame información institucional sobre un crédito en moneda extranjera.","label":"informational","template_group_id":"informational_credito_moneda_extranjera_16","split":"train"}
+{"example_id":"EX-0065","text":"¿Qué significa un periodo de gracia?","label":"informational","template_group_id":"informational_periodo_gracia_17","split":"train"}
+{"example_id":"EX-0066","text":"Explícame de manera general cómo funciona un periodo de gracia.","label":"informational","template_group_id":"informational_periodo_gracia_17","split":"train"}
+{"example_id":"EX-0067","text":"Quisiera conocer las características de un periodo de gracia.","label":"informational","template_group_id":"informational_periodo_gracia_17","split":"train"}
+{"example_id":"EX-0068","text":"Dame información institucional sobre un periodo de gracia.","label":"informational","template_group_id":"informational_periodo_gracia_17","split":"train"}
+{"example_id":"EX-0069","text":"¿Qué significa la amortización de capital?","label":"informational","template_group_id":"informational_amortizacion_capital_18","split":"train"}
+{"example_id":"EX-0070","text":"Explícame de manera general cómo funciona la amortización de capital.","label":"informational","template_group_id":"informational_amortizacion_capital_18","split":"train"}
+{"example_id":"EX-0071","text":"Quisiera conocer las características de la amortización de capital.","label":"informational","template_group_id":"informational_amortizacion_capital_18","split":"train"}
+{"example_id":"EX-0072","text":"Dame información institucional sobre la amortización de capital.","label":"informational","template_group_id":"informational_amortizacion_capital_18","split":"train"}
+{"example_id":"EX-0073","text":"¿Qué significa una reprogramación de cuotas?","label":"informational","template_group_id":"informational_reprogramacion_cuotas_19","split":"train"}
+{"example_id":"EX-0074","text":"Explícame de manera general cómo funciona una reprogramación de cuotas.","label":"informational","template_group_id":"informational_reprogramacion_cuotas_19","split":"train"}
+{"example_id":"EX-0075","text":"Quisiera conocer las características de una reprogramación de cuotas.","label":"informational","template_group_id":"informational_reprogramacion_cuotas_19","split":"train"}
+{"example_id":"EX-0076","text":"Dame información institucional sobre una reprogramación de cuotas.","label":"informational","template_group_id":"informational_reprogramacion_cuotas_19","split":"train"}
+{"example_id":"EX-0077","text":"¿Qué significa el saldo de capital?","label":"informational","template_group_id":"informational_saldo_capital_20","split":"train"}
+{"example_id":"EX-0078","text":"Explícame de manera general cómo funciona el saldo de capital.","label":"informational","template_group_id":"informational_saldo_capital_20","split":"train"}
+{"example_id":"EX-0079","text":"Quisiera conocer las características de el saldo de capital.","label":"informational","template_group_id":"informational_saldo_capital_20","split":"train"}
+{"example_id":"EX-0080","text":"Dame información institucional sobre el saldo de capital.","label":"informational","template_group_id":"informational_saldo_capital_20","split":"train"}
+{"example_id":"EX-0081","text":"¿Qué significa la fecha de vencimiento de una cuota?","label":"informational","template_group_id":"informational_vencimiento_cuota_21","split":"holdout"}
+{"example_id":"EX-0082","text":"Explícame de manera general cómo funciona la fecha de vencimiento de una cuota.","label":"informational","template_group_id":"informational_vencimiento_cuota_21","split":"holdout"}
+{"example_id":"EX-0083","text":"Quisiera conocer las características de la fecha de vencimiento de una cuota.","label":"informational","template_group_id":"informational_vencimiento_cuota_21","split":"holdout"}
+{"example_id":"EX-0084","text":"Dame información institucional sobre la fecha de vencimiento de una cuota.","label":"informational","template_group_id":"informational_vencimiento_cuota_21","split":"holdout"}
+{"example_id":"EX-0085","text":"¿Qué significa una penalidad por atraso?","label":"informational","template_group_id":"informational_penalidad_atraso_22","split":"holdout"}
+{"example_id":"EX-0086","text":"Explícame de manera general cómo funciona una penalidad por atraso.","label":"informational","template_group_id":"informational_penalidad_atraso_22","split":"holdout"}
+{"example_id":"EX-0087","text":"Quisiera conocer las características de una penalidad por atraso.","label":"informational","template_group_id":"informational_penalidad_atraso_22","split":"holdout"}
+{"example_id":"EX-0088","text":"Dame información institucional sobre una penalidad por atraso.","label":"informational","template_group_id":"informational_penalidad_atraso_22","split":"holdout"}
+{"example_id":"EX-0089","text":"¿Qué significa un crédito para capital de trabajo?","label":"informational","template_group_id":"informational_capital_trabajo_23","split":"holdout"}
+{"example_id":"EX-0090","text":"Explícame de manera general cómo funciona un crédito para capital de trabajo.","label":"informational","template_group_id":"informational_capital_trabajo_23","split":"holdout"}
+{"example_id":"EX-0091","text":"Quisiera conocer las características de un crédito para capital de trabajo.","label":"informational","template_group_id":"informational_capital_trabajo_23","split":"holdout"}
+{"example_id":"EX-0092","text":"Dame información institucional sobre un crédito para capital de trabajo.","label":"informational","template_group_id":"informational_capital_trabajo_23","split":"holdout"}
+{"example_id":"EX-0093","text":"¿Qué significa un crédito para activo fijo?","label":"informational","template_group_id":"informational_activo_fijo_24","split":"holdout"}
+{"example_id":"EX-0094","text":"Explícame de manera general cómo funciona un crédito para activo fijo.","label":"informational","template_group_id":"informational_activo_fijo_24","split":"holdout"}
+{"example_id":"EX-0095","text":"Quisiera conocer las características de un crédito para activo fijo.","label":"informational","template_group_id":"informational_activo_fijo_24","split":"holdout"}
+{"example_id":"EX-0096","text":"Dame información institucional sobre un crédito para activo fijo.","label":"informational","template_group_id":"informational_activo_fijo_24","split":"holdout"}
+{"example_id":"EX-0097","text":"¿Qué significa el historial de pagos?","label":"informational","template_group_id":"informational_historial_pagos_25","split":"holdout"}
+{"example_id":"EX-0098","text":"Explícame de manera general cómo funciona el historial de pagos.","label":"informational","template_group_id":"informational_historial_pagos_25","split":"holdout"}
+{"example_id":"EX-0099","text":"Quisiera conocer las características de el historial de pagos.","label":"informational","template_group_id":"informational_historial_pagos_25","split":"holdout"}
+{"example_id":"EX-0100","text":"Dame información institucional sobre el historial de pagos.","label":"informational","template_group_id":"informational_historial_pagos_25","split":"holdout"}
+{"example_id":"EX-0101","text":"¿Puedes indicarme la fecha de la próxima cuota en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_proxima_cuota_01","split":"train"}
+{"example_id":"EX-0102","text":"Necesito consultar la fecha de la próxima cuota de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_proxima_cuota_01","split":"train"}
+{"example_id":"EX-0103","text":"Muéstrame la fecha de la próxima cuota asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_proxima_cuota_01","split":"train"}
+{"example_id":"EX-0104","text":"Quisiera revisar la fecha de la próxima cuota de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_proxima_cuota_01","split":"train"}
+{"example_id":"EX-0105","text":"¿Puedes indicarme el saldo pendiente del préstamo en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_saldo_pendiente_02","split":"train"}
+{"example_id":"EX-0106","text":"Necesito consultar el saldo pendiente del préstamo de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_saldo_pendiente_02","split":"train"}
+{"example_id":"EX-0107","text":"Muéstrame el saldo pendiente del préstamo asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_saldo_pendiente_02","split":"train"}
+{"example_id":"EX-0108","text":"Quisiera revisar el saldo pendiente del préstamo de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_saldo_pendiente_02","split":"train"}
+{"example_id":"EX-0109","text":"¿Puedes indicarme el estado actual del crédito en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_estado_credito_03","split":"train"}
+{"example_id":"EX-0110","text":"Necesito consultar el estado actual del crédito de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_estado_credito_03","split":"train"}
+{"example_id":"EX-0111","text":"Muéstrame el estado actual del crédito asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_estado_credito_03","split":"train"}
+{"example_id":"EX-0112","text":"Quisiera revisar el estado actual del crédito de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_estado_credito_03","split":"train"}
+{"example_id":"EX-0113","text":"¿Puedes indicarme la cantidad de cuotas pendientes en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_cuotas_pendientes_04","split":"train"}
+{"example_id":"EX-0114","text":"Necesito consultar la cantidad de cuotas pendientes de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_cuotas_pendientes_04","split":"train"}
+{"example_id":"EX-0115","text":"Muéstrame la cantidad de cuotas pendientes asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_cuotas_pendientes_04","split":"train"}
+{"example_id":"EX-0116","text":"Quisiera revisar la cantidad de cuotas pendientes de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_cuotas_pendientes_04","split":"train"}
+{"example_id":"EX-0117","text":"¿Puedes indicarme la cantidad de cuotas pagadas en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_cuotas_pagadas_05","split":"train"}
+{"example_id":"EX-0118","text":"Necesito consultar la cantidad de cuotas pagadas de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_cuotas_pagadas_05","split":"train"}
+{"example_id":"EX-0119","text":"Muéstrame la cantidad de cuotas pagadas asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_cuotas_pagadas_05","split":"train"}
+{"example_id":"EX-0120","text":"Quisiera revisar la cantidad de cuotas pagadas de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_cuotas_pagadas_05","split":"train"}
+{"example_id":"EX-0121","text":"¿Puedes indicarme el monto de la siguiente cuota en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_monto_siguiente_cuota_06","split":"train"}
+{"example_id":"EX-0122","text":"Necesito consultar el monto de la siguiente cuota de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_monto_siguiente_cuota_06","split":"train"}
+{"example_id":"EX-0123","text":"Muéstrame el monto de la siguiente cuota asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_monto_siguiente_cuota_06","split":"train"}
+{"example_id":"EX-0124","text":"Quisiera revisar el monto de la siguiente cuota de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_monto_siguiente_cuota_06","split":"train"}
+{"example_id":"EX-0125","text":"¿Puedes indicarme la fecha del desembolso registrado en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_fecha_desembolso_07","split":"train"}
+{"example_id":"EX-0126","text":"Necesito consultar la fecha del desembolso registrado de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_fecha_desembolso_07","split":"train"}
+{"example_id":"EX-0127","text":"Muéstrame la fecha del desembolso registrado asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_fecha_desembolso_07","split":"train"}
+{"example_id":"EX-0128","text":"Quisiera revisar la fecha del desembolso registrado de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_fecha_desembolso_07","split":"train"}
+{"example_id":"EX-0129","text":"¿Puedes indicarme el plazo restante del préstamo en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_plazo_restante_08","split":"train"}
+{"example_id":"EX-0130","text":"Necesito consultar el plazo restante del préstamo de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_plazo_restante_08","split":"train"}
+{"example_id":"EX-0131","text":"Muéstrame el plazo restante del préstamo asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_plazo_restante_08","split":"train"}
+{"example_id":"EX-0132","text":"Quisiera revisar el plazo restante del préstamo de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_plazo_restante_08","split":"train"}
+{"example_id":"EX-0133","text":"¿Puedes indicarme la moneda del crédito en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_moneda_credito_09","split":"train"}
+{"example_id":"EX-0134","text":"Necesito consultar la moneda del crédito de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_moneda_credito_09","split":"train"}
+{"example_id":"EX-0135","text":"Muéstrame la moneda del crédito asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_moneda_credito_09","split":"train"}
+{"example_id":"EX-0136","text":"Quisiera revisar la moneda del crédito de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_moneda_credito_09","split":"train"}
+{"example_id":"EX-0137","text":"¿Puedes indicarme la tasa aplicada al préstamo en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_tasa_aplicada_10","split":"train"}
+{"example_id":"EX-0138","text":"Necesito consultar la tasa aplicada al préstamo de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_tasa_aplicada_10","split":"train"}
+{"example_id":"EX-0139","text":"Muéstrame la tasa aplicada al préstamo asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_tasa_aplicada_10","split":"train"}
+{"example_id":"EX-0140","text":"Quisiera revisar la tasa aplicada al préstamo de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_tasa_aplicada_10","split":"train"}
+{"example_id":"EX-0141","text":"¿Puedes indicarme las comisiones registradas en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_comisiones_registradas_11","split":"train"}
+{"example_id":"EX-0142","text":"Necesito consultar las comisiones registradas de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_comisiones_registradas_11","split":"train"}
+{"example_id":"EX-0143","text":"Muéstrame las comisiones registradas asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_comisiones_registradas_11","split":"train"}
+{"example_id":"EX-0144","text":"Quisiera revisar las comisiones registradas de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_comisiones_registradas_11","split":"train"}
+{"example_id":"EX-0145","text":"¿Puedes indicarme el interés moratorio acumulado en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_mora_acumulada_12","split":"train"}
+{"example_id":"EX-0146","text":"Necesito consultar el interés moratorio acumulado de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_mora_acumulada_12","split":"train"}
+{"example_id":"EX-0147","text":"Muéstrame el interés moratorio acumulado asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_mora_acumulada_12","split":"train"}
+{"example_id":"EX-0148","text":"Quisiera revisar el interés moratorio acumulado de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_mora_acumulada_12","split":"train"}
+{"example_id":"EX-0149","text":"¿Puedes indicarme la cuota que figura vencida en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_cuota_vencida_13","split":"train"}
+{"example_id":"EX-0150","text":"Necesito consultar la cuota que figura vencida de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_cuota_vencida_13","split":"train"}
+{"example_id":"EX-0151","text":"Muéstrame la cuota que figura vencida asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_cuota_vencida_13","split":"train"}
+{"example_id":"EX-0152","text":"Quisiera revisar la cuota que figura vencida de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_cuota_vencida_13","split":"train"}
+{"example_id":"EX-0153","text":"¿Puedes indicarme el último pago registrado en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_ultimo_pago_14","split":"train"}
+{"example_id":"EX-0154","text":"Necesito consultar el último pago registrado de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_ultimo_pago_14","split":"train"}
+{"example_id":"EX-0155","text":"Muéstrame el último pago registrado asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_ultimo_pago_14","split":"train"}
+{"example_id":"EX-0156","text":"Quisiera revisar el último pago registrado de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_ultimo_pago_14","split":"train"}
+{"example_id":"EX-0157","text":"¿Puedes indicarme el cronograma vigente en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_cronograma_vigente_15","split":"train"}
+{"example_id":"EX-0158","text":"Necesito consultar el cronograma vigente de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_cronograma_vigente_15","split":"train"}
+{"example_id":"EX-0159","text":"Muéstrame el cronograma vigente asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_cronograma_vigente_15","split":"train"}
+{"example_id":"EX-0160","text":"Quisiera revisar el cronograma vigente de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_cronograma_vigente_15","split":"train"}
+{"example_id":"EX-0161","text":"¿Puedes indicarme el capital pendiente en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_capital_pendiente_16","split":"train"}
+{"example_id":"EX-0162","text":"Necesito consultar el capital pendiente de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_capital_pendiente_16","split":"train"}
+{"example_id":"EX-0163","text":"Muéstrame el capital pendiente asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_capital_pendiente_16","split":"train"}
+{"example_id":"EX-0164","text":"Quisiera revisar el capital pendiente de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_capital_pendiente_16","split":"train"}
+{"example_id":"EX-0165","text":"¿Puedes indicarme los intereses pendientes en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_intereses_pendientes_17","split":"train"}
+{"example_id":"EX-0166","text":"Necesito consultar los intereses pendientes de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_intereses_pendientes_17","split":"train"}
+{"example_id":"EX-0167","text":"Muéstrame los intereses pendientes asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_intereses_pendientes_17","split":"train"}
+{"example_id":"EX-0168","text":"Quisiera revisar los intereses pendientes de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_intereses_pendientes_17","split":"train"}
+{"example_id":"EX-0169","text":"¿Puedes indicarme el estado de una solicitud asociada en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_estado_solicitud_18","split":"train"}
+{"example_id":"EX-0170","text":"Necesito consultar el estado de una solicitud asociada de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_estado_solicitud_18","split":"train"}
+{"example_id":"EX-0171","text":"Muéstrame el estado de una solicitud asociada asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_estado_solicitud_18","split":"train"}
+{"example_id":"EX-0172","text":"Quisiera revisar el estado de una solicitud asociada de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_estado_solicitud_18","split":"train"}
+{"example_id":"EX-0173","text":"¿Puedes indicarme el número de la próxima cuota en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_numero_proxima_cuota_19","split":"train"}
+{"example_id":"EX-0174","text":"Necesito consultar el número de la próxima cuota de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_numero_proxima_cuota_19","split":"train"}
+{"example_id":"EX-0175","text":"Muéstrame el número de la próxima cuota asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_numero_proxima_cuota_19","split":"train"}
+{"example_id":"EX-0176","text":"Quisiera revisar el número de la próxima cuota de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_numero_proxima_cuota_19","split":"train"}
+{"example_id":"EX-0177","text":"¿Puedes indicarme la fecha de cancelación estimada en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_cancelacion_estimada_20","split":"train"}
+{"example_id":"EX-0178","text":"Necesito consultar la fecha de cancelación estimada de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_cancelacion_estimada_20","split":"train"}
+{"example_id":"EX-0179","text":"Muéstrame la fecha de cancelación estimada asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_cancelacion_estimada_20","split":"train"}
+{"example_id":"EX-0180","text":"Quisiera revisar la fecha de cancelación estimada de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_cancelacion_estimada_20","split":"train"}
+{"example_id":"EX-0181","text":"¿Puedes indicarme el total pagado hasta ahora en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_total_pagado_21","split":"holdout"}
+{"example_id":"EX-0182","text":"Necesito consultar el total pagado hasta ahora de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_total_pagado_21","split":"holdout"}
+{"example_id":"EX-0183","text":"Muéstrame el total pagado hasta ahora asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_total_pagado_21","split":"holdout"}
+{"example_id":"EX-0184","text":"Quisiera revisar el total pagado hasta ahora de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_total_pagado_21","split":"holdout"}
+{"example_id":"EX-0185","text":"¿Puedes indicarme el total pendiente de pago en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_total_por_pagar_22","split":"holdout"}
+{"example_id":"EX-0186","text":"Necesito consultar el total pendiente de pago de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_total_por_pagar_22","split":"holdout"}
+{"example_id":"EX-0187","text":"Muéstrame el total pendiente de pago asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_total_por_pagar_22","split":"holdout"}
+{"example_id":"EX-0188","text":"Quisiera revisar el total pendiente de pago de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_total_por_pagar_22","split":"holdout"}
+{"example_id":"EX-0189","text":"¿Puedes indicarme las cuotas con atraso en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_cuotas_atrasadas_23","split":"holdout"}
+{"example_id":"EX-0190","text":"Necesito consultar las cuotas con atraso de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_cuotas_atrasadas_23","split":"holdout"}
+{"example_id":"EX-0191","text":"Muéstrame las cuotas con atraso asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_cuotas_atrasadas_23","split":"holdout"}
+{"example_id":"EX-0192","text":"Quisiera revisar las cuotas con atraso de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_cuotas_atrasadas_23","split":"holdout"}
+{"example_id":"EX-0193","text":"¿Puedes indicarme el detalle de una cuota específica en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_detalle_cuota_24","split":"holdout"}
+{"example_id":"EX-0194","text":"Necesito consultar el detalle de una cuota específica de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_detalle_cuota_24","split":"holdout"}
+{"example_id":"EX-0195","text":"Muéstrame el detalle de una cuota específica asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_detalle_cuota_24","split":"holdout"}
+{"example_id":"EX-0196","text":"Quisiera revisar el detalle de una cuota específica de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_detalle_cuota_24","split":"holdout"}
+{"example_id":"EX-0197","text":"¿Puedes indicarme el resumen del crédito en mi perfil bancario ficticio?","label":"account_query","template_group_id":"account_query_resumen_credito_25","split":"holdout"}
+{"example_id":"EX-0198","text":"Necesito consultar el resumen del crédito de mi préstamo sintético.","label":"account_query","template_group_id":"account_query_resumen_credito_25","split":"holdout"}
+{"example_id":"EX-0199","text":"Muéstrame el resumen del crédito asociado a mi información simulada.","label":"account_query","template_group_id":"account_query_resumen_credito_25","split":"holdout"}
+{"example_id":"EX-0200","text":"Quisiera revisar el resumen del crédito de mi relación crediticia ficticia.","label":"account_query","template_group_id":"account_query_resumen_credito_25","split":"holdout"}
+{"example_id":"EX-0201","text":"Quiero registrar un reclamo por una comisión no reconocida.","label":"service_request","template_group_id":"service_request_comision_no_reconocida_01","split":"train"}
+{"example_id":"EX-0202","text":"Necesito abrir un reclamo por una comisión no reconocida.","label":"service_request","template_group_id":"service_request_comision_no_reconocida_01","split":"train"}
+{"example_id":"EX-0203","text":"Ayúdame a crear un reclamo por una comisión no reconocida para un caso ficticio.","label":"service_request","template_group_id":"service_request_comision_no_reconocida_01","split":"train"}
+{"example_id":"EX-0204","text":"Deseo ingresar un reclamo por una comisión no reconocida y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_comision_no_reconocida_01","split":"train"}
+{"example_id":"EX-0205","text":"Quiero registrar una solicitud por un pago no reflejado.","label":"service_request","template_group_id":"service_request_pago_no_reflejado_02","split":"train"}
+{"example_id":"EX-0206","text":"Necesito abrir una solicitud por un pago no reflejado.","label":"service_request","template_group_id":"service_request_pago_no_reflejado_02","split":"train"}
+{"example_id":"EX-0207","text":"Ayúdame a crear una solicitud por un pago no reflejado para un caso ficticio.","label":"service_request","template_group_id":"service_request_pago_no_reflejado_02","split":"train"}
+{"example_id":"EX-0208","text":"Deseo ingresar una solicitud por un pago no reflejado y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_pago_no_reflejado_02","split":"train"}
+{"example_id":"EX-0209","text":"Quiero registrar un caso por un error en el cronograma.","label":"service_request","template_group_id":"service_request_error_cronograma_03","split":"train"}
+{"example_id":"EX-0210","text":"Necesito abrir un caso por un error en el cronograma.","label":"service_request","template_group_id":"service_request_error_cronograma_03","split":"train"}
+{"example_id":"EX-0211","text":"Ayúdame a crear un caso por un error en el cronograma para un caso ficticio.","label":"service_request","template_group_id":"service_request_error_cronograma_03","split":"train"}
+{"example_id":"EX-0212","text":"Deseo ingresar un caso por un error en el cronograma y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_error_cronograma_03","split":"train"}
+{"example_id":"EX-0213","text":"Quiero registrar un reclamo por una cuota duplicada.","label":"service_request","template_group_id":"service_request_cuota_duplicada_04","split":"train"}
+{"example_id":"EX-0214","text":"Necesito abrir un reclamo por una cuota duplicada.","label":"service_request","template_group_id":"service_request_cuota_duplicada_04","split":"train"}
+{"example_id":"EX-0215","text":"Ayúdame a crear un reclamo por una cuota duplicada para un caso ficticio.","label":"service_request","template_group_id":"service_request_cuota_duplicada_04","split":"train"}
+{"example_id":"EX-0216","text":"Deseo ingresar un reclamo por una cuota duplicada y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_cuota_duplicada_04","split":"train"}
+{"example_id":"EX-0217","text":"Quiero registrar una solicitud para revisar intereses.","label":"service_request","template_group_id":"service_request_revision_intereses_05","split":"train"}
+{"example_id":"EX-0218","text":"Necesito abrir una solicitud para revisar intereses.","label":"service_request","template_group_id":"service_request_revision_intereses_05","split":"train"}
+{"example_id":"EX-0219","text":"Ayúdame a crear una solicitud para revisar intereses para un caso ficticio.","label":"service_request","template_group_id":"service_request_revision_intereses_05","split":"train"}
+{"example_id":"EX-0220","text":"Deseo ingresar una solicitud para revisar intereses y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_revision_intereses_05","split":"train"}
+{"example_id":"EX-0221","text":"Quiero registrar un reporte por un monto incorrecto.","label":"service_request","template_group_id":"service_request_monto_incorrecto_06","split":"train"}
+{"example_id":"EX-0222","text":"Necesito abrir un reporte por un monto incorrecto.","label":"service_request","template_group_id":"service_request_monto_incorrecto_06","split":"train"}
+{"example_id":"EX-0223","text":"Ayúdame a crear un reporte por un monto incorrecto para un caso ficticio.","label":"service_request","template_group_id":"service_request_monto_incorrecto_06","split":"train"}
+{"example_id":"EX-0224","text":"Deseo ingresar un reporte por un monto incorrecto y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_monto_incorrecto_06","split":"train"}
+{"example_id":"EX-0225","text":"Quiero registrar un caso sobre una fecha de vencimiento errónea.","label":"service_request","template_group_id":"service_request_vencimiento_erroneo_07","split":"train"}
+{"example_id":"EX-0226","text":"Necesito abrir un caso sobre una fecha de vencimiento errónea.","label":"service_request","template_group_id":"service_request_vencimiento_erroneo_07","split":"train"}
+{"example_id":"EX-0227","text":"Ayúdame a crear un caso sobre una fecha de vencimiento errónea para un caso ficticio.","label":"service_request","template_group_id":"service_request_vencimiento_erroneo_07","split":"train"}
+{"example_id":"EX-0228","text":"Deseo ingresar un caso sobre una fecha de vencimiento errónea y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_vencimiento_erroneo_07","split":"train"}
+{"example_id":"EX-0229","text":"Quiero registrar una solicitud de aclaración de saldo.","label":"service_request","template_group_id":"service_request_aclaracion_saldo_08","split":"train"}
+{"example_id":"EX-0230","text":"Necesito abrir una solicitud de aclaración de saldo.","label":"service_request","template_group_id":"service_request_aclaracion_saldo_08","split":"train"}
+{"example_id":"EX-0231","text":"Ayúdame a crear una solicitud de aclaración de saldo para un caso ficticio.","label":"service_request","template_group_id":"service_request_aclaracion_saldo_08","split":"train"}
+{"example_id":"EX-0232","text":"Deseo ingresar una solicitud de aclaración de saldo y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_aclaracion_saldo_08","split":"train"}
+{"example_id":"EX-0233","text":"Quiero registrar un reclamo por estado incorrecto del crédito.","label":"service_request","template_group_id":"service_request_estado_credito_incorrecto_09","split":"train"}
+{"example_id":"EX-0234","text":"Necesito abrir un reclamo por estado incorrecto del crédito.","label":"service_request","template_group_id":"service_request_estado_credito_incorrecto_09","split":"train"}
+{"example_id":"EX-0235","text":"Ayúdame a crear un reclamo por estado incorrecto del crédito para un caso ficticio.","label":"service_request","template_group_id":"service_request_estado_credito_incorrecto_09","split":"train"}
+{"example_id":"EX-0236","text":"Deseo ingresar un reclamo por estado incorrecto del crédito y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_estado_credito_incorrecto_09","split":"train"}
+{"example_id":"EX-0237","text":"Quiero registrar una solicitud para revisar una penalidad.","label":"service_request","template_group_id":"service_request_revision_penalidad_10","split":"train"}
+{"example_id":"EX-0238","text":"Necesito abrir una solicitud para revisar una penalidad.","label":"service_request","template_group_id":"service_request_revision_penalidad_10","split":"train"}
+{"example_id":"EX-0239","text":"Ayúdame a crear una solicitud para revisar una penalidad para un caso ficticio.","label":"service_request","template_group_id":"service_request_revision_penalidad_10","split":"train"}
+{"example_id":"EX-0240","text":"Deseo ingresar una solicitud para revisar una penalidad y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_revision_penalidad_10","split":"train"}
+{"example_id":"EX-0241","text":"Quiero registrar un caso por demora en la atención.","label":"service_request","template_group_id":"service_request_demora_atencion_11","split":"train"}
+{"example_id":"EX-0242","text":"Necesito abrir un caso por demora en la atención.","label":"service_request","template_group_id":"service_request_demora_atencion_11","split":"train"}
+{"example_id":"EX-0243","text":"Ayúdame a crear un caso por demora en la atención para un caso ficticio.","label":"service_request","template_group_id":"service_request_demora_atencion_11","split":"train"}
+{"example_id":"EX-0244","text":"Deseo ingresar un caso por demora en la atención y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_demora_atencion_11","split":"train"}
+{"example_id":"EX-0245","text":"Quiero registrar un reclamo sobre un desembolso pendiente.","label":"service_request","template_group_id":"service_request_desembolso_pendiente_12","split":"train"}
+{"example_id":"EX-0246","text":"Necesito abrir un reclamo sobre un desembolso pendiente.","label":"service_request","template_group_id":"service_request_desembolso_pendiente_12","split":"train"}
+{"example_id":"EX-0247","text":"Ayúdame a crear un reclamo sobre un desembolso pendiente para un caso ficticio.","label":"service_request","template_group_id":"service_request_desembolso_pendiente_12","split":"train"}
+{"example_id":"EX-0248","text":"Deseo ingresar un reclamo sobre un desembolso pendiente y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_desembolso_pendiente_12","split":"train"}
+{"example_id":"EX-0249","text":"Quiero registrar una solicitud de constancia de pago.","label":"service_request","template_group_id":"service_request_constancia_pago_13","split":"train"}
+{"example_id":"EX-0250","text":"Necesito abrir una solicitud de constancia de pago.","label":"service_request","template_group_id":"service_request_constancia_pago_13","split":"train"}
+{"example_id":"EX-0251","text":"Ayúdame a crear una solicitud de constancia de pago para un caso ficticio.","label":"service_request","template_group_id":"service_request_constancia_pago_13","split":"train"}
+{"example_id":"EX-0252","text":"Deseo ingresar una solicitud de constancia de pago y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_constancia_pago_13","split":"train"}
+{"example_id":"EX-0253","text":"Quiero registrar un caso para revisar un registro simulado.","label":"service_request","template_group_id":"service_request_correccion_registro_14","split":"train"}
+{"example_id":"EX-0254","text":"Necesito abrir un caso para revisar un registro simulado.","label":"service_request","template_group_id":"service_request_correccion_registro_14","split":"train"}
+{"example_id":"EX-0255","text":"Ayúdame a crear un caso para revisar un registro simulado para un caso ficticio.","label":"service_request","template_group_id":"service_request_correccion_registro_14","split":"train"}
+{"example_id":"EX-0256","text":"Deseo ingresar un caso para revisar un registro simulado y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_correccion_registro_14","split":"train"}
+{"example_id":"EX-0257","text":"Quiero registrar una solicitud de explicación de cargos.","label":"service_request","template_group_id":"service_request_explicacion_cargos_15","split":"train"}
+{"example_id":"EX-0258","text":"Necesito abrir una solicitud de explicación de cargos.","label":"service_request","template_group_id":"service_request_explicacion_cargos_15","split":"train"}
+{"example_id":"EX-0259","text":"Ayúdame a crear una solicitud de explicación de cargos para un caso ficticio.","label":"service_request","template_group_id":"service_request_explicacion_cargos_15","split":"train"}
+{"example_id":"EX-0260","text":"Deseo ingresar una solicitud de explicación de cargos y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_explicacion_cargos_15","split":"train"}
+{"example_id":"EX-0261","text":"Quiero registrar un reclamo sobre el cálculo de una cuota.","label":"service_request","template_group_id":"service_request_calculo_cuota_16","split":"train"}
+{"example_id":"EX-0262","text":"Necesito abrir un reclamo sobre el cálculo de una cuota.","label":"service_request","template_group_id":"service_request_calculo_cuota_16","split":"train"}
+{"example_id":"EX-0263","text":"Ayúdame a crear un reclamo sobre el cálculo de una cuota para un caso ficticio.","label":"service_request","template_group_id":"service_request_calculo_cuota_16","split":"train"}
+{"example_id":"EX-0264","text":"Deseo ingresar un reclamo sobre el cálculo de una cuota y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_calculo_cuota_16","split":"train"}
+{"example_id":"EX-0265","text":"Quiero registrar una solicitud para actualizar el seguimiento de un caso.","label":"service_request","template_group_id":"service_request_seguimiento_caso_17","split":"train"}
+{"example_id":"EX-0266","text":"Necesito abrir una solicitud para actualizar el seguimiento de un caso.","label":"service_request","template_group_id":"service_request_seguimiento_caso_17","split":"train"}
+{"example_id":"EX-0267","text":"Ayúdame a crear una solicitud para actualizar el seguimiento de un caso para un caso ficticio.","label":"service_request","template_group_id":"service_request_seguimiento_caso_17","split":"train"}
+{"example_id":"EX-0268","text":"Deseo ingresar una solicitud para actualizar el seguimiento de un caso y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_seguimiento_caso_17","split":"train"}
+{"example_id":"EX-0269","text":"Quiero registrar un caso por una respuesta incompleta.","label":"service_request","template_group_id":"service_request_respuesta_incompleta_18","split":"train"}
+{"example_id":"EX-0270","text":"Necesito abrir un caso por una respuesta incompleta.","label":"service_request","template_group_id":"service_request_respuesta_incompleta_18","split":"train"}
+{"example_id":"EX-0271","text":"Ayúdame a crear un caso por una respuesta incompleta para un caso ficticio.","label":"service_request","template_group_id":"service_request_respuesta_incompleta_18","split":"train"}
+{"example_id":"EX-0272","text":"Deseo ingresar un caso por una respuesta incompleta y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_respuesta_incompleta_18","split":"train"}
+{"example_id":"EX-0273","text":"Quiero registrar una solicitud de revisión del préstamo.","label":"service_request","template_group_id":"service_request_revision_prestamo_19","split":"train"}
+{"example_id":"EX-0274","text":"Necesito abrir una solicitud de revisión del préstamo.","label":"service_request","template_group_id":"service_request_revision_prestamo_19","split":"train"}
+{"example_id":"EX-0275","text":"Ayúdame a crear una solicitud de revisión del préstamo para un caso ficticio.","label":"service_request","template_group_id":"service_request_revision_prestamo_19","split":"train"}
+{"example_id":"EX-0276","text":"Deseo ingresar una solicitud de revisión del préstamo y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_revision_prestamo_19","split":"train"}
+{"example_id":"EX-0277","text":"Quiero registrar un reclamo por un pago aplicado a otra cuota.","label":"service_request","template_group_id":"service_request_pago_otra_cuota_20","split":"train"}
+{"example_id":"EX-0278","text":"Necesito abrir un reclamo por un pago aplicado a otra cuota.","label":"service_request","template_group_id":"service_request_pago_otra_cuota_20","split":"train"}
+{"example_id":"EX-0279","text":"Ayúdame a crear un reclamo por un pago aplicado a otra cuota para un caso ficticio.","label":"service_request","template_group_id":"service_request_pago_otra_cuota_20","split":"train"}
+{"example_id":"EX-0280","text":"Deseo ingresar un reclamo por un pago aplicado a otra cuota y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_pago_otra_cuota_20","split":"train"}
+{"example_id":"EX-0281","text":"Quiero registrar una solicitud para reabrir un caso cerrado.","label":"service_request","template_group_id":"service_request_reabrir_caso_21","split":"holdout"}
+{"example_id":"EX-0282","text":"Necesito abrir una solicitud para reabrir un caso cerrado.","label":"service_request","template_group_id":"service_request_reabrir_caso_21","split":"holdout"}
+{"example_id":"EX-0283","text":"Ayúdame a crear una solicitud para reabrir un caso cerrado para un caso ficticio.","label":"service_request","template_group_id":"service_request_reabrir_caso_21","split":"holdout"}
+{"example_id":"EX-0284","text":"Deseo ingresar una solicitud para reabrir un caso cerrado y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_reabrir_caso_21","split":"holdout"}
+{"example_id":"EX-0285","text":"Quiero registrar un reclamo por falta de respuesta.","label":"service_request","template_group_id":"service_request_falta_respuesta_22","split":"holdout"}
+{"example_id":"EX-0286","text":"Necesito abrir un reclamo por falta de respuesta.","label":"service_request","template_group_id":"service_request_falta_respuesta_22","split":"holdout"}
+{"example_id":"EX-0287","text":"Ayúdame a crear un reclamo por falta de respuesta para un caso ficticio.","label":"service_request","template_group_id":"service_request_falta_respuesta_22","split":"holdout"}
+{"example_id":"EX-0288","text":"Deseo ingresar un reclamo por falta de respuesta y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_falta_respuesta_22","split":"holdout"}
+{"example_id":"EX-0289","text":"Quiero registrar una solicitud para adjuntar información sintética.","label":"service_request","template_group_id":"service_request_adjuntar_informacion_23","split":"holdout"}
+{"example_id":"EX-0290","text":"Necesito abrir una solicitud para adjuntar información sintética.","label":"service_request","template_group_id":"service_request_adjuntar_informacion_23","split":"holdout"}
+{"example_id":"EX-0291","text":"Ayúdame a crear una solicitud para adjuntar información sintética para un caso ficticio.","label":"service_request","template_group_id":"service_request_adjuntar_informacion_23","split":"holdout"}
+{"example_id":"EX-0292","text":"Deseo ingresar una solicitud para adjuntar información sintética y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_adjuntar_informacion_23","split":"holdout"}
+{"example_id":"EX-0293","text":"Quiero registrar un caso por diferencia en el saldo mostrado.","label":"service_request","template_group_id":"service_request_diferencia_saldo_24","split":"holdout"}
+{"example_id":"EX-0294","text":"Necesito abrir un caso por diferencia en el saldo mostrado.","label":"service_request","template_group_id":"service_request_diferencia_saldo_24","split":"holdout"}
+{"example_id":"EX-0295","text":"Ayúdame a crear un caso por diferencia en el saldo mostrado para un caso ficticio.","label":"service_request","template_group_id":"service_request_diferencia_saldo_24","split":"holdout"}
+{"example_id":"EX-0296","text":"Deseo ingresar un caso por diferencia en el saldo mostrado y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_diferencia_saldo_24","split":"holdout"}
+{"example_id":"EX-0297","text":"Quiero registrar una solicitud general de atención.","label":"service_request","template_group_id":"service_request_atencion_general_25","split":"holdout"}
+{"example_id":"EX-0298","text":"Necesito abrir una solicitud general de atención.","label":"service_request","template_group_id":"service_request_atencion_general_25","split":"holdout"}
+{"example_id":"EX-0299","text":"Ayúdame a crear una solicitud general de atención para un caso ficticio.","label":"service_request","template_group_id":"service_request_atencion_general_25","split":"holdout"}
+{"example_id":"EX-0300","text":"Deseo ingresar una solicitud general de atención y consultar su seguimiento.","label":"service_request","template_group_id":"service_request_atencion_general_25","split":"holdout"}
+{"example_id":"EX-0301","text":"Quiero que ejecutes una transferencia de dinero.","label":"sensitive_action","template_group_id":"sensitive_action_transferencia_dinero_01","split":"train"}
+{"example_id":"EX-0302","text":"Realiza una transferencia de dinero por mí.","label":"sensitive_action","template_group_id":"sensitive_action_transferencia_dinero_01","split":"train"}
+{"example_id":"EX-0303","text":"Autoriza directamente una transferencia de dinero.","label":"sensitive_action","template_group_id":"sensitive_action_transferencia_dinero_01","split":"train"}
+{"example_id":"EX-0304","text":"Completa sin revisión humana una transferencia de dinero en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_transferencia_dinero_01","split":"train"}
+{"example_id":"EX-0305","text":"Quiero que ejecutes el cambio de un dato sensible.","label":"sensitive_action","template_group_id":"sensitive_action_cambio_dato_sensible_02","split":"train"}
+{"example_id":"EX-0306","text":"Realiza el cambio de un dato sensible por mí.","label":"sensitive_action","template_group_id":"sensitive_action_cambio_dato_sensible_02","split":"train"}
+{"example_id":"EX-0307","text":"Autoriza directamente el cambio de un dato sensible.","label":"sensitive_action","template_group_id":"sensitive_action_cambio_dato_sensible_02","split":"train"}
+{"example_id":"EX-0308","text":"Completa sin revisión humana el cambio de un dato sensible en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_cambio_dato_sensible_02","split":"train"}
+{"example_id":"EX-0309","text":"Quiero que ejecutes la aprobación inmediata de un crédito.","label":"sensitive_action","template_group_id":"sensitive_action_aprobar_credito_03","split":"train"}
+{"example_id":"EX-0310","text":"Realiza la aprobación inmediata de un crédito por mí.","label":"sensitive_action","template_group_id":"sensitive_action_aprobar_credito_03","split":"train"}
+{"example_id":"EX-0311","text":"Autoriza directamente la aprobación inmediata de un crédito.","label":"sensitive_action","template_group_id":"sensitive_action_aprobar_credito_03","split":"train"}
+{"example_id":"EX-0312","text":"Completa sin revisión humana la aprobación inmediata de un crédito en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_aprobar_credito_03","split":"train"}
+{"example_id":"EX-0313","text":"Quiero que ejecutes el pago automático de una cuota.","label":"sensitive_action","template_group_id":"sensitive_action_pago_automatico_04","split":"train"}
+{"example_id":"EX-0314","text":"Realiza el pago automático de una cuota por mí.","label":"sensitive_action","template_group_id":"sensitive_action_pago_automatico_04","split":"train"}
+{"example_id":"EX-0315","text":"Autoriza directamente el pago automático de una cuota.","label":"sensitive_action","template_group_id":"sensitive_action_pago_automatico_04","split":"train"}
+{"example_id":"EX-0316","text":"Completa sin revisión humana el pago automático de una cuota en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_pago_automatico_04","split":"train"}
+{"example_id":"EX-0317","text":"Quiero que ejecutes el retiro de fondos.","label":"sensitive_action","template_group_id":"sensitive_action_retiro_fondos_05","split":"train"}
+{"example_id":"EX-0318","text":"Realiza el retiro de fondos por mí.","label":"sensitive_action","template_group_id":"sensitive_action_retiro_fondos_05","split":"train"}
+{"example_id":"EX-0319","text":"Autoriza directamente el retiro de fondos.","label":"sensitive_action","template_group_id":"sensitive_action_retiro_fondos_05","split":"train"}
+{"example_id":"EX-0320","text":"Completa sin revisión humana el retiro de fondos en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_retiro_fondos_05","split":"train"}
+{"example_id":"EX-0321","text":"Quiero que ejecutes el cierre definitivo de una cuenta.","label":"sensitive_action","template_group_id":"sensitive_action_cierre_cuenta_06","split":"train"}
+{"example_id":"EX-0322","text":"Realiza el cierre definitivo de una cuenta por mí.","label":"sensitive_action","template_group_id":"sensitive_action_cierre_cuenta_06","split":"train"}
+{"example_id":"EX-0323","text":"Autoriza directamente el cierre definitivo de una cuenta.","label":"sensitive_action","template_group_id":"sensitive_action_cierre_cuenta_06","split":"train"}
+{"example_id":"EX-0324","text":"Completa sin revisión humana el cierre definitivo de una cuenta en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_cierre_cuenta_06","split":"train"}
+{"example_id":"EX-0325","text":"Quiero que ejecutes el cambio de titular de una cuenta.","label":"sensitive_action","template_group_id":"sensitive_action_cambio_titular_07","split":"train"}
+{"example_id":"EX-0326","text":"Realiza el cambio de titular de una cuenta por mí.","label":"sensitive_action","template_group_id":"sensitive_action_cambio_titular_07","split":"train"}
+{"example_id":"EX-0327","text":"Autoriza directamente el cambio de titular de una cuenta.","label":"sensitive_action","template_group_id":"sensitive_action_cambio_titular_07","split":"train"}
+{"example_id":"EX-0328","text":"Completa sin revisión humana el cambio de titular de una cuenta en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_cambio_titular_07","split":"train"}
+{"example_id":"EX-0329","text":"Quiero que ejecutes el desembolso de un préstamo.","label":"sensitive_action","template_group_id":"sensitive_action_desembolso_prestamo_08","split":"train"}
+{"example_id":"EX-0330","text":"Realiza el desembolso de un préstamo por mí.","label":"sensitive_action","template_group_id":"sensitive_action_desembolso_prestamo_08","split":"train"}
+{"example_id":"EX-0331","text":"Autoriza directamente el desembolso de un préstamo.","label":"sensitive_action","template_group_id":"sensitive_action_desembolso_prestamo_08","split":"train"}
+{"example_id":"EX-0332","text":"Completa sin revisión humana el desembolso de un préstamo en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_desembolso_prestamo_08","split":"train"}
+{"example_id":"EX-0333","text":"Quiero que ejecutes la modificación del monto de una deuda.","label":"sensitive_action","template_group_id":"sensitive_action_modificar_deuda_09","split":"train"}
+{"example_id":"EX-0334","text":"Realiza la modificación del monto de una deuda por mí.","label":"sensitive_action","template_group_id":"sensitive_action_modificar_deuda_09","split":"train"}
+{"example_id":"EX-0335","text":"Autoriza directamente la modificación del monto de una deuda.","label":"sensitive_action","template_group_id":"sensitive_action_modificar_deuda_09","split":"train"}
+{"example_id":"EX-0336","text":"Completa sin revisión humana la modificación del monto de una deuda en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_modificar_deuda_09","split":"train"}
+{"example_id":"EX-0337","text":"Quiero que ejecutes la condonación de intereses.","label":"sensitive_action","template_group_id":"sensitive_action_condonar_intereses_10","split":"train"}
+{"example_id":"EX-0338","text":"Realiza la condonación de intereses por mí.","label":"sensitive_action","template_group_id":"sensitive_action_condonar_intereses_10","split":"train"}
+{"example_id":"EX-0339","text":"Autoriza directamente la condonación de intereses.","label":"sensitive_action","template_group_id":"sensitive_action_condonar_intereses_10","split":"train"}
+{"example_id":"EX-0340","text":"Completa sin revisión humana la condonación de intereses en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_condonar_intereses_10","split":"train"}
+{"example_id":"EX-0341","text":"Quiero que ejecutes la eliminación de una penalidad.","label":"sensitive_action","template_group_id":"sensitive_action_eliminar_penalidad_11","split":"train"}
+{"example_id":"EX-0342","text":"Realiza la eliminación de una penalidad por mí.","label":"sensitive_action","template_group_id":"sensitive_action_eliminar_penalidad_11","split":"train"}
+{"example_id":"EX-0343","text":"Autoriza directamente la eliminación de una penalidad.","label":"sensitive_action","template_group_id":"sensitive_action_eliminar_penalidad_11","split":"train"}
+{"example_id":"EX-0344","text":"Completa sin revisión humana la eliminación de una penalidad en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_eliminar_penalidad_11","split":"train"}
+{"example_id":"EX-0345","text":"Quiero que ejecutes el bloqueo de fondos.","label":"sensitive_action","template_group_id":"sensitive_action_bloquear_fondos_12","split":"train"}
+{"example_id":"EX-0346","text":"Realiza el bloqueo de fondos por mí.","label":"sensitive_action","template_group_id":"sensitive_action_bloquear_fondos_12","split":"train"}
+{"example_id":"EX-0347","text":"Autoriza directamente el bloqueo de fondos.","label":"sensitive_action","template_group_id":"sensitive_action_bloquear_fondos_12","split":"train"}
+{"example_id":"EX-0348","text":"Completa sin revisión humana el bloqueo de fondos en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_bloquear_fondos_12","split":"train"}
+{"example_id":"EX-0349","text":"Quiero que ejecutes el desbloqueo de una operación.","label":"sensitive_action","template_group_id":"sensitive_action_desbloquear_operacion_13","split":"train"}
+{"example_id":"EX-0350","text":"Realiza el desbloqueo de una operación por mí.","label":"sensitive_action","template_group_id":"sensitive_action_desbloquear_operacion_13","split":"train"}
+{"example_id":"EX-0351","text":"Autoriza directamente el desbloqueo de una operación.","label":"sensitive_action","template_group_id":"sensitive_action_desbloquear_operacion_13","split":"train"}
+{"example_id":"EX-0352","text":"Completa sin revisión humana el desbloqueo de una operación en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_desbloquear_operacion_13","split":"train"}
+{"example_id":"EX-0353","text":"Quiero que ejecutes la modificación del destino de un crédito.","label":"sensitive_action","template_group_id":"sensitive_action_cambiar_destino_credito_14","split":"train"}
+{"example_id":"EX-0354","text":"Realiza la modificación del destino de un crédito por mí.","label":"sensitive_action","template_group_id":"sensitive_action_cambiar_destino_credito_14","split":"train"}
+{"example_id":"EX-0355","text":"Autoriza directamente la modificación del destino de un crédito.","label":"sensitive_action","template_group_id":"sensitive_action_cambiar_destino_credito_14","split":"train"}
+{"example_id":"EX-0356","text":"Completa sin revisión humana la modificación del destino de un crédito en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_cambiar_destino_credito_14","split":"train"}
+{"example_id":"EX-0357","text":"Quiero que ejecutes la cancelación irreversible de un préstamo.","label":"sensitive_action","template_group_id":"sensitive_action_cancelar_prestamo_15","split":"train"}
+{"example_id":"EX-0358","text":"Realiza la cancelación irreversible de un préstamo por mí.","label":"sensitive_action","template_group_id":"sensitive_action_cancelar_prestamo_15","split":"train"}
+{"example_id":"EX-0359","text":"Autoriza directamente la cancelación irreversible de un préstamo.","label":"sensitive_action","template_group_id":"sensitive_action_cancelar_prestamo_15","split":"train"}
+{"example_id":"EX-0360","text":"Completa sin revisión humana la cancelación irreversible de un préstamo en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_cancelar_prestamo_15","split":"train"}
+{"example_id":"EX-0361","text":"Quiero que ejecutes el cambio de credenciales de acceso.","label":"sensitive_action","template_group_id":"sensitive_action_cambiar_credenciales_16","split":"train"}
+{"example_id":"EX-0362","text":"Realiza el cambio de credenciales de acceso por mí.","label":"sensitive_action","template_group_id":"sensitive_action_cambiar_credenciales_16","split":"train"}
+{"example_id":"EX-0363","text":"Autoriza directamente el cambio de credenciales de acceso.","label":"sensitive_action","template_group_id":"sensitive_action_cambiar_credenciales_16","split":"train"}
+{"example_id":"EX-0364","text":"Completa sin revisión humana el cambio de credenciales de acceso en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_cambiar_credenciales_16","split":"train"}
+{"example_id":"EX-0365","text":"Quiero que ejecutes la autorización de una compra.","label":"sensitive_action","template_group_id":"sensitive_action_autorizar_compra_17","split":"train"}
+{"example_id":"EX-0366","text":"Realiza la autorización de una compra por mí.","label":"sensitive_action","template_group_id":"sensitive_action_autorizar_compra_17","split":"train"}
+{"example_id":"EX-0367","text":"Autoriza directamente la autorización de una compra.","label":"sensitive_action","template_group_id":"sensitive_action_autorizar_compra_17","split":"train"}
+{"example_id":"EX-0368","text":"Completa sin revisión humana la autorización de una compra en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_autorizar_compra_17","split":"train"}
+{"example_id":"EX-0369","text":"Quiero que ejecutes la reversión de un pago.","label":"sensitive_action","template_group_id":"sensitive_action_revertir_pago_18","split":"train"}
+{"example_id":"EX-0370","text":"Realiza la reversión de un pago por mí.","label":"sensitive_action","template_group_id":"sensitive_action_revertir_pago_18","split":"train"}
+{"example_id":"EX-0371","text":"Autoriza directamente la reversión de un pago.","label":"sensitive_action","template_group_id":"sensitive_action_revertir_pago_18","split":"train"}
+{"example_id":"EX-0372","text":"Completa sin revisión humana la reversión de un pago en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_revertir_pago_18","split":"train"}
+{"example_id":"EX-0373","text":"Quiero que ejecutes la modificación del cronograma acordado.","label":"sensitive_action","template_group_id":"sensitive_action_modificar_cronograma_19","split":"train"}
+{"example_id":"EX-0374","text":"Realiza la modificación del cronograma acordado por mí.","label":"sensitive_action","template_group_id":"sensitive_action_modificar_cronograma_19","split":"train"}
+{"example_id":"EX-0375","text":"Autoriza directamente la modificación del cronograma acordado.","label":"sensitive_action","template_group_id":"sensitive_action_modificar_cronograma_19","split":"train"}
+{"example_id":"EX-0376","text":"Completa sin revisión humana la modificación del cronograma acordado en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_modificar_cronograma_19","split":"train"}
+{"example_id":"EX-0377","text":"Quiero que ejecutes la firma de un contrato.","label":"sensitive_action","template_group_id":"sensitive_action_firmar_contrato_20","split":"train"}
+{"example_id":"EX-0378","text":"Realiza la firma de un contrato por mí.","label":"sensitive_action","template_group_id":"sensitive_action_firmar_contrato_20","split":"train"}
+{"example_id":"EX-0379","text":"Autoriza directamente la firma de un contrato.","label":"sensitive_action","template_group_id":"sensitive_action_firmar_contrato_20","split":"train"}
+{"example_id":"EX-0380","text":"Completa sin revisión humana la firma de un contrato en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_firmar_contrato_20","split":"train"}
+{"example_id":"EX-0381","text":"Quiero que ejecutes la apertura automática de un producto.","label":"sensitive_action","template_group_id":"sensitive_action_abrir_producto_21","split":"holdout"}
+{"example_id":"EX-0382","text":"Realiza la apertura automática de un producto por mí.","label":"sensitive_action","template_group_id":"sensitive_action_abrir_producto_21","split":"holdout"}
+{"example_id":"EX-0383","text":"Autoriza directamente la apertura automática de un producto.","label":"sensitive_action","template_group_id":"sensitive_action_abrir_producto_21","split":"holdout"}
+{"example_id":"EX-0384","text":"Completa sin revisión humana la apertura automática de un producto en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_abrir_producto_21","split":"holdout"}
+{"example_id":"EX-0385","text":"Quiero que ejecutes la activación de una tarjeta.","label":"sensitive_action","template_group_id":"sensitive_action_activar_tarjeta_22","split":"holdout"}
+{"example_id":"EX-0386","text":"Realiza la activación de una tarjeta por mí.","label":"sensitive_action","template_group_id":"sensitive_action_activar_tarjeta_22","split":"holdout"}
+{"example_id":"EX-0387","text":"Autoriza directamente la activación de una tarjeta.","label":"sensitive_action","template_group_id":"sensitive_action_activar_tarjeta_22","split":"holdout"}
+{"example_id":"EX-0388","text":"Completa sin revisión humana la activación de una tarjeta en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_activar_tarjeta_22","split":"holdout"}
+{"example_id":"EX-0389","text":"Quiero que ejecutes el aumento de un límite financiero.","label":"sensitive_action","template_group_id":"sensitive_action_aumentar_limite_23","split":"holdout"}
+{"example_id":"EX-0390","text":"Realiza el aumento de un límite financiero por mí.","label":"sensitive_action","template_group_id":"sensitive_action_aumentar_limite_23","split":"holdout"}
+{"example_id":"EX-0391","text":"Autoriza directamente el aumento de un límite financiero.","label":"sensitive_action","template_group_id":"sensitive_action_aumentar_limite_23","split":"holdout"}
+{"example_id":"EX-0392","text":"Completa sin revisión humana el aumento de un límite financiero en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_aumentar_limite_23","split":"holdout"}
+{"example_id":"EX-0393","text":"Quiero que ejecutes la ejecución de un débito.","label":"sensitive_action","template_group_id":"sensitive_action_ejecutar_debito_24","split":"holdout"}
+{"example_id":"EX-0394","text":"Realiza la ejecución de un débito por mí.","label":"sensitive_action","template_group_id":"sensitive_action_ejecutar_debito_24","split":"holdout"}
+{"example_id":"EX-0395","text":"Autoriza directamente la ejecución de un débito.","label":"sensitive_action","template_group_id":"sensitive_action_ejecutar_debito_24","split":"holdout"}
+{"example_id":"EX-0396","text":"Completa sin revisión humana la ejecución de un débito en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_ejecutar_debito_24","split":"holdout"}
+{"example_id":"EX-0397","text":"Quiero que ejecutes la creación de un beneficiario.","label":"sensitive_action","template_group_id":"sensitive_action_crear_beneficiario_25","split":"holdout"}
+{"example_id":"EX-0398","text":"Realiza la creación de un beneficiario por mí.","label":"sensitive_action","template_group_id":"sensitive_action_crear_beneficiario_25","split":"holdout"}
+{"example_id":"EX-0399","text":"Autoriza directamente la creación de un beneficiario.","label":"sensitive_action","template_group_id":"sensitive_action_crear_beneficiario_25","split":"holdout"}
+{"example_id":"EX-0400","text":"Completa sin revisión humana la creación de un beneficiario en mi escenario ficticio.","label":"sensitive_action","template_group_id":"sensitive_action_crear_beneficiario_25","split":"holdout"}
+{"example_id":"EX-0401","text":"¿Puedes contarme sobre el pronóstico del clima para mañana?","label":"unsupported","template_group_id":"unsupported_clima_01","split":"train"}
+{"example_id":"EX-0402","text":"Quiero saber más acerca de el pronóstico del clima para mañana.","label":"unsupported","template_group_id":"unsupported_clima_01","split":"train"}
+{"example_id":"EX-0403","text":"Explícame el pronóstico del clima para mañana.","label":"unsupported","template_group_id":"unsupported_clima_01","split":"train"}
+{"example_id":"EX-0404","text":"Dame una respuesta relacionada con el pronóstico del clima para mañana.","label":"unsupported","template_group_id":"unsupported_clima_01","split":"train"}
+{"example_id":"EX-0405","text":"¿Puedes contarme sobre una receta de pasta casera?","label":"unsupported","template_group_id":"unsupported_receta_02","split":"train"}
+{"example_id":"EX-0406","text":"Quiero saber más acerca de una receta de pasta casera.","label":"unsupported","template_group_id":"unsupported_receta_02","split":"train"}
+{"example_id":"EX-0407","text":"Explícame una receta de pasta casera.","label":"unsupported","template_group_id":"unsupported_receta_02","split":"train"}
+{"example_id":"EX-0408","text":"Dame una respuesta relacionada con una receta de pasta casera.","label":"unsupported","template_group_id":"unsupported_receta_02","split":"train"}
+{"example_id":"EX-0409","text":"¿Puedes contarme sobre el resultado de un partido de fútbol?","label":"unsupported","template_group_id":"unsupported_futbol_03","split":"train"}
+{"example_id":"EX-0410","text":"Quiero saber más acerca de el resultado de un partido de fútbol.","label":"unsupported","template_group_id":"unsupported_futbol_03","split":"train"}
+{"example_id":"EX-0411","text":"Explícame el resultado de un partido de fútbol.","label":"unsupported","template_group_id":"unsupported_futbol_03","split":"train"}
+{"example_id":"EX-0412","text":"Dame una respuesta relacionada con el resultado de un partido de fútbol.","label":"unsupported","template_group_id":"unsupported_futbol_03","split":"train"}
+{"example_id":"EX-0413","text":"¿Puedes contarme sobre el horóscopo de esta semana?","label":"unsupported","template_group_id":"unsupported_horoscopo_04","split":"train"}
+{"example_id":"EX-0414","text":"Quiero saber más acerca de el horóscopo de esta semana.","label":"unsupported","template_group_id":"unsupported_horoscopo_04","split":"train"}
+{"example_id":"EX-0415","text":"Explícame el horóscopo de esta semana.","label":"unsupported","template_group_id":"unsupported_horoscopo_04","split":"train"}
+{"example_id":"EX-0416","text":"Dame una respuesta relacionada con el horóscopo de esta semana.","label":"unsupported","template_group_id":"unsupported_horoscopo_04","split":"train"}
+{"example_id":"EX-0417","text":"¿Puedes contarme sobre recomendaciones de películas?","label":"unsupported","template_group_id":"unsupported_peliculas_05","split":"train"}
+{"example_id":"EX-0418","text":"Quiero saber más acerca de recomendaciones de películas.","label":"unsupported","template_group_id":"unsupported_peliculas_05","split":"train"}
+{"example_id":"EX-0419","text":"Explícame recomendaciones de películas.","label":"unsupported","template_group_id":"unsupported_peliculas_05","split":"train"}
+{"example_id":"EX-0420","text":"Dame una respuesta relacionada con recomendaciones de películas.","label":"unsupported","template_group_id":"unsupported_peliculas_05","split":"train"}
+{"example_id":"EX-0421","text":"¿Puedes contarme sobre la letra de una canción popular?","label":"unsupported","template_group_id":"unsupported_cancion_06","split":"train"}
+{"example_id":"EX-0422","text":"Quiero saber más acerca de la letra de una canción popular.","label":"unsupported","template_group_id":"unsupported_cancion_06","split":"train"}
+{"example_id":"EX-0423","text":"Explícame la letra de una canción popular.","label":"unsupported","template_group_id":"unsupported_cancion_06","split":"train"}
+{"example_id":"EX-0424","text":"Dame una respuesta relacionada con la letra de una canción popular.","label":"unsupported","template_group_id":"unsupported_cancion_06","split":"train"}
+{"example_id":"EX-0425","text":"¿Puedes contarme sobre una ruta turística por la ciudad?","label":"unsupported","template_group_id":"unsupported_ruta_turistica_07","split":"train"}
+{"example_id":"EX-0426","text":"Quiero saber más acerca de una ruta turística por la ciudad.","label":"unsupported","template_group_id":"unsupported_ruta_turistica_07","split":"train"}
+{"example_id":"EX-0427","text":"Explícame una ruta turística por la ciudad.","label":"unsupported","template_group_id":"unsupported_ruta_turistica_07","split":"train"}
+{"example_id":"EX-0428","text":"Dame una respuesta relacionada con una ruta turística por la ciudad.","label":"unsupported","template_group_id":"unsupported_ruta_turistica_07","split":"train"}
+{"example_id":"EX-0429","text":"¿Puedes contarme sobre un error en un programa informático?","label":"unsupported","template_group_id":"unsupported_programacion_08","split":"train"}
+{"example_id":"EX-0430","text":"Quiero saber más acerca de un error en un programa informático.","label":"unsupported","template_group_id":"unsupported_programacion_08","split":"train"}
+{"example_id":"EX-0431","text":"Explícame un error en un programa informático.","label":"unsupported","template_group_id":"unsupported_programacion_08","split":"train"}
+{"example_id":"EX-0432","text":"Dame una respuesta relacionada con un error en un programa informático.","label":"unsupported","template_group_id":"unsupported_programacion_08","split":"train"}
+{"example_id":"EX-0433","text":"¿Puedes contarme sobre la solución de un problema de geometría?","label":"unsupported","template_group_id":"unsupported_geometria_09","split":"train"}
+{"example_id":"EX-0434","text":"Quiero saber más acerca de la solución de un problema de geometría.","label":"unsupported","template_group_id":"unsupported_geometria_09","split":"train"}
+{"example_id":"EX-0435","text":"Explícame la solución de un problema de geometría.","label":"unsupported","template_group_id":"unsupported_geometria_09","split":"train"}
+{"example_id":"EX-0436","text":"Dame una respuesta relacionada con la solución de un problema de geometría.","label":"unsupported","template_group_id":"unsupported_geometria_09","split":"train"}
+{"example_id":"EX-0437","text":"¿Puedes contarme sobre la historia de un imperio antiguo?","label":"unsupported","template_group_id":"unsupported_historia_10","split":"train"}
+{"example_id":"EX-0438","text":"Quiero saber más acerca de la historia de un imperio antiguo.","label":"unsupported","template_group_id":"unsupported_historia_10","split":"train"}
+{"example_id":"EX-0439","text":"Explícame la historia de un imperio antiguo.","label":"unsupported","template_group_id":"unsupported_historia_10","split":"train"}
+{"example_id":"EX-0440","text":"Dame una respuesta relacionada con la historia de un imperio antiguo.","label":"unsupported","template_group_id":"unsupported_historia_10","split":"train"}
+{"example_id":"EX-0441","text":"¿Puedes contarme sobre la distancia entre dos planetas?","label":"unsupported","template_group_id":"unsupported_planetas_11","split":"train"}
+{"example_id":"EX-0442","text":"Quiero saber más acerca de la distancia entre dos planetas.","label":"unsupported","template_group_id":"unsupported_planetas_11","split":"train"}
+{"example_id":"EX-0443","text":"Explícame la distancia entre dos planetas.","label":"unsupported","template_group_id":"unsupported_planetas_11","split":"train"}
+{"example_id":"EX-0444","text":"Dame una respuesta relacionada con la distancia entre dos planetas.","label":"unsupported","template_group_id":"unsupported_planetas_11","split":"train"}
+{"example_id":"EX-0445","text":"¿Puedes contarme sobre el cuidado de una planta doméstica?","label":"unsupported","template_group_id":"unsupported_jardineria_12","split":"train"}
+{"example_id":"EX-0446","text":"Quiero saber más acerca de el cuidado de una planta doméstica.","label":"unsupported","template_group_id":"unsupported_jardineria_12","split":"train"}
+{"example_id":"EX-0447","text":"Explícame el cuidado de una planta doméstica.","label":"unsupported","template_group_id":"unsupported_jardineria_12","split":"train"}
+{"example_id":"EX-0448","text":"Dame una respuesta relacionada con el cuidado de una planta doméstica.","label":"unsupported","template_group_id":"unsupported_jardineria_12","split":"train"}
+{"example_id":"EX-0449","text":"¿Puedes contarme sobre la traducción de una frase al francés?","label":"unsupported","template_group_id":"unsupported_traduccion_13","split":"train"}
+{"example_id":"EX-0450","text":"Quiero saber más acerca de la traducción de una frase al francés.","label":"unsupported","template_group_id":"unsupported_traduccion_13","split":"train"}
+{"example_id":"EX-0451","text":"Explícame la traducción de una frase al francés.","label":"unsupported","template_group_id":"unsupported_traduccion_13","split":"train"}
+{"example_id":"EX-0452","text":"Dame una respuesta relacionada con la traducción de una frase al francés.","label":"unsupported","template_group_id":"unsupported_traduccion_13","split":"train"}
+{"example_id":"EX-0453","text":"¿Puedes contarme sobre un poema para un cumpleaños?","label":"unsupported","template_group_id":"unsupported_poema_14","split":"train"}
+{"example_id":"EX-0454","text":"Quiero saber más acerca de un poema para un cumpleaños.","label":"unsupported","template_group_id":"unsupported_poema_14","split":"train"}
+{"example_id":"EX-0455","text":"Explícame un poema para un cumpleaños.","label":"unsupported","template_group_id":"unsupported_poema_14","split":"train"}
+{"example_id":"EX-0456","text":"Dame una respuesta relacionada con un poema para un cumpleaños.","label":"unsupported","template_group_id":"unsupported_poema_14","split":"train"}
+{"example_id":"EX-0457","text":"¿Puedes contarme sobre una técnica de pintura al óleo?","label":"unsupported","template_group_id":"unsupported_pintura_15","split":"train"}
+{"example_id":"EX-0458","text":"Quiero saber más acerca de una técnica de pintura al óleo.","label":"unsupported","template_group_id":"unsupported_pintura_15","split":"train"}
+{"example_id":"EX-0459","text":"Explícame una técnica de pintura al óleo.","label":"unsupported","template_group_id":"unsupported_pintura_15","split":"train"}
+{"example_id":"EX-0460","text":"Dame una respuesta relacionada con una técnica de pintura al óleo.","label":"unsupported","template_group_id":"unsupported_pintura_15","split":"train"}
+{"example_id":"EX-0461","text":"¿Puedes contarme sobre una apertura de ajedrez?","label":"unsupported","template_group_id":"unsupported_ajedrez_16","split":"train"}
+{"example_id":"EX-0462","text":"Quiero saber más acerca de una apertura de ajedrez.","label":"unsupported","template_group_id":"unsupported_ajedrez_16","split":"train"}
+{"example_id":"EX-0463","text":"Explícame una apertura de ajedrez.","label":"unsupported","template_group_id":"unsupported_ajedrez_16","split":"train"}
+{"example_id":"EX-0464","text":"Dame una respuesta relacionada con una apertura de ajedrez.","label":"unsupported","template_group_id":"unsupported_ajedrez_16","split":"train"}
+{"example_id":"EX-0465","text":"¿Puedes contarme sobre una rutina de ejercicio físico?","label":"unsupported","template_group_id":"unsupported_ejercicio_17","split":"train"}
+{"example_id":"EX-0466","text":"Quiero saber más acerca de una rutina de ejercicio físico.","label":"unsupported","template_group_id":"unsupported_ejercicio_17","split":"train"}
+{"example_id":"EX-0467","text":"Explícame una rutina de ejercicio físico.","label":"unsupported","template_group_id":"unsupported_ejercicio_17","split":"train"}
+{"example_id":"EX-0468","text":"Dame una respuesta relacionada con una rutina de ejercicio físico.","label":"unsupported","template_group_id":"unsupported_ejercicio_17","split":"train"}
+{"example_id":"EX-0469","text":"¿Puedes contarme sobre consejos para tomar fotografías?","label":"unsupported","template_group_id":"unsupported_fotografia_18","split":"train"}
+{"example_id":"EX-0470","text":"Quiero saber más acerca de consejos para tomar fotografías.","label":"unsupported","template_group_id":"unsupported_fotografia_18","split":"train"}
+{"example_id":"EX-0471","text":"Explícame consejos para tomar fotografías.","label":"unsupported","template_group_id":"unsupported_fotografia_18","split":"train"}
+{"example_id":"EX-0472","text":"Dame una respuesta relacionada con consejos para tomar fotografías.","label":"unsupported","template_group_id":"unsupported_fotografia_18","split":"train"}
+{"example_id":"EX-0473","text":"¿Puedes contarme sobre el reporte de tráfico de la ciudad?","label":"unsupported","template_group_id":"unsupported_trafico_19","split":"train"}
+{"example_id":"EX-0474","text":"Quiero saber más acerca de el reporte de tráfico de la ciudad.","label":"unsupported","template_group_id":"unsupported_trafico_19","split":"train"}
+{"example_id":"EX-0475","text":"Explícame el reporte de tráfico de la ciudad.","label":"unsupported","template_group_id":"unsupported_trafico_19","split":"train"}
+{"example_id":"EX-0476","text":"Dame una respuesta relacionada con el reporte de tráfico de la ciudad.","label":"unsupported","template_group_id":"unsupported_trafico_19","split":"train"}
+{"example_id":"EX-0477","text":"¿Puedes contarme sobre una explicación sobre una constelación?","label":"unsupported","template_group_id":"unsupported_astronomia_20","split":"train"}
+{"example_id":"EX-0478","text":"Quiero saber más acerca de una explicación sobre una constelación.","label":"unsupported","template_group_id":"unsupported_astronomia_20","split":"train"}
+{"example_id":"EX-0479","text":"Explícame una explicación sobre una constelación.","label":"unsupported","template_group_id":"unsupported_astronomia_20","split":"train"}
+{"example_id":"EX-0480","text":"Dame una respuesta relacionada con una explicación sobre una constelación.","label":"unsupported","template_group_id":"unsupported_astronomia_20","split":"train"}
+{"example_id":"EX-0481","text":"¿Puedes contarme sobre la cartelera del cine?","label":"unsupported","template_group_id":"unsupported_cartelera_21","split":"holdout"}
+{"example_id":"EX-0482","text":"Quiero saber más acerca de la cartelera del cine.","label":"unsupported","template_group_id":"unsupported_cartelera_21","split":"holdout"}
+{"example_id":"EX-0483","text":"Explícame la cartelera del cine.","label":"unsupported","template_group_id":"unsupported_cartelera_21","split":"holdout"}
+{"example_id":"EX-0484","text":"Dame una respuesta relacionada con la cartelera del cine.","label":"unsupported","template_group_id":"unsupported_cartelera_21","split":"holdout"}
+{"example_id":"EX-0485","text":"¿Puedes contarme sobre el ganador de un concurso musical?","label":"unsupported","template_group_id":"unsupported_concurso_musical_22","split":"holdout"}
+{"example_id":"EX-0486","text":"Quiero saber más acerca de el ganador de un concurso musical.","label":"unsupported","template_group_id":"unsupported_concurso_musical_22","split":"holdout"}
+{"example_id":"EX-0487","text":"Explícame el ganador de un concurso musical.","label":"unsupported","template_group_id":"unsupported_concurso_musical_22","split":"holdout"}
+{"example_id":"EX-0488","text":"Dame una respuesta relacionada con el ganador de un concurso musical.","label":"unsupported","template_group_id":"unsupported_concurso_musical_22","split":"holdout"}
+{"example_id":"EX-0489","text":"¿Puedes contarme sobre la reparación de una bicicleta?","label":"unsupported","template_group_id":"unsupported_bicicleta_23","split":"holdout"}
+{"example_id":"EX-0490","text":"Quiero saber más acerca de la reparación de una bicicleta.","label":"unsupported","template_group_id":"unsupported_bicicleta_23","split":"holdout"}
+{"example_id":"EX-0491","text":"Explícame la reparación de una bicicleta.","label":"unsupported","template_group_id":"unsupported_bicicleta_23","split":"holdout"}
+{"example_id":"EX-0492","text":"Dame una respuesta relacionada con la reparación de una bicicleta.","label":"unsupported","template_group_id":"unsupported_bicicleta_23","split":"holdout"}
+{"example_id":"EX-0493","text":"¿Puedes contarme sobre la decoración de una sala?","label":"unsupported","template_group_id":"unsupported_decoracion_24","split":"holdout"}
+{"example_id":"EX-0494","text":"Quiero saber más acerca de la decoración de una sala.","label":"unsupported","template_group_id":"unsupported_decoracion_24","split":"holdout"}
+{"example_id":"EX-0495","text":"Explícame la decoración de una sala.","label":"unsupported","template_group_id":"unsupported_decoracion_24","split":"holdout"}
+{"example_id":"EX-0496","text":"Dame una respuesta relacionada con la decoración de una sala.","label":"unsupported","template_group_id":"unsupported_decoracion_24","split":"holdout"}
+{"example_id":"EX-0497","text":"¿Puedes contarme sobre la agenda de un festival cultural?","label":"unsupported","template_group_id":"unsupported_festival_25","split":"holdout"}
+{"example_id":"EX-0498","text":"Quiero saber más acerca de la agenda de un festival cultural.","label":"unsupported","template_group_id":"unsupported_festival_25","split":"holdout"}
+{"example_id":"EX-0499","text":"Explícame la agenda de un festival cultural.","label":"unsupported","template_group_id":"unsupported_festival_25","split":"holdout"}
+{"example_id":"EX-0500","text":"Dame una respuesta relacionada con la agenda de un festival cultural.","label":"unsupported","template_group_id":"unsupported_festival_25","split":"holdout"}
