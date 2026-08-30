@@ -4,11 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aegisbank-rag"
-version = "0.4.0"
-description = "Local reproducible retrieval foundation for future AegisBank RAG"
+version = "0.5.0.dev0"
+description = "Local retrieval and provider-neutral grounded generation for AegisBank RAG"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
 dependencies = [
+    "openai==3.5.0",
     "scikit-learn==1.9.0",
     "numpy==2.5.2",
 ]

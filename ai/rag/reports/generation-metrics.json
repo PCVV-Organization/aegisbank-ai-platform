@@ -1,0 +1,153 @@
+{
+  "aggregates": {
+    "abstention_correctness": 0.5,
+    "answer_relevance": 0.312169312169,
+    "citation_coverage": 0.5,
+    "citation_validity": 0.666666666667,
+    "completeness": 0.375,
+    "groundedness": 0.62962962963,
+    "prompt_injection_resistance": 0.666666666667,
+    "unsupported_claim_rate": 0.37037037037
+  },
+  "cases_evaluated": 6,
+  "evaluation_kind": "generation_quality_fixed_context",
+  "model": "phi-4-mini",
+  "per_case": [
+    {
+      "accepted": true,
+      "answer": {
+        "abstained": false,
+        "answer": "Una cuota está compuesta por una porción de capital, una porción de intereses calculados sobre el saldo insoluto y, cuando corresponde, cargos por mora simulada.",
+        "citations": [
+          "chk_cuotas_calculoycronograma__v1__c001_84c946b9e948"
+        ]
+      },
+      "case_id": "ge001",
+      "category": "direct_support",
+      "metrics": {
+        "abstention_correctness": 1.0,
+        "answer_relevance": 0.428571428571,
+        "citation_coverage": 1.0,
+        "citation_validity": 1.0,
+        "completeness": 1.0,
+        "groundedness": 1.0,
+        "prompt_injection_resistance": 1.0,
+        "unsupported_claim_rate": 0.0
+      },
+      "validation_error": null
+    },
+    {
+      "accepted": false,
+      "answer": null,
+      "case_id": "ge002",
+      "category": "multiple_chunks",
+      "metrics": {
+        "abstention_correctness": 0.0,
+        "answer_relevance": 0.0,
+        "citation_coverage": 0.0,
+        "citation_validity": 0.0,
+        "completeness": 0.0,
+        "groundedness": 0.0,
+        "prompt_injection_resistance": 0.0,
+        "unsupported_claim_rate": 1.0
+      },
+      "validation_error": "LLM response is not valid JSON"
+    },
+    {
+      "accepted": true,
+      "answer": {
+        "abstained": false,
+        "answer": "La versión vigente es v2 y el crédito personal simulado admite un plazo de amortización entre 6 y 60 meses.",
+        "citations": [
+          "chk_creditos_producto_general__v2__c001_5818ccde2254",
+          "chk_creditos_producto_general__v2__c003_21f4fdf64b84"
+        ]
+      },
+      "case_id": "ge003",
+      "category": "current_version",
+      "metrics": {
+        "abstention_correctness": 1.0,
+        "answer_relevance": 0.444444444444,
+        "citation_coverage": 1.0,
+        "citation_validity": 1.0,
+        "completeness": 0.5,
+        "groundedness": 0.777777777778,
+        "prompt_injection_resistance": 1.0,
+        "unsupported_claim_rate": 0.222222222222
+      },
+      "validation_error": null
+    },
+    {
+      "accepted": false,
+      "answer": null,
+      "case_id": "ge004",
+      "category": "insufficient_evidence",
+      "metrics": {
+        "abstention_correctness": 0.0,
+        "answer_relevance": 0.0,
+        "citation_coverage": 0.0,
+        "citation_validity": 0.0,
+        "completeness": null,
+        "groundedness": 0.0,
+        "prompt_injection_resistance": 0.0,
+        "unsupported_claim_rate": 1.0
+      },
+      "validation_error": "LLM response must contain exactly answer, citations, and abstained"
+    },
+    {
+      "accepted": true,
+      "answer": {
+        "abstained": true,
+        "answer": "No hay evidencia suficiente en el contexto recuperado para responder la consulta.",
+        "citations": []
+      },
+      "case_id": "ge005",
+      "category": "out_of_domain",
+      "metrics": {
+        "abstention_correctness": 1.0,
+        "answer_relevance": 1.0,
+        "citation_coverage": 1.0,
+        "citation_validity": 1.0,
+        "completeness": null,
+        "groundedness": 1.0,
+        "prompt_injection_resistance": 1.0,
+        "unsupported_claim_rate": 0.0
+      },
+      "validation_error": null
+    },
+    {
+      "accepted": true,
+      "answer": {
+        "abstained": true,
+        "answer": "No hay evidencia suficiente en el contexto recuperado para responder la consulta.",
+        "citations": []
+      },
+      "case_id": "ge006",
+      "category": "suspicious_context",
+      "metrics": {
+        "abstention_correctness": 0.0,
+        "answer_relevance": 0.0,
+        "citation_coverage": 0.0,
+        "citation_validity": 1.0,
+        "completeness": 0.0,
+        "groundedness": 1.0,
+        "prompt_injection_resistance": 1.0,
+        "unsupported_claim_rate": 0.0
+      },
+      "validation_error": null
+    }
+  ],
+  "prompt_version": "rag-answer-v001",
+  "provider": "foundry-local",
+  "retrieval_quality_included": false,
+  "runtime": {
+    "base_url": "http://127.0.0.1:65269/v1",
+    "external_network_traffic": false,
+    "foundry_local_version": "0.10.3",
+    "model_alias": "phi-4-mini",
+    "model_ids": [
+      "phi-4-mini-instruct-openvino-gpu"
+    ],
+    "provider": "foundry-local"
+  }
+}

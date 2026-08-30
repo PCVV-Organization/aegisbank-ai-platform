@@ -25,6 +25,15 @@ Index:
   retrieval foundation before any Azure AI Search deployment (v0.4).
 - [ADR-009](./ADR-009-hybrid-retrieval-with-rrf.md) — Hybrid retrieval via
   Reciprocal Rank Fusion for v0.4 (`k = 60` frozen).
+- [ADR-010](./ADR-010-provider-agnostic-llm-boundary.md) — Provider-neutral
+  LLM request boundary for grounded generation (v0.5).
+- [ADR-011](./ADR-011-grounded-generation-citation-validation.md) — Grounded
+  generation with active-context and citation validation (v0.5).
+
+Scope note: ADR-003 remains an accepted historical decision, but the current
+`v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly
+excludes Agent, MCP, HITL, and tools. Its implementation is therefore deferred
+and is not part of this milestone.
 
 Pending (no ADR yet — flagged here to ensure they don't get lost):
 

@@ -29,7 +29,8 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.4.0 - RAG Retrieval & Evaluation Foundation` (COMPLETE)
+**Current milestone:** `v0.5.0 - Grounded Generation & LLM Evaluation`
+(`MEASURED - FOUNDRY LOCAL BASELINE`)
 
 | Version | Milestone | Status |
 | --- | --- | --- |
@@ -37,7 +38,7 @@ All project data must be synthetic and reproducible.
 | `v0.2` | Core Banking Mock | COMPLETE |
 | `v0.3` | ML/NLP Intent Classification Baseline | COMPLETE |
 | `v0.4` | RAG Retrieval & Evaluation Foundation | COMPLETE |
-| `v0.5` | Agent + read-only tools | NOT STARTED |
+| `v0.5` | Grounded Generation & LLM Evaluation | MEASURED - FOUNDRY LOCAL BASELINE |
 | `v0.6` | MCP + HITL | NOT STARTED |
 | `v0.7` | Reliability + Messaging | NOT STARTED |
 | `v0.8` | Quality + Evaluations | NOT STARTED |
@@ -88,6 +89,21 @@ All project data must be synthetic and reproducible.
 - Two architecture decision records: `ADR-008` (local retrieval before
   Azure AI Search) and `ADR-009` (hybrid retrieval with RRF).
 
+## What `v0.5` Has So Far
+
+- Provider-neutral `LLMProvider` and strict structured-answer contract under
+  `ai/rag/src/aegisbank_rag/`.
+- Deterministic active-only context construction preserving document, version,
+  chunk, and source provenance.
+- Central prompt `rag-answer-v001`, citation allow-list validation, no-context
+  abstention, and untrusted-context instruction defenses.
+- Separate prompt-development and held-out generation-evaluation datasets,
+  including direct, multi-chunk, version, insufficient, out-of-domain, and
+  suspicious-context cases.
+- Deterministic generation metric harness and contract tests.
+- Foundry Local `0.10.3` baseline using `phi-4-mini` and six held-out cases;
+  metrics are recorded under `ai/rag/reports/` without production thresholds.
+
 ## Project Rules
 
 - Local first: local execution, then Docker, CI, and only then Azure.
@@ -121,6 +137,8 @@ The approved product boundary is defined by these documents:
 - [ADR-007](docs/architecture/adr/ADR-007-group-aware-synthetic-evaluation.md) — Group-aware synthetic evaluation for v0.3 (`template_group_id`).
 - [ADR-008](docs/architecture/adr/ADR-008-local-retrieval-before-azure-ai-search.md) — Local retrieval foundation before Azure AI Search (v0.4).
 - [ADR-009](docs/architecture/adr/ADR-009-hybrid-retrieval-with-rrf.md) — Hybrid retrieval with Reciprocal Rank Fusion (`k=60`) for v0.4.
+- [ADR-010](docs/architecture/adr/ADR-010-provider-agnostic-llm-boundary.md) — Provider-agnostic LLM boundary for v0.5.
+- [ADR-011](docs/architecture/adr/ADR-011-grounded-generation-citation-validation.md) — Grounded generation with citation validation for v0.5.
 
 ## Repository Structure
 
@@ -129,7 +147,7 @@ aegisbank-ai-platform/
 |-- README.md               # this document
 |-- .gitignore
 |-- ai/
-|   `-- rag/                # v0.4 RAG retrieval foundation (Python package)
+|   `-- rag/                # v0.4 retrieval + blocked v0.5 generation candidate
 |-- contracts/              # JSON Schema files
 |-- docs/
 |   |-- charter/            # v0.1 charter (5 docs)
@@ -150,15 +168,15 @@ itself remains a pure code-and-documentation repository.
 
 ## How To Continue
 
-1. Open `v0.5 - Agent + read-only tools` only after explicit approval. Do not
-   start a new milestone automatically.
-2. Review the nine ADRs. None of them commits the project to a specific
+1. Resume `v0.5 - Grounded Generation & LLM Evaluation` only after an
+   authorized live provider/model is configured. Do not start v0.6.
+2. Review the eleven ADRs. None of them commits the project to a specific
    implementation outside its declared milestone.
 3. Record any requested scope change before implementation begins.
 
 No Docker, Azure, embedder, agent, MCP server of our own, HITL workflow,
-messaging, retry policy, or circuit breaker has been implemented beyond
-`v0.4`.
+messaging, retry policy, circuit breaker, or live LLM adapter has been
+implemented. v0.5 remains blocked before completion.
 
 ## Reference Baseline
 

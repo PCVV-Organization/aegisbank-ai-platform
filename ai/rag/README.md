@@ -1,11 +1,11 @@
-# AegisBank RAG Retrieval Foundation
+# AegisBank RAG
 
-Local, reproducible retrieval foundation for the `v0.4.0 - RAG Retrieval &
-Evaluation Foundation` milestone of AegisBank AI Platform.
+Local retrieval baseline plus the provider-neutral candidate implementation
+for `v0.5.0 - Grounded Generation & LLM Evaluation`.
 
-> This is a local educational retrieval layer. It does not call Azure AI
-> Search, does not run an LLM, and does not integrate with Core Banking yet.
-> It only produces candidate chunks plus deterministic metrics.
+> `v0.4` retrieval is complete and frozen. `v0.5` has a measured Foundry Local
+> baseline over six held-out cases. No Azure resource, cloud cost, agent, MCP,
+> HITL, tool, or Core Banking integration is included.
 
 ## What It Is
 
@@ -15,8 +15,9 @@ hybrid ranker fuses both signals with Reciprocal Rank Fusion (RRF). The
 pipeline is reproducible by seed, the corpus is versioned, and the evaluation
 dataset provides offline metrics.
 
-The component exists to provide a measurable retrieval reference before any
-LLM, agent, MCP integration, or Azure AI Search deployment is attempted.
+The retrieval component provides a measurable reference before any external
+search deployment. The grounded-generation candidate adds deterministic
+context and output controls without selecting or calling an LLM vendor.
 
 ## Why Not Azure AI Search Yet
 
@@ -31,9 +32,30 @@ consumers.
 
 - It does not use real banking knowledge.
 - It does not embed text with Azure OpenAI embeddings.
-- It does not call any LLM.
+- It does not contain or call a live LLM adapter.
 - It does not authorize actions, run an agent, or talk to MCP.
 - It does not claim production relevance.
+
+## v0.5 Candidate Implementation
+
+Status: `MEASURED - FOUNDRY LOCAL BASELINE`.
+
+- `LLMProvider` isolates provider/model integration from grounding rules.
+- `build_context` emits canonical JSON and retains `document_id`, `version`,
+  `chunk_id`, and `source`; superseded hits are excluded.
+- `rag-answer-v001` is the only answer prompt and treats retrieved content as
+  untrusted evidence rather than instructions.
+- `GroundedAnswer` requires exactly `answer`, `citations`, and `abstained`.
+- Non-abstained answers require citations, and every citation is checked
+  against the chunks actually supplied to the model.
+- Empty active context abstains without invoking a provider.
+- Prompt-development and held-out generation-evaluation cases are separate.
+
+The fixed-context generation harness measures groundedness, answer relevance,
+completeness, citation validity, citation coverage, abstention correctness,
+unsupported-claim rate, and prompt-injection resistance. The observed
+Foundry Local baseline is recorded in `reports/generation-metrics.json`; it
+does not re-score or tune v0.4 retrieval and defines no production thresholds.
 
 ## Setup
 
@@ -60,6 +82,7 @@ checks; they must never be used to tune weights or thresholds.
 
 ```powershell
 .venv\Scripts\python.exe -m pytest ai/rag/tests
+.venv\Scripts\python.exe -m pytest ai/rag/tests/v05
 .venv\Scripts\python.exe -m ruff check ai/rag
 .venv\Scripts\python.exe -m ruff format --check ai/rag
 .venv\Scripts\python.exe -m compileall ai/rag/src
@@ -71,6 +94,10 @@ Corpus generation, chunk ID assignment, vectorizer fitting, and TruncatedSVD
 randomization all use `RANDOM_STATE = 42`. The corpus SHA-256 fingerprint is
 recorded in `data/corpus-manifest.json`.
 
+Generation evaluation uses disjoint files
+`data/generation-prompt-dev.jsonl` and `data/generation-eval.jsonl`. Fixed
+contexts isolate generation measurements from frozen retrieval measurements.
+
 ## Limitations
 
 - The corpus is synthetic, hand-authored, and small.
@@ -79,3 +106,7 @@ recorded in `data/corpus-manifest.json`.
 - Retrieval metrics on synthetic data do not transfer to real banking
   traffic.
 - Hybrid RRF weights are not tuned against any production data.
+- Prompt-injection resistance has only deterministic contract coverage until
+  the held-out adversarial case is executed against an authorized live model.
+- Lexical generation metrics are transparent proxies, not semantic or
+  production-quality guarantees.
