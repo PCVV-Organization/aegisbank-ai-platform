@@ -121,8 +121,9 @@ Synthetic JSONL dataset (`eval-cases.jsonl`) contains 15 cases covering:
 - Direct chat with no tool needed
 
 Each case carries one or more metric tags. The harness computes per-metric
-pass/fail counts and rates. No live model invocation is performed; the harness
-uses a mock client for deterministic testing.
+pass/fail counts and rates using a mock client for deterministic testing. A
+separate one-time local Foundry evaluation is recorded outside this deterministic
+test harness.
 
 ## Alternatives
 

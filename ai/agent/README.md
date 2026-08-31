@@ -106,4 +106,6 @@ ai/agent/
 - Uses existing `FoundryLocalProvider` and Chat Completions
 - Reuses `ai/rag` without modifying corpus/retrieval/rag-answer-v001
 - Mock Core Banking via in-memory SQLite with deterministic seed
-- No live model evaluation; all tests use mocks or real tool execution
+- One live local evaluation over 15 synthetic cases is recorded in
+  `reports/agent-live-metrics.json`; no cloud model or production threshold is
+  implied.

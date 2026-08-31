@@ -114,7 +114,7 @@ All project data must be synthetic and reproducible.
 - Deterministic customer ownership validation preventing cross-customer access.
 - Canonical agent system prompt `agent-system-v001`.
 - Complete test coverage across schemas, registry, tools, ownership, and evaluation.
-- Foundry Local `0.10.3` offline evaluation recorded in `ai/agent/reports/`.
+- Foundry Local `0.10.3` live local baseline recorded in `ai/agent/reports/`.
 - Two architecture decision records: `ADR-012` (single-agent read-only first)
   and `ADR-013` (deterministic tool authorization boundary).
 
