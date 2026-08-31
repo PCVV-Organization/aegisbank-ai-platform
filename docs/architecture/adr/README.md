@@ -49,6 +49,12 @@ Index:
   model for regulatory non-repudiation (v0.9).
 - [ADR-021](./ADR-021-hotl-supervisory-kill-switch-for-writes.md) — Human-on-the-Loop
   (HOTL) supervisory kill-switch for writes (v0.9).
+- [ADR-022](./ADR-022-layered-test-strategy-and-quality-gates.md) — Layered test
+  strategy and quality gates (v0.10).
+- [ADR-023](./ADR-023-contract-first-compatibility-protection.md) — Contract-first
+  compatibility protection (v0.10).
+- [ADR-024](./ADR-024-ci-security-gates-before-deployment.md) — CI security gates
+  before deployment (v0.10).
 
 Scope note: ADR-003 remains an accepted historical decision, but the current
 `v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly

@@ -210,3 +210,11 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **Tool allowlist:** Subconjunto explícito de herramientas que el modelo puede ver para una intención. Limitarlo reduce ambigüedad y superficie de riesgo.
 * **Policy-enforced routing:** Para datos personales, la aplicación fuerza primero la consulta READ autorizada; el LLM no decide si puede responder desde memoria.
 * **En AegisBank:** `AgentContext.session_customer_id` determina la identidad y `get_loan_details`/`get_next_installment` validan ownership. Nunca se acepta `customer_id` suministrado por el LLM.
+
+### QA, CI, SAST, SCA y SBOM
+* **QA:** Quality Assurance (aseguramiento de calidad), proceso que demuestra que una promesa del sistema se cumple.
+* **CI:** Continuous Integration (integración continua), ejecución automática de validaciones por cambio.
+* **SAST:** Static Application Security Testing (análisis estático), inspección del código sin ejecutarlo; AegisBank usa Bandit.
+* **SCA:** Software Composition Analysis (análisis de composición), auditoría de dependencias; AegisBank usa pip-audit.
+* **SBOM:** Software Bill of Materials (lista de materiales de software), inventario CycloneDX de componentes. No es un escaneo de vulnerabilidades.
+* **En AegisBank:** `scripts/quality_gate.py` encadena estos controles. La workflow es `CI-CONFIGURED / RUNNER-PENDING` hasta que un runner de GitHub produzca evidencia.

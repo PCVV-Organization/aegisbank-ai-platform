@@ -46,6 +46,8 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | **Supervisión HOTL & Kill-Switch** | `LAB-COVERED` | v0.9 | `HOTLSupervisor` con monitoreo operativo y Kill-Switch para deshabilitar escrituras. |
 | **Grounded Knowledge Tool Routing** | `LAB-COVERED` | v0.9.1 | Policy determinista ejecuta `search_knowledge` antes de preguntas bancarias, registra métricas y se abstiene ante `KNOWLEDGE_GAP`; tests de pseudo-tool text. |
 | **Banking READ Tool Routing** | `LAB-COVERED` | v0.9.2 | Policy de cuenta, allowlist mínima, `tool_choice` específico, consulta multi-step y ownership determinista; sin nuevas escrituras ni cobertura cloud. |
+| **Layered Quality Engineering** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Estrategia documentada, contratos, E2E crítico y gate local/workflow configurado; runner remoto pendiente. |
+| **DevSecOps Security Gates** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Bandit, pip-audit, SBOM CycloneDX y secret scan definidos; vulnerabilidades y disponibilidad de advisory se reportan sin inventar PASS. |
 | **CI/CD & DevSecOps** | `CLOUD-PENDING` | v0.10 | Planificado para v0.10 (GitHub Actions, SAST, SBOM, Contract testing). |
 | **Contenedores / Cloud Deployment** | `CLOUD-PENDING` | v0.11 | Planificado para v0.11 (Docker, Azure Container Apps, Service Bus Emulator). |
 | **MLOps & Experiment Tracking** | `CLOUD-PENDING` | v0.12 | Planificado para v0.12 (MLflow, drift de datos, calibración). |

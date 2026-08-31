@@ -1,0 +1,13 @@
+{
+  "name": "AegisBank Mock Core Banking API v1",
+  "format": "postman-collection-v2.1",
+  "description": "Synthetic local API scenarios. Execute with Postman/Newman or an equivalent HTTP client.",
+  "requests": [
+    {"name": "health", "method": "GET", "path": "/health", "expected_status": 200},
+    {"name": "loan happy path", "method": "GET", "path": "/api/v1/loans/LOAN-0001", "expected_status": 200, "expected_fields": ["loan_id", "status", "outstanding_balance"]},
+    {"name": "loan malformed id", "method": "GET", "path": "/api/v1/loans/not-a-loan", "expected_status": 422},
+    {"name": "loan not found", "method": "GET", "path": "/api/v1/loans/LOAN-9999", "expected_status": 404},
+    {"name": "next installment", "method": "GET", "path": "/api/v1/loans/LOAN-0001/installments/next", "expected_status": 200, "expected_fields": ["loan_id", "due_date", "total_due"]},
+    {"name": "correlation propagation", "method": "GET", "path": "/health", "headers": {"X-Correlation-ID": "CORR-API-001"}, "expected_status": 200, "expected_response_header": "X-Correlation-ID"}
+  ]
+}
