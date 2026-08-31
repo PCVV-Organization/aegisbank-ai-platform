@@ -7,7 +7,7 @@ name = "mock-core-banking"
 version = "0.2.0"
 description = "AegisBank AI Platform - Mock Core Banking System v0.2"
 readme = "README.md"
-requires-python = ">=3.14,<3.15"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi==0.141.1",
     "pydantic==2.13.4",

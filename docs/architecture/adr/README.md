@@ -55,6 +55,12 @@ Index:
   compatibility protection (v0.10).
 - [ADR-024](./ADR-024-ci-security-gates-before-deployment.md) — CI security gates
   before deployment (v0.10).
+- [ADR-025](./ADR-025-local-containers-and-service-bus-adapter.md) — Local Containers and
+  Service Bus Adapter (v0.11).
+- [ADR-026](./ADR-026-azure-service-bus-emulator-messaging-adapter.md) — Azure Service Bus
+  Emulator Messaging Adapter behind canonical MessageBus (v0.11).
+- [ADR-027](./ADR-027-container-platform-decision-container-apps-vs-aks.md) — Cloud Container
+  Platform Decision: Azure Container Apps First vs. AKS Deferred (v0.11).
 
 Scope note: ADR-003 remains an accepted historical decision, but the current
 `v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly

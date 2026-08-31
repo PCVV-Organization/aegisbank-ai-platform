@@ -1,0 +1,69 @@
+# AegisBank AI Platform local Docker Compose environment v0.11.0.
+# Status: LAB-COVERED / CLOUD-PENDING; Foundry Local remains on the host.
+
+name: aegisbank-local
+
+services:
+  mock-core-banking:
+    build:
+      context: ../../services/mock-core-banking
+      dockerfile: Dockerfile
+    image: aegisbank/mock-core-banking:0.11.0
+    container_name: aegisbank-mock-core-banking
+    ports:
+      - "8000:8000"
+    environment:
+      AEGISBANK_ENV: "container"
+      AEGISBANK_DATABASE_URL: "sqlite:////app/data/aegisbank-dev.db"
+    networks:
+      - aegisbank-net
+    volumes:
+      - core-banking-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: aegisbank-mssql-emulator
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in the shell; never commit it}
+    networks:
+      - aegisbank-net
+
+  servicebus-emulator:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    container_name: aegisbank-servicebus-emulator
+    restart: unless-stopped
+    depends_on:
+      - mssql
+    ports:
+      - "5672:5672"
+    environment:
+      SQL_SERVER: "mssql"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in the shell; never commit it}
+      ACCEPT_EULA: "Y"
+      CONFIG_PATH: "/ServiceBus-Emulator/Config.json"
+    volumes:
+      - ./Config.json:/ServiceBus-Emulator/Config.json:ro
+    networks:
+      - aegisbank-net
+
+networks:
+  aegisbank-net:
+    driver: bridge
+
+volumes:
+  core-banking-data:
+    name: aegisbank-core-banking-data

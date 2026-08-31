@@ -241,3 +241,31 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **Staging / Index (Área de preparación):** Espacio intermedio de Git donde se seleccionan y preparan explícitamente los cambios que formarán parte del siguiente commit.
 * **CI Concurrency (Concurrencia en CI):** Configuración en pipelines de integración continua (e.g. GitHub Actions) que previene la ejecución simultánea de múltiples ejecuciones de workflow sobre la misma rama o pull request, cancelando ejecuciones obsoletas intermedias.
 * **CODEOWNERS:** Mecanismo nativo de plataformas como GitHub y GitLab que asigna automáticamente revisores o aprobadores obligatorios a pull requests en función de las rutas de archivos modificadas.
+
+---
+
+### Contenedores y Mensajería Azure (v0.11.0)
+
+* **Container (Contenedor):** Instancia estándar, aislada y ejecutable de un software que empaqueta código, bibliotecas y dependencias del sistema operativo, compartiendo el kernel del host sin la sobrecarga de una máquina virtual.
+* **Container Image (Imagen de contenedor):** Paquete binario estático, inmutable y compuesto por capas superpuestas de solo lectura que contiene la plantilla para instanciar contenedores.
+* **Dockerfile:** Archivo declarativo de texto plano con instrucciones secuenciales (`FROM`, `COPY`, `RUN`, `USER`, `EXPOSE`, `CMD`) que define la receta para construir una imagen de contenedor reproducible.
+* **Docker Compose:** Herramienta y formato declarativo YAML para definir, configurar y coordinar la ejecución multi-contenedor de aplicaciones complejas y sus redes/volúmenes locales.
+* **Registry (Registro de contenedores):** Servicio de almacenamiento y distribución indexada de imágenes de contenedores (e.g. Docker Hub, Azure Container Registry - ACR, GitHub Container Registry).
+* **OCI (Open Container Initiative / Iniciativa de Contenedores Abiertos):** Estándar de la industria gobernado por la Linux Foundation que especifica los formatos de imagen (*Image Spec*) y entornos de ejecución (*Runtime Spec*) para garantizar portabilidad universal entre Docker, containerd, Podman y Kubernetes.
+* **Port Mapping (Mapeo de puertos):** Configuración de traducción de direcciones de red (NAT) que vincula un puerto del host local (e.g. `8000`) a un puerto interno del contenedor (e.g. `8000`), permitiendo el tráfico entrante.
+* **Container Network (Red de contenedores):** Capa de red virtual aislada (comúnmente tipo *bridge*) gestionada por el runtime que permite a los contenedores comunicarse entre sí mediante resolución DNS interna por nombre de servicio (e.g. `mssql`, `mock-core-banking`).
+* **Health Check (Comprobación de salud):** Mecanismo periódico definido en el Dockerfile o orquestador que ejecuta un comando dentro del contenedor para verificar si el servicio está respondiendo adecuadamente y puede procesar tráfico.
+* **Readiness Probe (Sonda de preparación):** Sonda de orquestación (Kubernetes / Container Apps) que determina si el contenedor ha completado su inicialización y está listo para recibir peticiones del balanceador de carga.
+* **Liveness Probe (Sonda de vida):** Sonda de orquestación que determina si el proceso principal del contenedor sigue vivo y en estado saludable; si falla, el orquestador destruye y reinicia el contenedor automáticamente.
+* **Environment Variable (Variable de entorno):** Parámetro dinámico inyectado en tiempo de ejecución en el proceso del contenedor para configurar comportamiento (`AEGISBANK_ENV`, URLs) sin modificar el código fuente inmutable.
+* **Secret (Secreto):** Objeto de configuración sensible protegido (contraseñas, llaves criptográficas, connection strings) que debe inyectarse en memoria en tiempo de ejecución (e.g. Azure Key Vault, Docker Secrets) y nunca hornearse dentro de una imagen de contenedor.
+* **Volume (Volumen de almacenamiento):** Directorio o mecanismo de persistencia gestionado por el host que desacopla los datos del ciclo de vida efímero del contenedor, permitiendo persistencia duradera.
+* **AMQP (Advanced Message Queuing Protocol / Protocolo Avanzado de Encolamiento de Mensajes):** Protocolo binario de red estándar abierto a nivel de aplicación (puerto `5672`) optimizado para enrutamiento, encolamiento y entrega fiable de mensajes entre sistemas heterogéneos.
+* **Azure Service Bus:** Servicio empresarial administrado de mensajería como plataforma (MaaS) de Microsoft Azure que ofrece colas punto a punto fiables y tópicos pub/sub con garantías transaccionales y DLQ.
+* **Queue (Cola de mensajes):** Estructura de datos primero en entrar, primero en salir (FIFO) donde los productores depositan mensajes y un único consumidor los procesa mediante el patrón de entrega punto a punto.
+* **Topic (Tópico de mensajería):** Entidad de mensajería de tipo publicación/suscripción (Pub/Sub) que permite a un emisor publicar un evento y distribuirlo concurrentemente a múltiples suscriptores independientes.
+* **Subscription (Suscripción a tópico):** Receptor lógico adjunto a un tópico que filtra y retiene copias de los mensajes publicados para que un consumidor específico los procese independientemente.
+* **KEDA (Kubernetes Event-driven Autoscaling / Autoescalamiento de Kubernetes Guiado por Eventos):** Componente de orquestación que monitoriza fuentes de eventos externas (e.g. longitud de cola en Azure Service Bus) para autoescalar contenedores desde 0 hasta N instancias en función de la demanda en Azure Container Apps o AKS.
+* **Azure Container Apps:** Plataforma serverless totalmente administrada de Azure construida sobre Kubernetes que permite ejecutar microservicios y trabajos en contenedores con autoescalado KEDA, revisiones automáticas y baja sobrecarga operativa.
+* **Kubernetes (K8s):** Sistema de código abierto de nivel empresarial para automatizar el despliegue, escalado, balanceo de carga y gestión de aplicaciones contenerizadas en clústeres de servidores.
+* **AKS (Azure Kubernetes Service):** Servicio de Kubernetes administrado por Microsoft en Azure donde el plano de control (*control plane*) es operado por Microsoft, permitiendo control exhaustivo de infraestructura, pods, deployments e ingress.

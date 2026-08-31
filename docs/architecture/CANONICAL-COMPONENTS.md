@@ -5,7 +5,7 @@
 
 ---
 
-## Inventario Canónico de Responsabilidades
+## Inventario Canónico de las 19 Responsabilidades
 
 | Responsabilidad | Componente Canónico | Ruta Canónica | Interfaz Pública Principal | Consumidores | Punto de Extensión | Directiva DO NOT DUPLICATE |
 |---|---|---|---|---|---|---|

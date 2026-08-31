@@ -29,11 +29,12 @@ Minimal client example:
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPToolset
 
-toolset = MCPToolset('http://localhost:8000/mcp')
-agent = Agent('openai:gpt-5.2', toolsets=[toolset])
+toolset = MCPToolset("http://localhost:8000/mcp")
+agent = Agent("openai:gpt-5.2", toolsets=[toolset])
+
 
 async def main():
-    result = await agent.run('What is 7 plus 5?')
+    result = await agent.run("What is 7 plus 5?")
 ```
 
 Recommended: declare a toolset via the `toolsets=[...]` argument and use
@@ -56,15 +57,17 @@ see **per-user authentication** in the docs.
 from mcp.server.fastmcp import FastMCP
 from pydantic_ai import Agent
 
-server = FastMCP('Pydantic AI Server')
-server_agent = Agent('anthropic:claude-haiku-4-5', instructions='always reply in rhyme')
+server = FastMCP("Pydantic AI Server")
+server_agent = Agent("anthropic:claude-haiku-4-5", instructions="always reply in rhyme")
+
 
 @server.tool()
 async def poet(theme: str) -> str:
-    r = await server_agent.run(f'write a poem about {theme}')
+    r = await server_agent.run(f"write a poem about {theme}")
     return r.output
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     server.run()
 ```
 

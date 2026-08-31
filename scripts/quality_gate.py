@@ -161,7 +161,13 @@ def _session_guard_result(repo_root: Path) -> GateResult:
             output_snippet="No active session lock; standalone quality run permitted.",
         )
 
-    session_id = os.environ.get("AEGISBANK_SESSION_ID", "opencode-v0101")
+    try:
+        lock_data = json.loads(guard.lock_file.read_text(encoding="utf-8"))
+        default_session_id = lock_data.get("session_id", "opencode-v0110")
+    except (OSError, json.JSONDecodeError):
+        default_session_id = "opencode-v0110"
+
+    session_id = os.environ.get("AEGISBANK_SESSION_ID", default_session_id)
     started = time.time()
     ret = guard.check(session_id)
     dur = round(time.time() - started, 3)
@@ -170,14 +176,16 @@ def _session_guard_result(repo_root: Path) -> GateResult:
         command="internal:session_guard.check",
         status="PASS" if ret == 0 else "FAIL",
         duration_seconds=dur,
-        output_snippet="Session lock verified for active session."
-        if ret == 0
-        else "Session guard check failed.",
+        output_snippet=(
+            "Session lock verified for active session."
+            if ret == 0
+            else "Session guard check failed."
+        ),
     )
 
 
 def run_quality_gates(
-    repo_root: Path, secrets_only: bool = False
+    repo_root: Path, secrets_only: bool = False, containers: bool = False
 ) -> tuple[int, list[GateResult]]:
     results: list[GateResult] = []
     py_exec = sys.executable
@@ -269,6 +277,26 @@ def run_quality_gates(
             )
         )
 
+    if containers:
+        container_cmd = [py_exec, "scripts/container_acceptance.py"]
+        print("[*] Running gate: Container Integration Acceptance...")
+        started = time.time()
+        ret, stdout, stderr = _run_cmd(container_cmd, repo_root)
+        duration = round(time.time() - started, 3)
+        output = stdout.strip() if stdout.strip() else stderr.strip()
+        results.append(
+            GateResult(
+                name="Container Integration Acceptance",
+                command=" ".join(container_cmd),
+                status="PASS" if ret == 0 else "FAIL",
+                duration_seconds=duration,
+                output_snippet=output[-500:],
+                error_message=stderr if ret else None,
+            )
+        )
+        if ret:
+            all_passed = False
+
     # Architecture Inventory Gate
     print("[*] Running gate: Architecture Inventory & Ownership Gate...")
     start_time = time.time()
@@ -344,6 +372,13 @@ def main() -> int:
         action="store_true",
         help="Run only the secret scanning gate",
     )
+    parser.add_argument(
+        "--gate-containers",
+        "--include-containers",
+        dest="gate_containers",
+        action="store_true",
+        help="Run opt-in Docker Compose integration acceptance; requires Docker and MSSQL_SA_PASSWORD",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
@@ -351,7 +386,7 @@ def main() -> int:
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     exit_code, results = run_quality_gates(
-        repo_root, secrets_only=args.gate_secrets_only
+        repo_root, secrets_only=args.gate_secrets_only, containers=args.gate_containers
     )
 
     report_payload = {

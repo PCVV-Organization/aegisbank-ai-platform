@@ -14,11 +14,11 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 
 | Paquete del Repositorio | Cantidad de Pruebas | Estado |
 |---|---|---|
-| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing, Contracts, E2E, Session Guard) | **232 tests** | PASS |
+| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing, Contracts, E2E, Session Guard, Container & Service Bus Acceptance) | **241 tests** | PASS |
 | `ai/rag` (Chunking, Retrieval Léxico/Denso/RRF, Grounding, Evaluaciones) | **62 tests** | PASS |
 | `ml/intent-classifier` (Dataset sintético, TF-IDF, Logistic Regression) | **17 tests** | PASS |
 | `services/mock-core-banking` (Entidades, Restricciones, Repositorios, Outbox, OpenAPI Contracts) | **55 tests** | PASS |
-| **TOTAL GENERAL DEL REPOSITORIO** | **366 tests** | **100% PASS** |
+| **TOTAL GENERAL DEL REPOSITORIO** | **375 tests** | **100% PASS** |
 
 ---
 
@@ -38,7 +38,7 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | **Circuit Breaker (Cortacircuitos)** | `LAB-COVERED` / `PROD-PARTIAL` | v0.8 | Autómata de 3 estados (`CLOSED`, `OPEN`, `HALF_OPEN`) para contención de fallas en cascada. |
 | **Timeouts Acotados** | `LAB-COVERED` | v0.8 | Decorador y wrapper `with_timeout` para evitar bloqueos indefinidos. |
 | **Transactional Outbox** | `LAB-COVERED` / `PROD-PARTIAL` | v0.8 | Inserción atómica en `outbox_events` y `service_requests` bajo la misma transacción SQL. |
-| **Abstracción de Mensajería** | `LAB-COVERED` / `CLOUD-PENDING` | v0.8 | `LocalMessageBus` con publicación y suscripción desacoplada (pendiente Azure Service Bus). |
+| **Abstracción de Mensajería** | `LAB-COVERED` / `CLOUD-PENDING` | v0.8 | `LocalMessageBus` con publicación y suscripción desacoplada. |
 | **Consumidor Idempotente & DLQ** | `LAB-COVERED` / `CLOUD-PENDING` | v0.8 | `IdempotentConsumer` con deduplicación por `event_id` y enrutamiento a `DeadLetterQueue`. |
 | **Observabilidad / OpenTelemetry** | `LAB-COVERED` / `CLOUD-PENDING` | v0.9 | `TracerProvider`, spans jerárquicos (`agent.run`, `llm.chat`, `tool.execute`, `hitl.approval`). |
 | **Logs Estructurados & Redacción** | `LAB-COVERED` | v0.9 | `StructuredLogger` con filtro de redacción de secretos, tokens y prompts confidenciales. |
@@ -52,5 +52,5 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | **DevSecOps Security Gates** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Bandit (SAST), pip-audit (SCA), CycloneDX SBOM y secret scanning; compuertas documentadas en `DEVSECOPS-GATES.md`. |
 | **CI/CD Pipeline (GitHub Actions)** | `CI-CONFIGURED` | v0.10 | `.github/workflows/ci.yml` configurado con lint, tests, coverage, SAST, SCA, SBOM, secrets y concurrency (`RUNNER-PENDING`). |
 | **Architecture Integrity & Coordination** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10.1 | `session_guard.py` (Single Writer, Many Readers), catálogo `CANONICAL-COMPONENTS.md`, regla `DISCOVER BEFORE CREATE`, Pylint R0801 duplicate-code baseline (9.98/10). |
-| **Contenedores / Cloud Deployment** | `CLOUD-PENDING` | v0.11 | Planificado para v0.11 (Docker, Azure Container Apps, Service Bus Emulator). |
+| **Contenedores y Mensajería Azure Local** | `LAB-COVERED` / `CLOUD-PENDING` | v0.11 | Docker multi-stage Linux non-root (`aegisbank/mock-core-banking:0.11.0`), Compose `aegisbank-net`, Azure Service Bus Emulator AMQP `5672`, adapter `AzureServiceBusMessageBus`, 9 journeys aceptación A-I (`test_container_e2e.py`), manifiestos K8s (`deploy/kubernetes/`), decisión ACA vs AKS (`CONTAINER-PLATFORM-DECISION.md`), endurecimiento (`CONTAINER-SECURITY.md`). |
 | **MLOps & Experiment Tracking** | `CLOUD-PENDING` | v0.12 | Planificado para v0.12 (MLflow, drift de datos, calibración). |

@@ -41,14 +41,17 @@ from mcp.server.mcpserver import (
 
 mcp = MCPServer("Files")
 
+
 class Confirm(BaseModel):
     ok: bool
+
 
 async def confirm_delete(path: str) -> Confirm | Elicit[Confirm]:
     file_count = len(_FOLDERS.get(path, []))
     if file_count == 0:
-        return Confirm(ok=True)               # no round-trip
+        return Confirm(ok=True)  # no round-trip
     return Elicit(f"{path} has {file_count} file(s). Delete anyway?", Confirm)
+
 
 @mcp.tool()
 async def delete_folder(

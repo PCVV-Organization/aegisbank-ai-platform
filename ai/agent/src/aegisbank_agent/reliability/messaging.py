@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Callable
+from typing import Any, Callable, Protocol
 
 from mock_core_banking.persistence.database import Database
 from mock_core_banking.persistence.repositories import OutboxRepository
@@ -31,6 +31,13 @@ class DeadLetterRecord:
     failure_reason: str
     attempts: int
     failed_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class MessageBus(Protocol):
+    """Canonical outbound messaging contract for local and external transports."""
+
+    def publish(self, topic: str, message: Message) -> None:
+        """Publish a domain event."""
 
 
 class DeadLetterQueue:
@@ -84,7 +91,7 @@ class LocalMessageBus:
 class OutboxProcessor:
     """Background processor that polls pending outbox events and publishes them to the bus."""
 
-    def __init__(self, database: Database, message_bus: LocalMessageBus) -> None:
+    def __init__(self, database: Database, message_bus: MessageBus) -> None:
         self._database = database
         self._bus = message_bus
 
