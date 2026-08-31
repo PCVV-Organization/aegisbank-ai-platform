@@ -140,3 +140,23 @@ class OutboxEvent(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING", index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False)
     published_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+
+
+class AuditEvent(Base):
+    """Append-oriented, redacted operational audit event."""
+
+    __tablename__ = "audit_events"
+
+    event_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    event_name: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    correlation_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    trace_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    session_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    synthetic_customer_id: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    tool_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    approval_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    execution_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    latency_ms: Mapped[float | None] = mapped_column(Numeric(12, 3), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    details_json: Mapped[str] = mapped_column(String(4000), nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False)

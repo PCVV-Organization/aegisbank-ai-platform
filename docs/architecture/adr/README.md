@@ -43,6 +43,12 @@ Index:
   Outbox pattern and messaging abstraction (v0.8).
 - [ADR-018](./ADR-018-circuit-breaker-policy-for-external-dependencies.md) — Circuit
   breaker policy for external dependencies (v0.8).
+- [ADR-019](./ADR-019-opentelemetry-vendor-neutral-observability.md) — OpenTelemetry
+  as vendor-neutral observability standard (v0.9).
+- [ADR-020](./ADR-020-structured-audit-event-model.md) — Structured audit event
+  model for regulatory non-repudiation (v0.9).
+- [ADR-021](./ADR-021-hotl-supervisory-kill-switch-for-writes.md) — Human-on-the-Loop
+  (HOTL) supervisory kill-switch for writes (v0.9).
 
 Scope note: ADR-003 remains an accepted historical decision, but the current
 `v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly
@@ -52,6 +58,5 @@ and is not part of this milestone.
 Pending (no ADR yet — flagged here to ensure they don't get lost):
 
 - LSP choice for PowerShell (deferred; upstream distribution gone).
-- Eval framework choice for v0.8 (promptfoo vs custom harness).
-- Bicep module layout for v0.9.
-- Secrets management in CI / Azure for v0.9 (OIDC vs federated).
+- Bicep module layout for v0.10/v0.11.
+- Secrets management in CI / Azure for v0.10/v0.11 (OIDC vs federated).

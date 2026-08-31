@@ -29,7 +29,7 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.8.0 — Reliability + Messaging Foundation` (`COMPLETE`)
+**Current milestone:** `v0.9.0 — Observability + AgentOps + Audit` (`COMPLETE`)
 
 | Version | Milestone | Status |
 | --- | --- | --- |
@@ -41,7 +41,10 @@ All project data must be synthetic and reproducible.
 | `v0.6` | Single Agent + Read-Only Function Tools | COMPLETE |
 | `v0.7` | MCP + HITL | COMPLETE |
 | `v0.8` | Reliability + Messaging Foundation | COMPLETE |
-| `v0.9` | Azure Deployment | NOT STARTED |
+| `v0.9` | Observability + AgentOps + Audit | COMPLETE |
+| `v0.10` | Quality Engineering + DevSecOps | NOT STARTED |
+| `v0.11` | Containers + AI-200 | NOT STARTED |
+| `v0.12` | MLOps + Experimental Statistics | NOT STARTED |
 | `v1.0` | Enterprise Hardening | NOT STARTED |
 | `v1.1` | AKS experiment | Optional after `v1.0` |
 | `v1.2` | Multi-agent experiment | Optional after `v1.0` |
@@ -151,6 +154,23 @@ All project data must be synthetic and reproducible.
 - Deterministic 9-scenario failure injection test suite and full E2E acceptance tests.
 - Three architecture decision records: `ADR-016` (idempotent writes before retries),
   `ADR-017` (transactional outbox + messaging abstraction), and `ADR-018` (circuit breaker policy).
+
+## What `v0.9` Includes
+
+- OpenTelemetry (OTel) distributed tracing (`TracerProvider`, `InMemorySpanExporter`)
+  with hierarchical spans (`agent.run`, `llm.chat`, `tool.execute`, `hitl.approval`).
+- Unified context propagation binding technical `trace_id` with business `correlation_id`.
+- Structured JSON logging (`StructuredLogger`) with automatic redaction filter
+  for API keys, passwords, bearer tokens, and sensitive conversational data.
+- Operational metrics store (`OperationalMetrics`) tracking request counts, tool success/failure
+  rates, HITL approval ratios, and p50/p95/p99 latency percentiles.
+- Persistent append-only regulatory audit trail (`AuditLogger` and `AuditEvent`)
+  preserving chronological non-repudiation for all critical agent decisions and state changes.
+- AgentOps reporting utility (`AgentOpsSummary`) producing operational health summaries.
+- Human-on-the-Loop (HOTL) supervisory control (`HOTLSupervisor`) with alert subscriptions
+  and a global kill-switch for immediate write-tool mitigation.
+- Three architecture decision records: `ADR-019` (OpenTelemetry standard),
+  `ADR-020` (structured audit event model), and `ADR-021` (HOTL supervisory kill-switch).
 
 ## Project Rules
 

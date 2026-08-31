@@ -13,6 +13,7 @@ from ..domain.errors import (
     ServiceRequestNotFoundError,
 )
 from .models import (
+    AuditEvent,
     Customer,
     IdempotencyRecord,
     Installment,
@@ -210,3 +211,23 @@ class OutboxRepository:
             event.published_at = datetime.now(timezone.utc)
             self._session.flush()
         return event
+
+
+class AuditEventRepository:
+    """Append-only repository for sanitized operational audit events."""
+
+    def __init__(self, session: Session):
+        self._session = session
+
+    def append(self, **fields: object) -> AuditEvent:
+        event = AuditEvent(**fields)
+        self._session.add(event)
+        self._session.flush()
+        return event
+
+    def list_events(self, limit: int = 100) -> list[AuditEvent]:
+        return list(
+            self._session.scalars(
+                select(AuditEvent).order_by(AuditEvent.created_at.asc()).limit(limit)
+            ).all()
+        )

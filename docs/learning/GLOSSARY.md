@@ -24,8 +24,15 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 16. [Message Bus (Bus de Mensajes) y Queues](#message-bus)
 17. [Idempotent Consumer (Consumidor Idempotente)](#idempotent-consumer)
 18. [DLQ — Dead-Letter Queue (Cola de Mensajes Muertos)](#dlq)
-19. [ADR — Architecture Decision Record](#adr)
-20. [Observabilidad, Traza (Trace) y Correlation ID](#observabilidad)
+19. [OTel — OpenTelemetry](#otel)
+20. [Trace (Traza) y Span](#trace-y-span)
+21. [Correlation ID vs. Trace ID](#correlation-id-vs-trace-id)
+22. [Structured Logging (Logs Estructurados) y Redaction](#structured-logging-y-redaction)
+23. [Operational Metrics (Métricas Operativas) y Percentiles](#operational-metrics)
+24. [AgentOps — Operaciones de Agentes](#agentops)
+25. [Audit Log (Registro de Auditoría)](#audit-log)
+26. [KQL — Kusto Query Language](#kql)
+27. [ADR — Architecture Decision Record](#adr)
 
 ---
 
@@ -90,7 +97,7 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 
 ### HOTL
 * **Nombre completo:** Human-on-the-Loop (Humano sobre el Ciclo).
-* **¿Qué es?** Patrón donde el sistema ejecuta automáticamente ciertas acciones dentro de umbrales seguros, pero un operador humano supervisa en tiempo real, recibe alertas y puede intervenir o pausar el sistema si detecta anomalías.
+* **¿Qué es?** Patrón donde el sistema opera con supervisión continua de un operador humano que monitorea métricas operativas, alertas en tiempo real y cuenta con un **Kill-Switch supervisorio** para desactivar capacidades (ej. escrituras) si detecta anomalías.
 
 ---
 
@@ -139,11 +146,52 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 
 ---
 
-### ADR
-* **Nombre completo:** Architecture Decision Record (Registro de Decisión de Arquitectura).
-* **¿Qué es?** Documento inmutable y versionado que captura una decisión arquitectónica clave, su contexto, sus alternativas evaluadas y sus consecuencias.
+### OTel
+* **Nombre completo:** OpenTelemetry.
+* **¿Qué es?** Estándar abierto y vendor-neutral de la CNCF para instrumentar, generar, recolectar y exportar telemetría (trazas, métricas y logs) en aplicaciones modernas e IA.
 
 ---
 
-### Observabilidad
-* **¿Qué es?** Capacidad de entender el estado interno de un sistema a partir de sus salidas externas: Métricas (números), Logs (eventos textuales) y Trazas (recorrido de una petición a través de varios componentes correlacionados por un `trace_id`).
+### Trace y Span
+* **Trace (Traza):** El recorrido completo de una petición distribuida de punta a punta a través de todos los componentes.
+* **Span:** Unidad individual de trabajo dentro de una traza con nombre, hora de inicio, hora de fin, atributos, eventos y estado.
+
+---
+
+### Correlation ID vs. Trace ID
+* **Correlation ID:** Identificador generado a nivel de negocio/aplicación para correlacionar una interacción de usuario (`CORR-20260830-001`).
+* **Trace ID:** Identificador hexadecimal de 128 bits generado por OpenTelemetry para la traza técnica distribuida.
+
+---
+
+### Structured Logging y Redaction
+* **Structured Logging:** Emisión de logs en formato JSON con campos uniformes (`timestamp`, `level`, `correlation_id`, `trace_id`, `event_name`, `latency_ms`).
+* **Redaction (Enmascaramiento):** Filtrado automático para eliminar API keys, contraseñas, tokens y prompts confidenciales de los registros.
+
+---
+
+### Operational Metrics
+* **¿Qué son?** Mediciones numéricas agregadas en el tiempo (contadores de llamadas, tasas de error, percentiles de latencia p50, p95, p99) para evaluar la salud del agente.
+
+---
+
+### AgentOps
+* **Nombre completo:** Agent Operations (Operaciones de Agentes IA).
+* **¿Qué es?** Disciplina que gestiona el ciclo de vida, observabilidad, calidad, costos, latencia y estabilidad operativa de agentes IA en producción.
+
+---
+
+### Audit Log
+* **¿Qué es?** Registro inmutable, secuencial y persistente (*append-only*) de eventos críticos de seguridad y negocio que permite reconstruir fehacientemente quién hizo qué, cuándo, con qué autorización y cuál fue el resultado.
+
+---
+
+### KQL
+* **Nombre completo:** Kusto Query Language.
+* **¿Qué es?** Lenguaje de consultas potente y optimizado para analizar grandes volúmenes de telemetría estructurada en Azure Monitor, Azure Log Analytics y Microsoft Sentinel.
+
+---
+
+### ADR
+* **Nombre completo:** Architecture Decision Record (Registro de Decisión de Arquitectura).
+* **¿Qué es?** Documento inmutable y versionado que captura una decisión arquitectónica clave, su contexto, sus alternativas evaluadas y sus consecuencias.

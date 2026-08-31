@@ -1,235 +1,209 @@
 # AegisBank — Notas de Cátedra de Nivel Maestría en Inteligencia Artificial
 
-> **Módulo:** Arquitectura Agéntica, Resiliencia y Sistemas de Mensajería para Banca  
+> **Módulo:** Observabilidad Agéntica, AgentOps, Auditoría Inmutable y Supervisión HOTL
 > **Nivel:** Maestría / Posgrado en Inteligencia Artificial  
 > **Profesor / Lead Architect:** Senior Principal AI Engineer  
-> **Hito del Proyecto:** `v0.8.0 — Reliability + Messaging Foundation`
+> **Hito del Proyecto:** `v0.9.0 — Observability + AgentOps + Audit + HOTL Foundation`
 
 ---
 
-## 1. Introducción al Problema de la Escritura en Sistemas de IA
+## 1. Fundamentos de la Observabilidad en Sistemas de IA
 
-En las fases anteriores (`v0.1` a `v0.7`), construimos un agente capaz de:
-1. Responder consultas fundamentadas en conocimiento autorizado mediante **RAG** (Retrieval-Augmented Generation).
-2. Consultar saldos y cronogramas de préstamos mediante herramientas de lectura seguras (**READ tools**).
-3. Formular una propuesta de reclamo bancario a través de **MCP** (Model Context Protocol).
-4. Exigir la aprobación interactiva de un ser humano (**HITL**) antes de cualquier ejecución en el sistema transaccional.
-
-Sin embargo, en el mundo real de la banca y la nube:
-* Las redes fallan momentáneamente (*transient network glitches*).
-* Los clientes pierden conectividad y reintentan la misma operación.
-* Los servidores transaccionales pueden estar caídos o saturados.
-* Las bases de datos pueden bloquearse (*database locking*).
-
-Si un sistema de IA ejecuta escrituras sin una **base de confiabilidad (Reliability)**, ocurren desastres financieros:
-* **Duplicación de reclamos o transacciones**.
-* **Pérdida de eventos de negocio**.
-* **Saturación en cascada (*cascading failures*)**.
-
-El hito **`v0.8.0`** resuelve este problema mediante una arquitectura bancaria de grado empresarial.
+En la ingeniería de software tradicional, la observabilidad responde a la pregunta: *¿El servidor está respondiendo con código HTTP 200?*
+En la **Ingeniería de IA Agéntica (Agentic AI Engineering)**, la observabilidad debe responder preguntas mucho más complejas:
+* ¿Por qué el modelo eligió llamar a una herramienta específica (`tool_choice`)?
+* ¿Qué fragmentos de conocimiento recuperó el RAG y cuáles fueron citados?
+* ¿La respuesta fue rechazada por el filtro de grounding o por el evaluador humano (HITL)?
+* ¿Cuánto tiempo tomó la inferencia del LLM en comparación con la ejecución de la base de datos?
+* ¿Ocurrió un fallo transitorio que requirió reintentos o la activación de un cortacircuitos (*Circuit Breaker*)?
 
 ---
 
-## 2. Los Ocho Pilares de Confiabilidad de AegisBank
-
----
-
-### Pilar 1: Idempotencia (*Idempotency*)
+## 2. Los Tres Pilares de OpenTelemetry (OTel) para Agentes
 
 ```
-               Petición 1 (Key: IDEMP-001)
-  Agente/Cliente --------------------------> [ Idempotency Guard ]
-                                                      |
-                                             ¿Existe en BD?
-                                            /              \
-                                          NO               SÍ
-                                          /                  \
-                            [ Ejecutar WRITE ]        [ Retornar Respuesta ]
-                            [ Guardar Hash/Respuesta] [ Cachada Inmediata  ]
+                       +-------------------------------+
+                       |    OPENTELEMETRY STANDARD     |
+                       +-------------------------------+
+                         /            |              \
+                        /             |               \
+            [ LOGS ]              [ METRICS ]          [ TRACES ]
+      Eventos en JSON       Valores agregados        Spans jerárquicos
+      con Correlation ID    (p95, error rates)       (agent -> tool -> db)
 ```
-
-1. **Sigla y Nombre:** `Idempotency` (Idempotencia).
-2. **Definición Teórica:** Para una función $f(x)$, la propiedad de idempotencia establece que $f(f(x)) = f(x)$. En sistemas distribuidos, enviar la misma solicitud $N$ veces produce exactamente el mismo cambio de estado que enviarla 1 sola vez.
-3. **¿Qué problema resuelve?** La duplicación accidental de recursos bancarios cuando ocurren reintentos de red, timeouts o doble clic del usuario.
-4. **Cómo funciona internamente:**
-   - La petición incluye una llave única llamada `Idempotency-Key` (ej. UUIDv4 o digest determinista).
-   - Se calcula el hash canónico SHA-256 de los parámetros de la solicitud:
-     $$\text{hash} = \text{SHA256}(\text{canonical\_json}(\text{arguments}))$$
-   - En la base de datos se consulta la tabla `idempotency_records`:
-     - **Caso A (Nueva):** Se ejecuta la operación, se guarda el resultado y el hash atómicamente.
-     - **Caso B (Duplicada idéntica):** Se retorna la respuesta guardada previamente con estado HTTP 200/201 sin volver a ejecutar la lógica de negocio.
-     - **Caso C (Misma llave, datos alterados):** Se detecta que $\text{hash}_{\text{nuevo}} \neq \text{hash}_{\text{guardado}}$ y se lanza un error de conflicto (`IdempotencyConflictError`).
-5. **Por qué lo necesita AegisBank:** Porque si el agente o la red reintenta la creación de un reclamo `create_service_request`, el cliente solo debe tener un único reclamo registrado.
-6. **Alternativa y cuándo NO usarlo:** No se necesita en operaciones puramente de lectura (los métodos `GET` en REST son naturalmente idempotentes).
-7. **Riesgos típicos:** Generar llaves no únicas o no comparar los argumentos, lo que permitiría que una segunda operación distinta use la llave de la primera y quede enmascarada.
-8. **Relación con Mibanco (Perfil COE IA):** "Manejo de transacciones, consistencia y prevención de reprocesos en automatizaciones agénticas".
-9. **Relación con Microsoft Certifications:**
-   - **AI-103 / AI-200:** Mensajería y APIs resilientes en Azure API Management y Azure Service Bus.
-10. **Ejemplo en el código:** Módulo `aegisbank_agent.reliability.idempotency` y tabla `idempotency_records`.
 
 ---
 
-### Pilar 2: Tiempos Límite (*Timeouts*)
+### Pilar 1: Trazas Distribuidas y Spans (*Distributed Tracing & Spans*)
 
-1. **Nombre:** Timeouts (Tiempos máximos de espera).
-2. **Definición:** Límite temporal estricto tras el cual una llamada a una dependencia externa se cancela forzosamente.
-3. **¿Qué problema resuelve?** Bloqueo indefinido de hilos/recursos por servicios remotos lentos (*thread pool starvation*).
-4. **Cómo funciona internamente:** Se programa un temporizador no bloqueante. Si la corutina o función no concluye antes de $\Delta t$, se interrumpe y se genera una excepción `ExecutionTimeoutError`.
-5. **Por qué lo necesita AegisBank:** Evita que el agente se quede colgado si Core Banking tarda en responder.
-6. **Alternativa:** Dejar que el sistema operativo cierre la conexión TCP tras minutos (muy lento e inaceptable para SLAs bancarios).
-7. **Riesgos:** Configurar timeouts demasiado cortos que aborten transacciones normales en horas punta.
-8. **Relación con Mibanco:** Cumplimiento de **SLA operativos** y tiempos de respuesta.
-9. **Relación con AI-200:** Políticas de timeout en Azure Functions y Azure Container Apps.
+```
+TRACE ID: 4bf92f3577b34da6a3ce929d0e0e4736 (Correlation ID: REQ-20260830-001)
+│
+├── SPAN: agent.run [Duration: 850ms]
+│    │
+│    ├── SPAN: llm.chat [Duration: 620ms] (Model: phi-4-mini, Tokens: 412)
+│    │
+│    ├── SPAN: mcp.tool_call [Duration: 180ms] (Tool: create_service_request)
+│    │    │
+│    │    ├── SPAN: hitl.approval [Duration: 120ms] (Status: APPROVED)
+│    │    │
+│    │    └── SPAN: core_banking.write [Duration: 45ms] (Status: OK)
+│    │
+│    └── SPAN: outbox.publish [Duration: 15ms] (Event: ServiceRequestCreated)
+```
+
+1. **Sigla y Nombre:** `OTel` — OpenTelemetry / Distributed Tracing.
+2. **Definición Teórica:** Una **Traza (Trace)** representa el grafo acíclico dirigido (DAG) de operaciones ejecutadas para satisfacer una solicitud. Cada nodo del grafo es un **Span**.
+3. **Atributos Clave de un Span:**
+   * `span.name`: Nombre semántico (`agent.run`, `llm.chat`, `tool.execute`, `hitl.approval`).
+   * `trace_id`: Identificador global de 128 bits.
+   * `span_id`: Identificador único del paso de 64 bits.
+   * `parent_span_id`: Identificador del span padre para formar el árbol jerárquico.
+   * `attributes`: Metadatos contextuales (`gen_ai.system`, `gen_ai.model`, `tool.name`, `customer.id`).
+4. **Por qué lo necesita AegisBank:** Permite identificar inmediatamente en qué milisegundo exacto ocurrió un cuello de botella o en qué componente falló una transacción.
+5. **Relación con Microsoft Certifications:**
+   * **AI-103 & AI-200:** Distributed Tracing con OpenTelemetry en Azure Monitor y Application Insights.
 
 ---
 
-### Pilar 3: Reintentos Acotados con Retroceso Exponencial y Jitter
+### Pilar 2: Registros Estructurados y Redacción (*Structured Logging & Redaction*)
 
-```
-Intento 0: Falla (t=0)
-           |-- Espera t1 = Base * 2^0 + Jitter (ej. 100ms + 23ms)
-Intento 1: Falla
-           |-- Espera t2 = Base * 2^1 + Jitter (ej. 200ms + 45ms)
-Intento 2: Falla
-           |-- Espera t3 = Base * 2^2 + Jitter (ej. 400ms + 89ms)
-Intento 3: Éxito o Aborto definitivo
+```json
+{
+  "timestamp": "2026-08-30T21:25:00.123456Z",
+  "level": "INFO",
+  "event_name": "tool_executed",
+  "correlation_id": "REQ-20260830-001",
+  "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "span_id": "00f067aa0ba902b7",
+  "session_customer_id": "CUST-0001",
+  "tool_name": "create_service_request",
+  "approval_status": "APPROVED",
+  "execution_status": "SUCCESS",
+  "latency_ms": 45.2
+}
 ```
 
-1. **Nombre:** Bounded Exponential Backoff with Jitter.
-2. **Algoritmo Matemático:**
-   Para el intento $n \in \{0, 1, \dots, N-1\}$:
-   $$\text{Backoff}(n) = \min(\text{MaxDelay}, \text{BaseDelay} \times 2^n)$$
-   $$\text{ActualDelay}(n) = \text{random.uniform}(0, \text{Backoff}(n)) \quad \text{(Full Jitter)}$$
-3. **¿Qué problema resuelve?** Recuperarse automáticamente de micro-cortes de red sin saturar al servidor destino con una tormenta simultánea de reintentos (*thundering herd problem*).
-4. **Regla de Clasificación de Errores:**
-   * **Reintentables (Transitorios):** Conexión reseteada, timeout de socket, base de datos bloqueada temporalmente (`SQLITE_BUSY`).
-   * **NO Reintentables (Permanentes):** Error de validación de datos (HTTP 400), credencial incorrecta (HTTP 401/403), rechazo humano en HITL, conflicto de idempotencia (HTTP 409).
-5. **Precondición Innegociable:** **Idempotencia previa**. Nunca reintentar una escritura si no se cuenta con `Idempotency-Key`.
-6. **Relación con AI-200:** Transient Fault Handling con librerías Polly en .NET o Tenacity en Python sobre servicios Azure.
+1. **Regla de Redacción Obligatoria (Seguridad Bancaria):**
+   * **PROHIBIDO:** Registrar API Keys, contraseñas, bearer tokens, prompts conversacionales completos con datos sensibles o PII real en los logs de telemetría.
+   * **PERMITIDO:** Metadatos de la operación, nombres de herramientas, IDs sintéticos, estados de aprobación, latencias y códigos de error.
 
 ---
 
-### Pilar 4: Cortacircuitos (*Circuit Breaker Pattern*)
+### Pilar 3: Métricas Operativas y Percentiles de Latencia (*Metrics & Percentiles*)
 
-```
-             Fallas < Umbral
-           +-----------------+
-           |                 |
-           v                 |
-      +--------+         +------+
-      | CLOSED | ------> | OPEN |
-      +--------+  Fallas +------+
-          ^       >= Umbral  |
-          |                  | Cooldown expirado
-          |  1 Éxito         v
-          +------------ +-----------+
-                        | HALF_OPEN |
-                        +-----------+
-                             |
-                             | 1 Falla
-                             +-------> (Regresa a OPEN)
-```
-
-1. **Nombre:** Circuit Breaker (Cortacircuitos de Software).
-2. **Estados del Autómata Finito:**
-   * **`CLOSED` (Cerrado):** Estado normal. Las peticiones fluyen hacia la dependencia. Si falla, se incrementa el contador de fallas consecutivas.
-   * **`OPEN` (Abierto):** Al alcanzar el umbral de fallas consecutivas (ej. 3 fallas), el circuito se abre. Todas las peticiones entrantes son rechazadas **instantáneamente** con `CircuitBreakerOpenError`, sin tocar la red.
-   * **`HALF_OPEN` (Semi-abierto):** Tras expirar un tiempo de enfriamiento (*cooldown*, ej. 2.0s), se deja pasar una única petición de sondeo (*probe*). Si tiene éxito, el circuito vuelve a `CLOSED`; si falla, regresa a `OPEN`.
-3. **¿Qué problema resuelve?** Evita el efecto dominó o fallo en cascada en arquitecturas de microservicios y protege los recursos cuando una dependencia está caída.
-4. **Diferencia clave con Retry:**
-   * *Retry* reintenta una llamada asumiendo que el fallo pasará en milisegundos.
-   * *Circuit Breaker* detiene los reintentos cuando detecta que la falla es sistémica y durará segundos o minutos.
+1. **Contadores Operativos:**
+   * `request_count`: Total de interacciones con el agente.
+   * `request_error_count`: Interacciones que resultaron en error.
+   * `tool_call_count` / `tool_call_failure_count`: Tasa de éxito y fallo por herramienta.
+   * `hitl_approved_count` / `hitl_rejected_count`: Proporción de aprobaciones humanas.
+   * `retry_count`: Reintentos ejecutados ante fallas transitorias.
+   * `circuit_breaker_open_count`: Incidentes de disparo de cortacircuitos.
+   * `dlq_count`: Mensajes envenenados derivados a la cola de mensajes muertos.
+2. **Cálculo de Percentiles de Latencia:**
+   * **p50 (Mediana):** El 50% de las peticiones se atendieron por debajo de este tiempo.
+   * **p95:** El 95% de las peticiones se atendieron por debajo de este tiempo (métrica clave para SLAs).
+   * **p99:** Identifica casos atípicos o anomalías extremas (*tail latency*).
 
 ---
 
-### Pilar 5: Bandeja de Salida Transaccional (*Transactional Outbox Pattern*)
+## 3. Registro de Auditoría Inmutable vs. Logs Operacionales
 
-```
-[ BASE DE DATOS TRANSACCIONAL ]
-+-------------------------------------------------------------+
-|                                                             |
-|   BEGIN TRANSACTION;                                        |
-|                                                             |
-|   1. INSERT INTO service_requests (...) VALUES (...);       |
-|   2. INSERT INTO outbox_events (event_id, payload, PENDING) |
-|                                                             |
-|   COMMIT;                                                   |
-|                                                             |
-+-------------------------------------------------------------+
-                            |
-                     (Proceso Asíncrono)
-                            |
-                            v
-             [ Local Message Bus / Event Bus ]
-                            |
-                            v
-             [ Consumidores / Notificaciones ]
-```
-
-1. **Nombre:** Transactional Outbox Pattern.
-2. **¿Qué problema resuelve?** El problema de la "Doble Escritura" (*Dual-Write Problem*). Si una aplicación intenta escribir en la base de datos SQL y enviar un mensaje a un bus (como Azure Service Bus) en dos pasos separados, inevitablemente ocurrirá que uno de los dos falle, dejando el sistema en estado inconsistente.
-3. **Cómo funciona:**
-   - La creación del reclamo bancario y la inserción del evento `ServiceRequestCreated` se ejecutan dentro del mismo bloque transaccional atómico (`session.commit()`).
-   - Una tarea en segundo plano (*Outbox Processor*) lee los eventos en estado `PENDING`, los despacha al bus de mensajes y los marca como `PUBLISHED`.
-4. **Relación con Mibanco:** "Garantía de auditoría, trazabilidad y consistencia transaccional".
-
----
-
-### Pilar 6: Abstracción de Mensajería Local (*Local Message Bus*)
-
-1. **Nombre:** Message Bus Abstraction (Bus de Mensajes Desacoplado).
-2. **Diseño:** Creamos una interfaz agnóstica (`MessageBus`) que permite publicar eventos a tópicos y suscribir colas consumidoras.
-3. **Local vs Cloud:**
-   - En `v0.8` (local): Bus en memoria / SQLite determinista, sin necesidad de infraestructura pesada.
-   - En `v0.9+` / Cloud (AI-200): Se reemplaza la implementación concreta por **Azure Service Bus Topics/Subscriptions** sin alterar una sola línea de lógica de negocio.
-
----
-
-### Pilar 7: Consumidor Idempotente (*Idempotent Consumer*)
-
-1. **Nombre:** Idempotent Consumer Pattern.
-2. **¿Qué problema resuelve?** Los sistemas de colas profesionales (Azure Service Bus, RabbitMQ, Kafka) garantizan entrega "al menos una vez" (*at-least-once delivery*), lo que significa que en casos raros de reconexión de red, un mismo mensaje puede ser entregado dos veces al consumidor.
-3. **Cómo funciona:** El consumidor mantiene una tabla o conjunto de `processed_event_ids`. Cuando recibe un mensaje, verifica si el `event_id` ya fue procesado: si ya existe, lo descarta silenciosamente con éxito sin volver a ejecutar la acción.
-
----
-
-### Pilar 8: Cola de Mensajes Muertos (*Dead-Letter Queue - DLQ*)
-
-```
-[ Mensaje Entrante ] ---> Intento 1 (Falla) ---> Intento 2 (Falla) ---> Intento 3 (Falla)
-                                                                             |
-                                                                             v
-                                                                   [ Mover a DLQ ]
-                                                                   (Error: Formato inválido)
-```
-
-1. **Sigla y Nombre:** DLQ — Dead-Letter Queue (Cola de Mensajes Muertos).
-2. **¿Qué es?** Cola secundaria reservada para almacenar mensajes que no pueden ser procesados exitosamente tras agotar los reintentos permitidos (*poison messages*).
-3. **¿Qué problema resuelve?** Evita que un mensaje defectuoso bloquee la cola principal en un ciclo infinito de fallas (*poison pill block*), permitiendo a los ingenieros de soporte inspeccionar el mensaje y su causa raíz.
-4. **Relación con Azure (AI-200):** Azure Service Bus habilita DLQ nativo configurando `MaxDeliveryCount`.
-
----
-
-## 3. Matriz Comparativa: Implementación Local v0.8 vs Equivalente Azure (AI-200)
-
-| Concepto de Confiabilidad | Implementación Local en AegisBank (v0.8) | Equivalente Cloud en Azure (AI-200 / Producción) |
+| Característica | Log Operacional / Telemetría | Registro de Auditoría Bancaria (Audit Trail) |
 |---|---|---|
-| **Idempotency** | `IdempotencyGuard` + SQLite `idempotency_records` | Azure Service Bus Duplicate Detection / Azure Cosmos DB ETag |
-| **Retries & Backoff** | `RetryPolicy` (Python con Exponential Backoff & Jitter) | Azure SDK built-in Retry Policies / Polly en Azure Functions |
-| **Circuit Breaker** | `CircuitBreaker` (FSM `CLOSED`, `OPEN`, `HALF_OPEN`) | Azure App Gateway / Dapr Resiliency Policies / Envoy Proxy |
-| **Timeouts** | `with_timeout` (Python `asyncio.timeout` / threading) | HTTP Request Timeouts en Azure API Management / Function Timeouts |
-| **Transactional Outbox** | SQLite `outbox_events` en transacción atómica | SQL Database Outbox + Change Data Capture (CDC) / Debezium |
-| **Message Bus** | `LocalMessageBus` (En memoria / SQLite) | **Azure Service Bus Topics & Queues** / Azure Event Grid |
-| **Idempotent Consumer** | `IdempotentConsumer` con registro de `event_id` | Azure Service Bus Session Processing + Deduplication Store |
-| **Dead-Letter Queue (DLQ)** | `DeadLetterQueue` local con tracking de fallas | **Azure Service Bus Dead-Letter Sub-queue (`$deadletterqueue`)** |
+| **Audiencia** | Desarrolladores / SRE / DevOps | Oficiales de Cumplimiento / Auditores / Reguladores |
+| **Persistencia** | Rotativa (retención 30 a 90 días) | Inmutable / Append-Only (retención de años) |
+| **Contenido** | Trazas técnicas, spans, latencias | Decisiones de negocio, hashes criptográficos, aprobaciones HITL |
+| **Garantía** | Mejor esfuerzo (*Best effort*) | No repudio (*Non-repudiation*) y secuencia garantizada |
 
 ---
 
-## 4. Síntesis para Examen de Maestría / Entrevista Técnica en Mibanco
+## 4. Supervisión HOTL (Human-on-the-Loop) y Kill-Switch
 
-1. **¿Por qué la idempotencia debe preceder a los reintentos?**  
-   *Respuesta:* Reintentar una operación no idempotente ante un error transitorio duplica la transacción si la petición original sí llegó a la base de datos pero la respuesta de red se perdió.
-2. **¿Qué diferencia a un Circuit Breaker de un Retry Policy?**  
-   *Respuesta:* El Retry mitiga fallos transitorios en milisegundos aislando la petición individual; el Circuit Breaker protege al sistema contra fallos persistentes deteniendo proactivamente el tráfico hacia la dependencia dañada.
-3. **¿Cómo garantiza el Transactional Outbox que no haya inconsistencias?**  
-   *Respuesta:* Al acoplar la mutación del agregado y el registro del evento en la misma transacción ACID de la base de datos, eliminando la posibilidad de que una ocurra sin la otra.
+```
+                 [ FLUJO NORMAL AGÉNTICO ]
+
+  Cliente ---> Agente ---> [ HOTL Kill-Switch: ACTIVO? ]
+                                   |
+                         +---------+---------+
+                         |                   |
+                     NO (Permitido)     SÍ (Bloqueado)
+                         |                   |
+                  [ Ejecutar Tool ]    [ FAST-FAIL HOTL ]
+                  (Requiere HITL)     "Escrituras suspendidas
+                                       por supervisión"
+```
+
+1. **Diferencia Fundamental:**
+   * **HITL (Human-in-the-Loop):** Decisión microscópica sobre una transacción individual.
+   * **HOTL (Human-on-the-Loop):** Control macroscópico sobre la capacidad del sistema.
+2. **Kill-Switch Supervisorio:** Permite a un operador humano o a un sistema de alerta automática deshabilitar de forma inmediata la herramienta de escritura (`create_service_request`) en toda la plataforma sin necesidad de redesplegar el código.
+
+---
+
+## 5. Masterclass KQL (Kusto Query Language) para Azure Monitor
+
+En producción (Microsoft AI-200), las trazas y logs de OpenTelemetry se consultan en Azure Log Analytics mediante KQL.
+
+### Consulta 1: Tasa de Fallo por Herramienta
+```kql
+AegisAgentSpans
+| where Name == "tool.execute"
+| summarize
+    TotalCalls = count(),
+    FailedCalls = countif(Status == "ERROR")
+    by ToolName = tostring(Attributes["tool.name"])
+| extend FailureRatePct = round((FailedCalls * 100.0) / TotalCalls, 2)
+| order by FailureRatePct desc
+```
+
+### Consulta 2: Distribución de Latencia del Agente (p50, p95, p99)
+```kql
+AegisAgentSpans
+| where Name == "agent.run"
+| summarize
+    P50_Ms = percentile(DurationMs, 50),
+    P95_Ms = percentile(DurationMs, 95),
+    P99_Ms = percentile(DurationMs, 99)
+    by Model = tostring(Attributes["gen_ai.model"])
+```
+
+### Consulta 3: Proporción de Aprobación vs. Rechazo en HITL
+```kql
+AegisAuditEvents
+| where EventType in ("HITL_APPROVED", "HITL_REJECTED")
+| summarize
+    Approvals = countif(EventType == "HITL_APPROVED"),
+    Rejections = countif(EventType == "HITL_REJECTED")
+    by bin(Timestamp, 1h)
+| extend ApprovalRatio = round((Approvals * 100.0) / (Approvals + Rejections), 2)
+```
+
+### Consulta 4: Incidentes de Disparo de Cortacircuitos (Circuit Breaker)
+```kql
+AegisAuditEvents
+| where EventType == "CIRCUIT_STATE_CHANGED" and Payload has "OPEN"
+| project Timestamp, CorrelationId, DependencyName = tostring(Payload.dependency), Reason = tostring(Payload.reason)
+| order by Timestamp desc
+```
+
+### Consulta 5: Auditoría de Mensajes en Cola de Mensajes Muertos (DLQ)
+```kql
+AegisAuditEvents
+| where EventType == "MESSAGE_DEAD_LETTERED"
+| project Timestamp, CorrelationId, EventId = tostring(Payload.event_id), FailureReason = tostring(Payload.failure_reason), Attempts = toint(Payload.attempts)
+| order by Timestamp desc
+```
+
+---
+
+## 6. Matriz de Madurez: Laboratorio Local vs. Producción Cloud
+
+| Capacidad | Estado en AegisBank (v0.9 Local) | Estado en Producción Cloud (Azure / AI-200) |
+|---|---|---|
+| **Tracing** | `InMemorySpanExporter` local | Azure Monitor Exporter $\to$ Application Insights |
+| **Logs** | JSON estructurado en stream/archivo | Azure Log Analytics Workspace |
+| **Métricas** | Contadores en memoria + percentiles | Azure Monitor Metrics / Prometheus |
+| **Auditoría** | SQLite `audit_logs` append-only | Azure SQL Immutable Ledger / Azure Cosmos DB WORM |
+| **HOTL Kill-Switch** | Variable atómica thread-safe en memoria | Azure App Configuration / Feature Flags dinámicos |
+| **Consultas** | Filtros Python en memoria | Consultas KQL en Azure Log Analytics |
