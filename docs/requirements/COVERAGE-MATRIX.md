@@ -4,8 +4,9 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 
 * **Categorías de Estado:**
   * **`LAB-COVERED`**: Implementado, probado y verificado completamente en el entorno de laboratorio local con tests reproducibles.
+  * **`CI-CONFIGURED` / `RUNNER-PENDING`**: Pipeline o configuración automatizada creada y validada sintácticamente, pero pendiente de ejecución verificable en un runner remoto (e.g. GitHub Actions).
   * **`PROD-PARTIAL`**: Implementado conceptualmente y funcional en laboratorio, pero requiere componentes distribuidos en la nube (Kubernetes, Azure Service Bus, Cloud WORM) para producción bancaria.
-  * **`CLOUD-PENDING`**: Planificado para hitos de nube e industrialización (v0.10+).
+  * **`CLOUD-PENDING`**: Planificado para hitos de nube e industrialización (v0.11+).
 
 ---
 
@@ -13,11 +14,11 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 
 | Paquete del Repositorio | Cantidad de Pruebas | Estado |
 |---|---|---|
-| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing) | **209 tests** | PASS |
+| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing, Contracts, E2E) | **225 tests** | PASS |
 | `ai/rag` (Chunking, Retrieval Léxico/Denso/RRF, Grounding, Evaluaciones) | **62 tests** | PASS |
 | `ml/intent-classifier` (Dataset sintético, TF-IDF, Logistic Regression) | **17 tests** | PASS |
-| `services/mock-core-banking` (Entidades, Restricciones, Repositorios, Outbox) | **55 tests** | PASS |
-| **TOTAL GENERAL DEL REPOSITORIO** | **343 tests** | **100% PASS** |
+| `services/mock-core-banking` (Entidades, Restricciones, Repositorios, Outbox, OpenAPI Contracts) | **55 tests** | PASS |
+| **TOTAL GENERAL DEL REPOSITORIO** | **359 tests** | **100% PASS** |
 
 ---
 
@@ -46,8 +47,9 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | **Supervisión HOTL & Kill-Switch** | `LAB-COVERED` | v0.9 | `HOTLSupervisor` con monitoreo operativo y Kill-Switch para deshabilitar escrituras. |
 | **Grounded Knowledge Tool Routing** | `LAB-COVERED` | v0.9.1 | Policy determinista ejecuta `search_knowledge` antes de preguntas bancarias, registra métricas y se abstiene ante `KNOWLEDGE_GAP`; tests de pseudo-tool text. |
 | **Banking READ Tool Routing** | `LAB-COVERED` | v0.9.2 | Policy de cuenta, allowlist mínima, `tool_choice` específico, consulta multi-step y ownership determinista; sin nuevas escrituras ni cobertura cloud. |
-| **Layered Quality Engineering** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Estrategia documentada, contratos, E2E crítico y gate local/workflow configurado; runner remoto pendiente. |
-| **DevSecOps Security Gates** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Bandit, pip-audit, SBOM CycloneDX y secret scan definidos; vulnerabilidades y disponibilidad de advisory se reportan sin inventar PASS. |
-| **CI/CD & DevSecOps** | `CLOUD-PENDING` | v0.10 | Planificado para v0.10 (GitHub Actions, SAST, SBOM, Contract testing). |
+| **Layered Quality Engineering** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Pirámide de pruebas (Unit, Integration, Contract, E2E), 8 journeys críticos A-H, y `quality_gate.py`. |
+| **Contract Testing & API Tests** | `LAB-COVERED` | v0.10 | Contratos JSON Schema OpenAPI, MCP tool registry y Outbox events; colección de pruebas de API de Core Banking. |
+| **DevSecOps Security Gates** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Bandit (SAST), pip-audit (SCA), CycloneDX SBOM y secret scanning; compuertas documentadas en `DEVSECOPS-GATES.md`. |
+| **CI/CD Pipeline (GitHub Actions)** | `CI-CONFIGURED` | v0.10 | `.github/workflows/ci.yml` configurado con lint, tests, coverage, SAST, SCA, SBOM y secrets (`RUNNER-PENDING`). |
 | **Contenedores / Cloud Deployment** | `CLOUD-PENDING` | v0.11 | Planificado para v0.11 (Docker, Azure Container Apps, Service Bus Emulator). |
 | **MLOps & Experiment Tracking** | `CLOUD-PENDING` | v0.12 | Planificado para v0.12 (MLflow, drift de datos, calibración). |

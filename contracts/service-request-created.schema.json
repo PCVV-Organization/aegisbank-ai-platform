@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aegisbank:contracts:service-request-created:v1",
+  "title": "ServiceRequestCreatedEventContract",
+  "description": "JSON Schema validating Transactional Outbox event payload for ServiceRequestCreated.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "aggregate_type",
+    "aggregate_id",
+    "payload",
+    "timestamp"
+  ],
+  "properties": {
+    "event_id": { "type": "string" },
+    "event_type": { "type": "string", "const": "ServiceRequestCreated" },
+    "aggregate_type": { "type": "string", "const": "ServiceRequest" },
+    "aggregate_id": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "payload": {
+      "type": "object",
+      "required": [
+        "service_request_id",
+        "customer_id",
+        "category",
+        "description",
+        "status"
+      ],
+      "properties": {
+        "service_request_id": { "type": "string" },
+        "customer_id": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    }
+  }
+}

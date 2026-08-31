@@ -1,13 +1,80 @@
 {
   "name": "AegisBank Mock Core Banking API v1",
   "format": "postman-collection-v2.1",
-  "description": "Synthetic local API scenarios. Execute with Postman/Newman or an equivalent HTTP client.",
+  "description": "Synthetic local API scenarios for Core Banking. Execute with Postman/Newman or an equivalent HTTP test runner.",
   "requests": [
-    {"name": "health", "method": "GET", "path": "/health", "expected_status": 200},
-    {"name": "loan happy path", "method": "GET", "path": "/api/v1/loans/LOAN-0001", "expected_status": 200, "expected_fields": ["loan_id", "status", "outstanding_balance"]},
-    {"name": "loan malformed id", "method": "GET", "path": "/api/v1/loans/not-a-loan", "expected_status": 422},
-    {"name": "loan not found", "method": "GET", "path": "/api/v1/loans/LOAN-9999", "expected_status": 404},
-    {"name": "next installment", "method": "GET", "path": "/api/v1/loans/LOAN-0001/installments/next", "expected_status": 200, "expected_fields": ["loan_id", "due_date", "total_due"]},
-    {"name": "correlation propagation", "method": "GET", "path": "/health", "headers": {"X-Correlation-ID": "CORR-API-001"}, "expected_status": 200, "expected_response_header": "X-Correlation-ID"}
+    {
+      "name": "Health Live Check",
+      "method": "GET",
+      "path": "/health/live",
+      "expected_status": 200
+    },
+    {
+      "name": "Customer Details Happy Path",
+      "method": "GET",
+      "path": "/api/v1/customers/CUST-0001",
+      "expected_status": 200,
+      "expected_fields": ["customer_id", "display_name", "status"]
+    },
+    {
+      "name": "Customer Loans List",
+      "method": "GET",
+      "path": "/api/v1/customers/CUST-0001/loans",
+      "expected_status": 200,
+      "expected_fields": ["customer_id", "loans"]
+    },
+    {
+      "name": "Loan Details Happy Path",
+      "method": "GET",
+      "path": "/api/v1/loans/LOAN-0001",
+      "expected_status": 200,
+      "expected_fields": ["loan_id", "status", "outstanding_balance"]
+    },
+    {
+      "name": "Loan Malformed ID Validation",
+      "method": "GET",
+      "path": "/api/v1/loans/not-a-loan",
+      "expected_status": 422
+    },
+    {
+      "name": "Loan Not Found (404)",
+      "method": "GET",
+      "path": "/api/v1/loans/LOAN-9999",
+      "expected_status": 404
+    },
+    {
+      "name": "Next Installment Happy Path",
+      "method": "GET",
+      "path": "/api/v1/loans/LOAN-0001/installments/next",
+      "expected_status": 200,
+      "expected_fields": ["loan_id", "due_date", "total_due"]
+    },
+    {
+      "name": "Service Request Create (Idempotent WRITE)",
+      "method": "POST",
+      "path": "/api/v1/service-requests",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Correlation-ID": "CORR-API-TEST-001"
+      },
+      "body": {
+        "customer_id": "CUST-0001",
+        "category": "LOAN",
+        "description": "API Test Service Request",
+        "idempotency_key": "IDEMP-API-TEST-001"
+      },
+      "expected_status": 201,
+      "expected_fields": ["service_request_id", "status", "customer_id"]
+    },
+    {
+      "name": "Correlation ID Propagation",
+      "method": "GET",
+      "path": "/health/ready",
+      "headers": {
+        "X-Correlation-ID": "CORR-API-PROPAGATION-001"
+      },
+      "expected_status": 200,
+      "expected_response_header": "X-Correlation-ID"
+    }
   ]
 }

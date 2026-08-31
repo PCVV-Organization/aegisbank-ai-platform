@@ -41,6 +41,7 @@ Desktop.ini
 dist/
 build/
 .tox/
+reports/
 
 # Infrastructure local state
 .terraform/

@@ -1,35 +1,113 @@
-name: AegisBank Quality Pipeline
+# AegisBank AI Platform — CI Pipeline
+# Status: CI-CONFIGURED / RUNNER-PENDING
+# Note: This workflow is configured for GitHub Actions runners. It is not marked CI-EXECUTED
+# until verified on a live GitHub Actions runner with execution logs.
+
+name: AegisBank CI Pipeline
 
 on:
-  pull_request:
   push:
-    branches: [master]
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
 
 permissions:
   contents: read
 
 jobs:
-  quality:
-    name: Quality and DevSecOps gates
+  static-analysis:
+    name: Static Quality & Linting
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
-          cache: pip
-      - name: Install local packages and quality tools
+          python-version: "3.14"
+
+      - name: Install Linting Tools
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e 'ai/rag[dev]' -e 'services/mock-core-banking[dev]' -e 'ai/agent[dev]' -e 'ml/intent-classifier[dev]'
-          python -m pip install bandit==1.9.4 pip-audit==2.10.1 pytest-cov==7.0.0
-      - name: Run local quality gate
-        run: python scripts/quality_gate.py
-      - name: Upload quality reports
-        if: always()
-        uses: actions/upload-artifact@v6
+          pip install ruff
+
+      - name: Run Ruff Lint Check
+        run: ruff check .
+
+      - name: Run Ruff Format Check
+        run: ruff format --check .
+
+      - name: Bytecode Compilation Check
+        run: python -m compileall .
+
+  test-suite:
+    name: Test Pyramid (Unit, Integration, Contract, E2E)
+    runs-on: ubuntu-latest
+    needs: static-analysis
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
         with:
-          name: aegisbank-quality-reports
-          path: artifacts/quality
+          python-version: "3.14"
+
+      - name: Install Core Banking Package & Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e services/mock-core-banking[dev]
+
+      - name: Install ML Classifier Package
+        run: pip install -e ml/intent-classifier[dev]
+
+      - name: Install RAG Package
+        run: pip install -e ai/rag[dev]
+
+      - name: Install Agent Package & Test Dependencies
+        run: |
+          pip install -e ai/agent[dev]
+          pip install pytest pytest-cov jsonschema
+
+      - name: Run Mock Core Banking Tests & Contracts
+        run: pytest services/mock-core-banking/tests
+
+      - name: Run ML Intent Classifier Tests
+        run: pytest ml/intent-classifier/tests
+
+      - name: Run AI RAG Tests
+        run: pytest ai/rag/tests
+
+      - name: Run AI Agent Tests, Contracts & E2E Journeys
+        run: pytest ai/agent/tests --cov=ai/agent/src --cov-report=term-missing
+
+  devsecops:
+    name: DevSecOps Gates (SAST, SCA, SBOM, Secrets)
+    runs-on: ubuntu-latest
+    needs: static-analysis
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install DevSecOps Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit pip-audit cyclonedx-bom
+
+      - name: Run SAST Security Scan (Bandit)
+        run: bandit -ll -r ai/agent/src ai/rag/src ml/intent-classifier/src services/mock-core-banking/src
+
+      - name: Run SCA Vulnerability Audit (pip-audit)
+        run: pip-audit
+
+      - name: Verify CycloneDX SBOM Generation
+        run: pip-audit -f cyclonedx-json -o docs/security/sbom.json
+
+      - name: Scan for Uncommitted Secrets & Sensitive Tokens
+        run: python scripts/quality_gate.py --gate-secrets-only

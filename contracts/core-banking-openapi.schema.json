@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aegisbank:contracts:core-banking-openapi:v1",
+  "title": "CoreBankingOpenAPIContract",
+  "description": "JSON Schema validating OpenAPI specification paths and models for Mock Core Banking.",
+  "type": "object",
+  "required": ["openapi", "info", "paths", "components"],
+  "properties": {
+    "openapi": {
+      "type": "string"
+    },
+    "info": {
+      "type": "object",
+      "required": ["title", "version"],
+      "properties": {
+        "title": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "required": [
+        "/health/live",
+        "/health/ready",
+        "/api/v1/customers/{customer_id}",
+        "/api/v1/customers/{customer_id}/loans",
+        "/api/v1/loans/{loan_id}",
+        "/api/v1/loans/{loan_id}/installments/next",
+        "/api/v1/service-requests",
+        "/api/v1/service-requests/{service_request_id}"
+      ]
+    },
+    "components": {
+      "type": "object",
+      "required": ["schemas"],
+      "properties": {
+        "schemas": {
+          "type": "object",
+          "required": [
+            "CustomerResponse",
+            "LoanResponse",
+            "InstallmentResponse",
+            "ServiceRequestCreateRequest",
+            "ServiceRequestResponse",
+            "ErrorResponse"
+          ]
+        }
+      }
+    }
+  }
+}

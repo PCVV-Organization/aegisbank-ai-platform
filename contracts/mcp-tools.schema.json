@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aegisbank:contracts:mcp-tools:v1",
+  "title": "MCPToolsRegistryContract",
+  "description": "JSON Schema validating MCP tool registry definitions and safety annotations.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "description", "inputSchema"],
+    "properties": {
+      "name": { "type": "string" },
+      "description": { "type": "string" },
+      "inputSchema": {
+        "type": "object",
+        "required": ["type", "properties"],
+        "properties": {
+          "type": { "type": "string", "const": "object" },
+          "properties": { "type": "object" },
+          "required": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "annotations": {
+        "type": "object",
+        "properties": {
+          "audience": { "type": "array", "items": { "type": "string" } },
+          "priority": { "type": "number" },
+          "readOnly": { "type": "boolean" },
+          "requiresApproval": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

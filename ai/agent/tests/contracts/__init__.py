@@ -1,1 +1,1 @@
-"""Contract tests for stable agent boundaries."""
+"""Contract validation test suites for MCP tools, schemas, and events."""
