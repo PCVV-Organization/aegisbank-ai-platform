@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from . import models as _models  # noqa: F401
 from .base import Base
@@ -13,11 +14,13 @@ from .base import Base
 
 def _build_engine(database_url: str) -> Engine:
     url = make_url(database_url)
-    engine = create_engine(
-        database_url,
-        connect_args={"check_same_thread": False} if url.get_backend_name() == "sqlite" else {},
-        pool_pre_ping=True,
-    )
+    engine_kwargs: dict[str, object] = {"pool_pre_ping": True}
+    if url.get_backend_name() == "sqlite":
+        engine_kwargs["connect_args"] = {"check_same_thread": False}
+        if not url.database or url.database == ":memory:":
+            engine_kwargs["poolclass"] = StaticPool
+
+    engine = create_engine(database_url, **engine_kwargs)
 
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_conn, _connection_record):

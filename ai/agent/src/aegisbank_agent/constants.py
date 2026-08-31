@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 DEFAULT_MODEL_ALIAS: str = "phi-4-mini"
-DEFAULT_SYSTEM_PROMPT_VERSION: str = "agent-system-v001"
+DEFAULT_SYSTEM_PROMPT_VERSION: str = "agent-system-v002"
 DEFAULT_MAX_TOOL_ROUNDS: int = 3
 
 PACKAGE_DIR: Path = Path(__file__).resolve().parent

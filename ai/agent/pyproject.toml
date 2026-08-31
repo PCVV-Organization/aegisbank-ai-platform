@@ -4,12 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aegisbank-agent"
-version = "0.6.0.dev0"
-description = "Single-agent orchestrator with read-only function tools for AegisBank AI Platform"
+version = "0.7.0.dev0"
+description = "Single-agent orchestrator with MCP and human-approved tools for AegisBank AI Platform"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "openai==3.5.0",
+    "mcp==2.1.1",
     "pydantic==2.13.4",
     "aegisbank-rag>=0.4.0",
     "mock-core-banking>=0.2.0",
@@ -23,6 +24,7 @@ dev = [
 
 [project.scripts]
 aegisbank-agent = "aegisbank_agent.cli:main"
+aegisbank-mcp-demo = "aegisbank_agent.hitl_cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/aegisbank_agent"]

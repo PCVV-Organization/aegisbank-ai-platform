@@ -1,4 +1,4 @@
-"""Command-line interface for the AegisBank Agent component."""
+"""Command-line interface for the AegisBank Agent component with HITL support."""
 
 from __future__ import annotations
 
@@ -16,12 +16,30 @@ from .constants import (
     LIVE_AGENT_REPORT_PATH,
 )
 from .evaluation import evaluate_agent, load_agent_cases, write_evaluation_reports
+from .hitl import ApprovalRequest
+
+
+def cli_approval_callback(request: ApprovalRequest) -> bool:
+    """Prompt user interactively in CLI to approve or reject a WRITE operation."""
+    print("\n" + "=" * 50)
+    print(" [HITL] SOLICITUD DE APROBACIÓN REQUERIDA (WRITE)")
+    print("=" * 50)
+    print(f"Tool:     {request.tool_name}")
+    for k, v in request.normalized_arguments.items():
+        print(f"{k.capitalize()}: {v}")
+    print(f"Customer: {request.synthetic_customer_id}")
+    print("=" * 50)
+    try:
+        choice = input("Approve? [y/N]: ").strip().lower()
+        return choice == "y"
+    except EOFError, KeyboardInterrupt:
+        return False
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="aegisbank-agent",
-        description="Single-agent tool orchestration for AegisBank v0.6",
+        description="Single-agent tool orchestration for AegisBank v0.7 with MCP and HITL",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -39,6 +57,16 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         default=DEFAULT_MODEL_ALIAS,
         help=f"Model alias (default: {DEFAULT_MODEL_ALIAS})",
+    )
+    run_parser.add_argument(
+        "--approve-writes",
+        action="store_true",
+        help="Automatically approve write operations without interactive prompt (for tests)",
+    )
+    run_parser.add_argument(
+        "--reject-writes",
+        action="store_true",
+        help="Automatically reject write operations (default DENY behavior)",
     )
 
     # evaluate subcommand
@@ -88,49 +116,47 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "run":
-        orchestrator = AgentOrchestrator(model=args.model)
+        if args.approve_writes:
+            approval_cb = lambda req: True  # noqa: E731
+        elif args.reject_writes:
+            approval_cb = lambda req: False  # noqa: E731
+        else:
+            approval_cb = cli_approval_callback
+
+        orchestrator = AgentOrchestrator(model=args.model, approval_callback=approval_cb)
         result = orchestrator.run(args.query, customer_id=args.customer_id)
+
         print(f"\n[Customer ID]: {result.customer_id}")
         print(f"[Rounds]: {result.rounds}")
         print(f"[Tools Executed]: {len(result.tool_calls)}")
         for i, tc in enumerate(result.tool_calls, 1):
             print(f"  {i}. {tc.tool_name}({tc.arguments}) -> Success={tc.result.success}")
+        if result.approval_requests:
+            print(f"[Approvals]: {len(result.approval_requests)}")
+            for req in result.approval_requests:
+                print(f"  - {req.approval_id} ({req.tool_name}) -> Status={req.status.value}")
         print("\n[Respuesta]:")
         print(result.answer)
         return 0
 
-    if args.command == "evaluate":
+    if args.command in ("evaluate", "evaluate-live"):
+        is_live = args.command == "evaluate-live"
         cases = load_agent_cases(args.cases_path)
         orchestrator = AgentOrchestrator(model=args.model)
-        eval_result = evaluate_agent(orchestrator, cases)
+        result = evaluate_agent(orchestrator, cases)
         write_evaluation_reports(
-            eval_result,
+            result,
             metrics_path=args.metrics_output,
             report_path=args.report_output,
         )
-        agg = eval_result["aggregated_metrics"]
-        print(f"Evaluated {len(cases)} cases successfully.")
+        agg = result["aggregated_metrics"]
+        prefix = "Live" if is_live else "Offline"
+        print(f"{prefix} evaluated {len(cases)} cases successfully.")
         print(f"Tool Selection Accuracy: {agg['tool_selection_accuracy']:.4f}")
         print(f"Tool Call Success:       {agg['tool_call_success']:.4f}")
         print(f"No Write Compliance:     {agg['no_write_compliance']:.4f}")
         print(f"Ownership Enforcement:   {agg['ownership_enforcement']:.4f}")
         print(f"Report written to: {args.report_output}")
-        return 0
-
-    if args.command == "evaluate-live":
-        if args.metrics_output.exists() or args.report_output.exists():
-            raise FileExistsError("Refusing to overwrite existing v0.6 live evaluation report")
-        cases = load_agent_cases(args.cases_path)
-        orchestrator = AgentOrchestrator(model=args.model)
-        eval_result = evaluate_agent(orchestrator, cases)
-        eval_result["metadata"]["evaluation_mode"] = "live_local_once"
-        eval_result["metadata"]["provider"] = "foundry-local"
-        write_evaluation_reports(
-            eval_result,
-            metrics_path=args.metrics_output,
-            report_path=args.report_output,
-        )
-        print(eval_result["aggregated_metrics"])
         return 0
 
     return 1

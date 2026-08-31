@@ -29,8 +29,7 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.6.0 — Single Agent + Read-Only Function Tools`
-(`MEASURED - FOUNDRY LOCAL BASELINE`)
+**Current milestone:** `v0.7.0 — MCP + Human-in-the-Loop` (`COMPLETE`)
 
 | Version | Milestone | Status |
 | --- | --- | --- |
@@ -39,8 +38,8 @@ All project data must be synthetic and reproducible.
 | `v0.3` | ML/NLP Intent Classification Baseline | COMPLETE |
 | `v0.4` | RAG Retrieval & Evaluation Foundation | COMPLETE |
 | `v0.5` | Grounded Generation & LLM Evaluation | COMPLETE |
-| `v0.6` | Single Agent + Read-Only Function Tools | MEASURED - FOUNDRY LOCAL BASELINE |
-| `v0.7` | MCP + HITL | NOT STARTED |
+| `v0.6` | Single Agent + Read-Only Function Tools | COMPLETE |
+| `v0.7` | MCP + HITL | COMPLETE |
 | `v0.8` | Quality + Evaluations | NOT STARTED |
 | `v0.9` | Azure Deployment | NOT STARTED |
 | `v1.0` | Enterprise Hardening | NOT STARTED |
@@ -118,6 +117,22 @@ All project data must be synthetic and reproducible.
 - Two architecture decision records: `ADR-012` (single-agent read-only first)
   and `ADR-013` (deterministic tool authorization boundary).
 
+## What `v0.7` Includes
+
+- Local Model Context Protocol (MCP) server boundary (`ai/agent/src/aegisbank_agent/mcp/`)
+  using the official Python `mcp>=2.1.1` SDK over `stdio` transport (Protocol `2026-07-28`).
+- Informative tool annotations metadata (`readOnlyHint=True` for read tools;
+  `readOnlyHint=False`, `destructiveHint=False` for write tool).
+- Single, low-risk state-changing WRITE operation: `create_service_request`.
+- Mandatory Human-in-the-Loop (HITL) approval state machine (`ApprovalRequest`
+  with states `PENDING`, `APPROVED`, `REJECTED`, `EXECUTED`).
+- Cryptographic argument hash binding and tampering detection post-approval.
+- Replay prevention for executed approvals and customer boundary isolation.
+- Interactive CLI human oversight prompt with default `DENY` behavior.
+- Complete acceptance test suite with 10 explicit security and workflow invariants.
+- Two architecture decision records: `ADR-014` (local MCP boundary using stdio)
+  and `ADR-015` (mandatory HITL for banking writes).
+
 ## Project Rules
 
 - Local first: local execution, then Docker, CI, and only then Azure.
@@ -155,6 +170,8 @@ The approved product boundary is defined by these documents:
 - [ADR-011](docs/architecture/adr/ADR-011-grounded-generation-citation-validation.md) — Grounded generation with citation validation for v0.5.
 - [ADR-012](docs/architecture/adr/ADR-012-single-agent-orchestrator-read-only-tools.md) — Single-agent orchestrator with read-only tools for v0.6.
 - [ADR-013](docs/architecture/adr/ADR-013-deterministic-tool-authorization-boundary.md) — Deterministic tool authorization and ownership boundary for v0.6.
+- [ADR-014](docs/architecture/adr/ADR-014-local-mcp-boundary-stdio.md) — Local MCP boundary using stdio transport for v0.7.
+- [ADR-015](docs/architecture/adr/ADR-015-mandatory-hitl-for-banking-writes.md) — Mandatory HITL for banking writes for v0.7.
 
 ## Repository Structure
 
@@ -163,7 +180,7 @@ aegisbank-ai-platform/
 |-- README.md               # this document
 |-- .gitignore
 |-- ai/
-|   |-- agent/              # v0.6 single-agent orchestrator & read tools
+|   |-- agent/              # v0.6/v0.7 agent orchestrator, MCP server & HITL
 |   `-- rag/                # v0.4 retrieval & v0.5 generation baseline
 |-- contracts/              # JSON Schema files
 |-- docs/
@@ -185,14 +202,14 @@ itself remains a pure code-and-documentation repository.
 
 ## How To Continue
 
-1. Start `v0.7 - MCP + HITL` only after explicit approval. Do not start a new
-   milestone automatically.
-2. Review the thirteen ADRs. None of them commits the project to a specific
+1. Start `v0.8 - Quality + Evaluations` only after explicit approval. Do not
+   start a new milestone automatically.
+2. Review the fifteen ADRs. None of them commits the project to a specific
    implementation outside its declared milestone.
 3. Record any requested scope change before implementation begins.
 
-No Docker, Azure, embedder, MCP server of our own, HITL workflow, messaging,
-retry policy, or circuit breaker has been implemented.
+No Docker, Azure, complex multi-agent flows, or paid cloud services have been
+implemented.
 
 ## Reference Baseline
 

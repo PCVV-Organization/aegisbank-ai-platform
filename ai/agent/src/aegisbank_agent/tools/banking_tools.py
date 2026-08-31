@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from mock_core_banking.domain.enums import ServiceRequestCategory
 from mock_core_banking.domain.errors import CustomerNotFoundError, LoanNotFoundError
 from mock_core_banking.domain.next_installment import select_next_installment
 from mock_core_banking.persistence.database import Database
@@ -12,6 +13,7 @@ from mock_core_banking.persistence.repositories import (
     CustomerRepository,
     InstallmentRepository,
     LoanRepository,
+    ServiceRequestRepository,
 )
 from mock_core_banking.persistence.seed import seed_database
 
@@ -253,5 +255,124 @@ class GetNextInstallmentTool(FunctionTool):
                     "fees_due": str(installment.fees_due),
                     "total_due": str(installment.total_due),
                     "status": installment.status.value,
+                },
+            )
+
+
+class CreateServiceRequestTool(FunctionTool):
+    """Tool to create a synthetic customer service request or claim in Core Banking."""
+
+    def __init__(self, database: Database | None = None) -> None:
+        self._db = database or create_default_database()
+
+    @property
+    def name(self) -> str:
+        return "create_service_request"
+
+    @property
+    def description(self) -> str:
+        return (
+            "Crea una solicitud de servicio o reclamo bancario para el cliente de la sesión. "
+            "Requiere aprobación humana explícita antes de su ejecución."
+        )
+
+    @property
+    def parameters_schema(self) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "enum": ["LOAN", "INSTALLMENT", "FEE", "GENERAL"],
+                    "description": (
+                        "Categoría de la solicitud o reclamo (LOAN, INSTALLMENT, FEE, GENERAL)."
+                    ),
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detalle descriptivo del reclamo o solicitud del cliente.",
+                },
+            },
+            "required": ["category", "description"],
+            "additionalProperties": False,
+        }
+
+    def execute(self, arguments: dict[str, Any], context: AgentContext) -> ToolResult:
+        raw_category = arguments.get("category")
+        description = arguments.get("description")
+
+        if not isinstance(raw_category, str) or not raw_category.strip():
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error="El parámetro 'category' es obligatorio (LOAN, INSTALLMENT, FEE, GENERAL).",
+            )
+
+        cat_upper = raw_category.strip().upper()
+        cat_map = {
+            "CLAIM": ServiceRequestCategory.GENERAL,
+            "RECLAMO": ServiceRequestCategory.GENERAL,
+            "GENERAL": ServiceRequestCategory.GENERAL,
+            "LOAN": ServiceRequestCategory.LOAN,
+            "PRESTAMO": ServiceRequestCategory.LOAN,
+            "PRÉSTAMO": ServiceRequestCategory.LOAN,
+            "INSTALLMENT": ServiceRequestCategory.INSTALLMENT,
+            "CUOTA": ServiceRequestCategory.INSTALLMENT,
+            "FEE": ServiceRequestCategory.FEE,
+            "COMISION": ServiceRequestCategory.FEE,
+            "COMISIÓN": ServiceRequestCategory.FEE,
+        }
+        category_enum = cat_map.get(cat_upper)
+        if category_enum is None:
+            try:
+                category_enum = ServiceRequestCategory(cat_upper)
+            except ValueError:
+                return ToolResult(
+                    tool_name=self.name,
+                    success=False,
+                    error=(
+                        f"Categoría '{raw_category}' inválida. "
+                        "Valores permitidos: LOAN, INSTALLMENT, FEE, GENERAL."
+                    ),
+                )
+
+        if not isinstance(description, str) or len(description.strip()) < 5:
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error=(
+                    "El parámetro 'description' debe contener al menos 5 caracteres descriptivos."
+                ),
+            )
+
+        with self._db.session() as session:
+            cust_repo = CustomerRepository(session)
+            try:
+                cust_repo.get_by_id(context.session_customer_id)
+            except CustomerNotFoundError:
+                return ToolResult(
+                    tool_name=self.name,
+                    success=False,
+                    error=f"Cliente '{context.session_customer_id}' no encontrado en Core Banking.",
+                )
+
+            sr_repo = ServiceRequestRepository(session)
+            sr = sr_repo.create(
+                customer_id=context.session_customer_id,
+                category=category_enum,
+                description=description.strip(),
+            )
+            session.commit()
+
+            return ToolResult(
+                tool_name=self.name,
+                success=True,
+                data={
+                    "service_request_id": sr.service_request_id,
+                    "customer_id": sr.customer_id,
+                    "category": sr.category.value,
+                    "description": sr.description,
+                    "status": sr.status.value,
+                    "created_at": sr.created_at.isoformat(),
                 },
             )

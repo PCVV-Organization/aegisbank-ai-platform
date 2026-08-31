@@ -1,26 +1,39 @@
-"""Read-only tool registry and deterministic execution gate."""
+"""Tool registry and deterministic execution gate."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from .banking_tools import GetLoanDetailsTool, GetMyLoansTool, GetNextInstallmentTool
+from .banking_tools import (
+    CreateServiceRequestTool,
+    GetLoanDetailsTool,
+    GetMyLoansTool,
+    GetNextInstallmentTool,
+)
 from .base import AgentContext, FunctionTool, ToolResult
 from .knowledge_tools import SearchKnowledgeTool
 
 
 class ToolRegistry:
-    """Deterministic registry enforcing a strictly read-only tool allowlist."""
+    """Deterministic registry enforcing allowed tool sets."""
 
-    def __init__(self, tools: list[FunctionTool] | None = None) -> None:
+    def __init__(
+        self,
+        tools: list[FunctionTool] | None = None,
+        *,
+        include_write_tools: bool = False,
+    ) -> None:
         self._tools: dict[str, FunctionTool] = {}
         if tools is None:
-            default_tools = [
+            default_tools: list[FunctionTool] = [
                 SearchKnowledgeTool(),
                 GetMyLoansTool(),
                 GetLoanDetailsTool(),
                 GetNextInstallmentTool(),
             ]
+            if include_write_tools:
+                default_tools.append(CreateServiceRequestTool())
+
             for tool in default_tools:
                 self.register(tool)
         else:
@@ -53,7 +66,7 @@ class ToolRegistry:
                 success=False,
                 error=(
                     f"Herramienta '{name}' no permitida o desconocida. "
-                    "Solo están disponibles herramientas de lectura: "
+                    "Herramientas disponibles: "
                     f"{', '.join(self.allowed_tool_names)}."
                 ),
             )
