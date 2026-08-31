@@ -10,6 +10,8 @@ import time
 import urllib.request
 from pathlib import Path
 
+from azure.servicebus.exceptions import ServiceBusError
+
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "deploy" / "local" / "docker-compose.yml"
 
@@ -103,7 +105,7 @@ def main() -> int:
         time.sleep(30)
         try:
             message_ok = _message_flow()
-        except Exception as exc:
+        except (OSError, ServiceBusError) as exc:
             print(f"AEGISBANK_V0.11_MESSAGE_FLOW_ERROR: {type(exc).__name__}")
             return 1
         if not message_ok:

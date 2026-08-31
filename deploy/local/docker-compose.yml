@@ -41,24 +41,36 @@ services:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in the shell; never commit it}
     networks:
       - aegisbank-net
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   servicebus-emulator:
     image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
     container_name: aegisbank-servicebus-emulator
     restart: unless-stopped
     depends_on:
-      - mssql
+      mssql:
+        condition: service_healthy
     ports:
       - "5672:5672"
     environment:
       SQL_SERVER: "mssql"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in the shell; never commit it}
       ACCEPT_EULA: "Y"
-      CONFIG_PATH: "/ServiceBus-Emulator/Config.json"
     volumes:
-      - ./Config.json:/ServiceBus-Emulator/Config.json:ro
+      - ./Config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
     networks:
       - aegisbank-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/5672'"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
 
 networks:
   aegisbank-net:
