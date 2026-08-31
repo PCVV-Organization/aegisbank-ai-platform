@@ -29,6 +29,10 @@ Index:
   LLM request boundary for grounded generation (v0.5).
 - [ADR-011](./ADR-011-grounded-generation-citation-validation.md) — Grounded
   generation with active-context and citation validation (v0.5).
+- [ADR-012](./ADR-012-single-agent-orchestrator-read-only-tools.md) — Single
+  agent orchestrator with read-only function tools (v0.6).
+- [ADR-013](./ADR-013-deterministic-tool-authorization-boundary.md) — Deterministic
+  tool authorization and ownership boundary (v0.6).
 
 Scope note: ADR-003 remains an accepted historical decision, but the current
 `v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly

@@ -29,7 +29,7 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.5.0 - Grounded Generation & LLM Evaluation`
+**Current milestone:** `v0.6.0 — Single Agent + Read-Only Function Tools`
 (`MEASURED - FOUNDRY LOCAL BASELINE`)
 
 | Version | Milestone | Status |
@@ -38,9 +38,9 @@ All project data must be synthetic and reproducible.
 | `v0.2` | Core Banking Mock | COMPLETE |
 | `v0.3` | ML/NLP Intent Classification Baseline | COMPLETE |
 | `v0.4` | RAG Retrieval & Evaluation Foundation | COMPLETE |
-| `v0.5` | Grounded Generation & LLM Evaluation | MEASURED - FOUNDRY LOCAL BASELINE |
-| `v0.6` | MCP + HITL | NOT STARTED |
-| `v0.7` | Reliability + Messaging | NOT STARTED |
+| `v0.5` | Grounded Generation & LLM Evaluation | COMPLETE |
+| `v0.6` | Single Agent + Read-Only Function Tools | MEASURED - FOUNDRY LOCAL BASELINE |
+| `v0.7` | MCP + HITL | NOT STARTED |
 | `v0.8` | Quality + Evaluations | NOT STARTED |
 | `v0.9` | Azure Deployment | NOT STARTED |
 | `v1.0` | Enterprise Hardening | NOT STARTED |
@@ -89,7 +89,7 @@ All project data must be synthetic and reproducible.
 - Two architecture decision records: `ADR-008` (local retrieval before
   Azure AI Search) and `ADR-009` (hybrid retrieval with RRF).
 
-## What `v0.5` Has So Far
+## What `v0.5` Includes
 
 - Provider-neutral `LLMProvider` and strict structured-answer contract under
   `ai/rag/src/aegisbank_rag/`.
@@ -103,6 +103,20 @@ All project data must be synthetic and reproducible.
 - Deterministic generation metric harness and contract tests.
 - Foundry Local `0.10.3` baseline using `phi-4-mini` and six held-out cases;
   metrics are recorded under `ai/rag/reports/` without production thresholds.
+- Two architecture decision records: `ADR-010` (provider-neutral LLM boundary)
+  and `ADR-011` (grounded generation citation validation).
+
+## What `v0.6` Includes
+
+- Single-agent orchestrator (`ai/agent/`) with multi-turn loop and round limits.
+- Strict read-only tool allowlist: `search_knowledge`, `get_my_loans`,
+  `get_loan_details`, `get_next_installment`.
+- Deterministic customer ownership validation preventing cross-customer access.
+- Canonical agent system prompt `agent-system-v001`.
+- Complete test coverage across schemas, registry, tools, ownership, and evaluation.
+- Foundry Local `0.10.3` offline evaluation recorded in `ai/agent/reports/`.
+- Two architecture decision records: `ADR-012` (single-agent read-only first)
+  and `ADR-013` (deterministic tool authorization boundary).
 
 ## Project Rules
 
@@ -139,6 +153,8 @@ The approved product boundary is defined by these documents:
 - [ADR-009](docs/architecture/adr/ADR-009-hybrid-retrieval-with-rrf.md) — Hybrid retrieval with Reciprocal Rank Fusion (`k=60`) for v0.4.
 - [ADR-010](docs/architecture/adr/ADR-010-provider-agnostic-llm-boundary.md) — Provider-agnostic LLM boundary for v0.5.
 - [ADR-011](docs/architecture/adr/ADR-011-grounded-generation-citation-validation.md) — Grounded generation with citation validation for v0.5.
+- [ADR-012](docs/architecture/adr/ADR-012-single-agent-orchestrator-read-only-tools.md) — Single-agent orchestrator with read-only tools for v0.6.
+- [ADR-013](docs/architecture/adr/ADR-013-deterministic-tool-authorization-boundary.md) — Deterministic tool authorization and ownership boundary for v0.6.
 
 ## Repository Structure
 
@@ -147,7 +163,8 @@ aegisbank-ai-platform/
 |-- README.md               # this document
 |-- .gitignore
 |-- ai/
-|   `-- rag/                # v0.4 retrieval + blocked v0.5 generation candidate
+|   |-- agent/              # v0.6 single-agent orchestrator & read tools
+|   `-- rag/                # v0.4 retrieval & v0.5 generation baseline
 |-- contracts/              # JSON Schema files
 |-- docs/
 |   |-- charter/            # v0.1 charter (5 docs)
@@ -168,15 +185,14 @@ itself remains a pure code-and-documentation repository.
 
 ## How To Continue
 
-1. Resume `v0.5 - Grounded Generation & LLM Evaluation` only after an
-   authorized live provider/model is configured. Do not start v0.6.
-2. Review the eleven ADRs. None of them commits the project to a specific
+1. Start `v0.7 - MCP + HITL` only after explicit approval. Do not start a new
+   milestone automatically.
+2. Review the thirteen ADRs. None of them commits the project to a specific
    implementation outside its declared milestone.
 3. Record any requested scope change before implementation begins.
 
-No Docker, Azure, embedder, agent, MCP server of our own, HITL workflow,
-messaging, retry policy, circuit breaker, or live LLM adapter has been
-implemented. v0.5 remains blocked before completion.
+No Docker, Azure, embedder, MCP server of our own, HITL workflow, messaging,
+retry policy, or circuit breaker has been implemented.
 
 ## Reference Baseline
 
