@@ -116,3 +116,27 @@ class ServiceRequest(Base):
         Enum(ServiceRequestStatus, native_enum=False, create_constraint=True), nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False)
+
+
+class IdempotencyRecord(Base):
+    __tablename__ = "idempotency_records"
+
+    idempotency_key: Mapped[str] = mapped_column(String(128), primary_key=True)
+    customer_id: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    resource_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    response_data: Mapped[str] = mapped_column(String(4000), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False)
+
+
+class OutboxEvent(Base):
+    __tablename__ = "outbox_events"
+
+    event_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    event_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    aggregate_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    aggregate_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    payload: Mapped[str] = mapped_column(String(4000), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING", index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False)
+    published_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)

@@ -292,6 +292,10 @@ class CreateServiceRequestTool(FunctionTool):
                     "type": "string",
                     "description": "Detalle descriptivo del reclamo o solicitud del cliente.",
                 },
+                "idempotency_key": {
+                    "type": "string",
+                    "description": "Llave única para garantizar que la solicitud no se duplique.",
+                },
             },
             "required": ["category", "description"],
             "additionalProperties": False,
@@ -300,6 +304,7 @@ class CreateServiceRequestTool(FunctionTool):
     def execute(self, arguments: dict[str, Any], context: AgentContext) -> ToolResult:
         raw_category = arguments.get("category")
         description = arguments.get("description")
+        idempotency_key = arguments.get("idempotency_key")
 
         if not isinstance(raw_category, str) or not raw_category.strip():
             return ToolResult(
@@ -345,34 +350,71 @@ class CreateServiceRequestTool(FunctionTool):
                 ),
             )
 
-        with self._db.session() as session:
-            cust_repo = CustomerRepository(session)
-            try:
-                cust_repo.get_by_id(context.session_customer_id)
-            except CustomerNotFoundError:
-                return ToolResult(
-                    tool_name=self.name,
-                    success=False,
-                    error=f"Cliente '{context.session_customer_id}' no encontrado en Core Banking.",
+        # Normalize arguments for idempotency checking
+        normalized_args = {
+            "category": category_enum.value,
+            "description": description.strip(),
+        }
+        effective_key = (
+            idempotency_key.strip()
+            if isinstance(idempotency_key, str) and idempotency_key.strip()
+            else None
+        )
+
+        def _do_create() -> dict[str, Any]:
+            with self._db.session() as session:
+                cust_repo = CustomerRepository(session)
+                try:
+                    cust_repo.get_by_id(context.session_customer_id)
+                except CustomerNotFoundError:
+                    raise ValueError(
+                        f"Cliente '{context.session_customer_id}' no encontrado en Core Banking."
+                    )
+
+                sr_repo = ServiceRequestRepository(session)
+                sr = sr_repo.create(
+                    customer_id=context.session_customer_id,
+                    category=category_enum,
+                    description=description.strip(),
                 )
-
-            sr_repo = ServiceRequestRepository(session)
-            sr = sr_repo.create(
-                customer_id=context.session_customer_id,
-                category=category_enum,
-                description=description.strip(),
-            )
-            session.commit()
-
-            return ToolResult(
-                tool_name=self.name,
-                success=True,
-                data={
+                session.commit()
+                return {
                     "service_request_id": sr.service_request_id,
                     "customer_id": sr.customer_id,
                     "category": sr.category.value,
                     "description": sr.description,
                     "status": sr.status.value,
                     "created_at": sr.created_at.isoformat(),
-                },
+                }
+
+        try:
+            if effective_key:
+                from ..reliability.idempotency import (
+                    IdempotencyGuard,
+                )
+
+                guard = IdempotencyGuard(self._db)
+                data, cached = guard.execute_idempotent(
+                    idempotency_key=effective_key,
+                    customer_id=context.session_customer_id,
+                    arguments=normalized_args,
+                    operation=_do_create,
+                )
+                return ToolResult(
+                    tool_name=self.name,
+                    success=True,
+                    data=data,
+                )
+            else:
+                data = _do_create()
+                return ToolResult(
+                    tool_name=self.name,
+                    success=True,
+                    data=data,
+                )
+        except Exception as exc:
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error=str(exc),
             )

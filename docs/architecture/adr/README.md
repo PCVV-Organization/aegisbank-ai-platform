@@ -33,14 +33,16 @@ Index:
   agent orchestrator with read-only function tools (v0.6).
 - [ADR-013](./ADR-013-deterministic-tool-authorization-boundary.md) — Deterministic
   tool authorization and ownership boundary (v0.6).
-- [ADR-014](./ADR-014-local-mcp-stdio-boundary.md) — Local MCP boundary using
-  stdio (v0.7).
-- [ADR-015](./ADR-015-mandatory-human-approval-for-banking-writes.md) — Mandatory
-  human approval for banking writes (v0.7).
 - [ADR-014](./ADR-014-local-mcp-boundary-stdio.md) — Local Model Context
   Protocol (MCP) boundary using stdio transport (v0.7).
 - [ADR-015](./ADR-015-mandatory-hitl-for-banking-writes.md) — Mandatory
   Human-in-the-Loop (HITL) authorization for banking writes (v0.7).
+- [ADR-016](./ADR-016-idempotent-banking-writes-before-retries.md) — Idempotent
+  banking writes before retries (v0.8).
+- [ADR-017](./ADR-017-transactional-outbox-and-messaging-abstraction.md) — Transactional
+  Outbox pattern and messaging abstraction (v0.8).
+- [ADR-018](./ADR-018-circuit-breaker-policy-for-external-dependencies.md) — Circuit
+  breaker policy for external dependencies (v0.8).
 
 Scope note: ADR-003 remains an accepted historical decision, but the current
 `v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly

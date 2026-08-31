@@ -37,3 +37,11 @@ ni `git add -A`. Si todo pasa crea:
 `feat(v0.7): establish MCP human-approved write boundary`
 
 No push. No iniciar v0.8.
+
+## Modo educativo obligatorio
+
+Explica cada resultado como una clase introductoria de maestría: define en
+español la primera vez cada sigla o término técnico (por ejemplo LLM, RAG, MCP,
+HITL, API, E2E y ADR), explica qué problema resuelve y relaciona la evidencia
+con AI-103 y AI-200. No presentes una certificación ni una afirmación de
+compliance como resultado de los tests.

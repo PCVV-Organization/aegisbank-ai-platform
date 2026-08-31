@@ -29,7 +29,7 @@ All project data must be synthetic and reproducible.
 
 ## Current Status
 
-**Current milestone:** `v0.7.0 — MCP + Human-in-the-Loop` (`COMPLETE`)
+**Current milestone:** `v0.8.0 — Reliability + Messaging Foundation` (`COMPLETE`)
 
 | Version | Milestone | Status |
 | --- | --- | --- |
@@ -40,7 +40,7 @@ All project data must be synthetic and reproducible.
 | `v0.5` | Grounded Generation & LLM Evaluation | COMPLETE |
 | `v0.6` | Single Agent + Read-Only Function Tools | COMPLETE |
 | `v0.7` | MCP + HITL | COMPLETE |
-| `v0.8` | Quality + Evaluations | NOT STARTED |
+| `v0.8` | Reliability + Messaging Foundation | COMPLETE |
 | `v0.9` | Azure Deployment | NOT STARTED |
 | `v1.0` | Enterprise Hardening | NOT STARTED |
 | `v1.1` | AKS experiment | Optional after `v1.0` |
@@ -133,6 +133,25 @@ All project data must be synthetic and reproducible.
 - Two architecture decision records: `ADR-014` (local MCP boundary using stdio)
   and `ADR-015` (mandatory HITL for banking writes).
 
+## What `v0.8` Includes
+
+- Deterministic Idempotency Guard (`IdempotencyGuard` + `idempotency_records` table)
+  with SHA-256 argument canonicalization, cached result playback, and conflict detection.
+- Bounded Exponential Backoff Retry Policy (`RetryPolicy`) with full jitter,
+  strictly scoped to transient recoverable errors (zero retries on validation, auth,
+  HITL rejects, and idempotency conflicts).
+- 3-State Finite State Machine Circuit Breaker (`CircuitBreaker` with `CLOSED`, `OPEN`,
+  `HALF_OPEN`) to prevent cascading dependency failure.
+- Strict bounded execution timeouts (`with_timeout`).
+- Transactional Outbox Pattern (`OutboxRepository` + `outbox_events` table) persisting
+  the `ServiceRequestCreated` domain event within the same atomic database transaction.
+- Agnostic Message Bus Abstraction (`LocalMessageBus` and `OutboxProcessor`).
+- Idempotent Event Consumer (`IdempotentConsumer`) with Dead-Letter Queue (`DeadLetterQueue`)
+  routing for persistently failing poison messages.
+- Deterministic 9-scenario failure injection test suite and full E2E acceptance tests.
+- Three architecture decision records: `ADR-016` (idempotent writes before retries),
+  `ADR-017` (transactional outbox + messaging abstraction), and `ADR-018` (circuit breaker policy).
+
 ## Project Rules
 
 - Local first: local execution, then Docker, CI, and only then Azure.
@@ -207,6 +226,10 @@ itself remains a pure code-and-documentation repository.
 2. Review the fifteen ADRs. None of them commits the project to a specific
    implementation outside its declared milestone.
 3. Record any requested scope change before implementation begins.
+4. Use the [role-profile learning map](docs/career/role-profile-images-and-gap-analysis.md)
+   to study terminology, evidence, and remaining gaps against Microsoft AI-103
+   and AI-200. It transcribes the supplied role-profile images without claiming
+   certification or production readiness.
 
 No Docker, Azure, complex multi-agent flows, or paid cloud services have been
 implemented.
@@ -214,7 +237,7 @@ implemented.
 ## Reference Baseline
 
 The charter uses official sources as design references, not as claims of
-certification or compliance. The source baseline was checked on 2026-08-20:
+certification or compliance. The source baseline was checked on 2026-08-30:
 
 - [Microsoft AI-103 study guide](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/ai-103)
 - [Microsoft AI-200 study guide](https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/ai-200)
