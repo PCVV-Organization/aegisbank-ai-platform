@@ -204,3 +204,9 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **Knowledge gap:** No existe evidencia suficiente en la base autorizada para responder. AegisBank debe abstenerse, no completar el dato con memoria del LLM.
 * **Routing gap:** La evidencia podría existir, pero el agente no emitió un `tool_call` estructurado. Es distinto de un knowledge gap.
 * **En AegisBank:** Políticas, requisitos, tasas, comisiones y plazos se recuperan antes de la generación; las citas conservan `document_id`, versión y `chunk_id`.
+
+### Account Query y Tool Allowlist
+* **Account query:** Pregunta que necesita datos específicos de la cuenta autenticada, por ejemplo “mis préstamos” o “mi próxima cuota”.
+* **Tool allowlist:** Subconjunto explícito de herramientas que el modelo puede ver para una intención. Limitarlo reduce ambigüedad y superficie de riesgo.
+* **Policy-enforced routing:** Para datos personales, la aplicación fuerza primero la consulta READ autorizada; el LLM no decide si puede responder desde memoria.
+* **En AegisBank:** `AgentContext.session_customer_id` determina la identidad y `get_loan_details`/`get_next_installment` validan ownership. Nunca se acepta `customer_id` suministrado por el LLM.

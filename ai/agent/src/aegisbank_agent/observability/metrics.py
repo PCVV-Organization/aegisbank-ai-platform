@@ -28,6 +28,11 @@ class OperationalMetrics:
             "knowledge_tool_invoked_count": 0,
             "knowledge_tool_missed_count": 0,
             "knowledge_abstention_count": 0,
+            "banking_data_required_count": 0,
+            "banking_tool_invoked_count": 0,
+            "banking_tool_missed_count": 0,
+            "pseudo_tool_call_count": 0,
+            "forced_routing_count": 0,
         }
         self._latencies: dict[str, list[float]] = {
             "agent_run_latencies_ms": [],

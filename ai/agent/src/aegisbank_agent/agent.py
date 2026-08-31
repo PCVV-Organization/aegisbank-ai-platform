@@ -14,7 +14,12 @@ from openai import OpenAI
 
 from .constants import DEFAULT_MAX_TOOL_ROUNDS, SYSTEM_PROMPT_PATH
 from .hitl import ApprovalRequest, HITLApprovalManager
-from .knowledge_routing import has_sufficient_evidence, requires_authorized_knowledge
+from .knowledge_routing import (
+    account_tool_allowlist,
+    has_sufficient_evidence,
+    requires_account_data,
+    requires_authorized_knowledge,
+)
 from .observability import Observability, create_observability
 from .observability.audit import AuditEventType, AuditLogger, get_audit_logger
 from .observability.context import ObservabilityContext
@@ -152,20 +157,25 @@ class AgentOrchestrator:
     def hotl_supervisor(self) -> HOTLSupervisor:
         return self._hotl
 
-    def _call_completions(self, messages: list[dict[str, Any]], tools: list[dict[str, Any]]) -> Any:
+    def _call_completions(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        tool_choice: Any = "auto",
+    ) -> Any:
         if hasattr(self._client, "chat") and hasattr(self._client.chat, "completions"):
             return self._client.chat.completions.create(
                 model=self._model,
                 messages=messages,
                 tools=tools,
-                tool_choice="auto",
+                tool_choice=tool_choice,
             )
         if hasattr(self._client, "create"):
             return self._client.create(
                 model=self._model,
                 messages=messages,
                 tools=tools,
-                tool_choice="auto",
+                tool_choice=tool_choice,
             )
         raise AttributeError("LLM client does not provide a create completion interface")
 
@@ -206,7 +216,17 @@ class AgentOrchestrator:
             },
         ):
             context = AgentContext(session_customer_id=customer_id)
-            tools = self._registry.export_openai_tools()
+            all_tools = self._registry.export_openai_tools()
+            account_required = requires_account_data(user_message)
+            account_allowlist = account_tool_allowlist(user_message) if account_required else []
+            if account_required:
+                self._metrics.increment("banking_data_required_count")
+                self._metrics.increment("forced_routing_count")
+                tools = [
+                    tool for tool in all_tools if tool["function"]["name"] in account_allowlist
+                ]
+            else:
+                tools = all_tools
             active_approval_cb = approval_callback or self._approval_callback
 
             messages: list[dict[str, Any]] = [
@@ -217,6 +237,54 @@ class AgentOrchestrator:
             executed_records: list[ToolCallRecord] = []
             created_approvals: list[ApprovalRequest] = []
             current_round = 0
+            account_result: ToolResult | None = None
+            account_model_calls = 0
+
+            # Resolve the account list deterministically before asking for a follow-up tool.
+            if account_required and "get_my_loans" in account_allowlist:
+                with trace_span(
+                    "tool.get_my_loans",
+                    attributes={
+                        "tool.name": "get_my_loans",
+                        "customer.id": customer_id,
+                        "routing.mode": "POLICY_ENFORCED_ROUTING",
+                    },
+                ):
+                    account_result = self._registry.execute("get_my_loans", {}, context)
+                self._metrics.increment("banking_tool_invoked_count")
+                executed_records.append(ToolCallRecord("get_my_loans", {}, account_result))
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": (
+                            "Datos autorizados de la sesión actual. Usa únicamente estos "
+                            f"datos: {json.dumps(account_result.data, ensure_ascii=False)}"
+                        ),
+                    }
+                )
+                if not account_result.success:
+                    self._metrics.increment("banking_tool_missed_count")
+                    return AgentExecutionResult(
+                        answer="No pude consultar los datos bancarios de la sesión.",
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        success=False,
+                        error=account_result.error,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
+                tools = [
+                    tool
+                    for tool in all_tools
+                    if tool["function"]["name"] in account_allowlist
+                    and tool["function"]["name"] != "get_my_loans"
+                ]
+
+            selected_tool = tools[0]["function"]["name"] if len(tools) == 1 else None
+            effective_tool_choice: Any = (
+                {"type": "function", "function": {"name": selected_tool}}
+                if account_required and selected_tool
+                else "auto"
+            )
 
             # Banking policy/product questions must be grounded before generation.
             knowledge_required = requires_authorized_knowledge(user_message)
@@ -328,7 +396,9 @@ class AgentOrchestrator:
                             "round": current_round,
                         },
                     ):
-                        response = self._call_completions(messages, tools)
+                        response = self._call_completions(
+                            messages, tools, tool_choice=effective_tool_choice
+                        )
                     llm_dur_ms = (time.perf_counter() - llm_start) * 1000.0
                     self._metrics.record_latency("llm_latencies_ms", llm_dur_ms)
                 except Exception as exc:
@@ -368,12 +438,46 @@ class AgentOrchestrator:
                     extra={
                         "tools_provided": len(tools),
                         "tool_choice": "auto",
+                        "routing_mode": (
+                            "POLICY_ENFORCED_ROUTING" if account_required else "AUTO_ROUTING"
+                        ),
+                        "effective_tool_choice": effective_tool_choice,
                         "finish_reason": finish_reason,
                         "structured_tool_call": bool(tool_calls),
                     },
                 )
 
                 if not tool_calls:
+                    if account_result is not None and not any(
+                        rec.tool_name == "get_my_loans" for rec in executed_records
+                    ):
+                        executed_records.append(ToolCallRecord("get_my_loans", {}, account_result))
+                    if account_required and any(
+                        name in (msg.content or "") for name in account_allowlist
+                    ):
+                        self._metrics.increment("pseudo_tool_call_count")
+                        self._metrics.increment("banking_tool_missed_count")
+                        self._audit.record(
+                            event_type=AuditEventType.TOOL_DENIED,
+                            correlation_id=obs_ctx.correlation_id,
+                            customer_id=customer_id,
+                            actor="ROUTING_POLICY",
+                            payload={
+                                "reason": "PSEUDO_TOOL_CALL",
+                                "content_length": len(msg.content or ""),
+                            },
+                        )
+                        return AgentExecutionResult(
+                            answer=(
+                                "No pude obtener una respuesta estructurada del sistema bancario."
+                            ),
+                            customer_id=customer_id,
+                            tool_calls=executed_records,
+                            rounds=current_round,
+                            success=False,
+                            error="Structured tool call was not emitted",
+                            correlation_id=obs_ctx.correlation_id,
+                        )
                     # Model provided direct final text answer
                     answer = msg.content or ""
                     total_dur_ms = (time.perf_counter() - start_time) * 1000.0
@@ -434,6 +538,8 @@ class AgentOrchestrator:
                         parsed_args = {}
 
                     self._metrics.increment("tool_call_count")
+                    if fn_name in account_allowlist:
+                        self._metrics.increment("banking_tool_invoked_count")
                     self._audit.record(
                         event_type=AuditEventType.TOOL_PROPOSED,
                         correlation_id=obs_ctx.correlation_id,
@@ -441,6 +547,23 @@ class AgentOrchestrator:
                         actor="AGENT",
                         payload={"tool_name": fn_name, "arguments": parsed_args},
                     )
+
+                    if fn_name == "get_my_loans" and account_result is not None:
+                        account_model_calls += 1
+                        if account_model_calls > 1:
+                            executed_records.append(
+                                ToolCallRecord("get_my_loans", {}, account_result)
+                            )
+                        tool_result = account_result
+                        messages.append(
+                            {
+                                "role": "tool",
+                                "tool_call_id": tc.id,
+                                "name": fn_name,
+                                "content": json.dumps(tool_result.as_dict(), ensure_ascii=False),
+                            }
+                        )
+                        continue
 
                     # 2. Check HOTL Supervisor Kill-Switch before allowing write tools
                     if fn_name in WRITE_TOOLS and not self._hotl.is_write_allowed:
@@ -600,6 +723,8 @@ class AgentOrchestrator:
                             "content": json.dumps(tool_result.as_dict(), ensure_ascii=False),
                         }
                     )
+                effective_tool_choice = "auto"
+                tools = all_tools
 
             total_dur_ms = (time.perf_counter() - start_time) * 1000.0
             self._metrics.record_latency("agent_run_latencies_ms", total_dur_ms)
