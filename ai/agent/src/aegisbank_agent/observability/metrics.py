@@ -24,6 +24,10 @@ class OperationalMetrics:
             "circuit_breaker_open_count": 0,
             "outbox_pending_count": 0,
             "dlq_count": 0,
+            "knowledge_required_count": 0,
+            "knowledge_tool_invoked_count": 0,
+            "knowledge_tool_missed_count": 0,
+            "knowledge_abstention_count": 0,
         }
         self._latencies: dict[str, list[float]] = {
             "agent_run_latencies_ms": [],

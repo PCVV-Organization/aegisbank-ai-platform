@@ -14,6 +14,7 @@ from openai import OpenAI
 
 from .constants import DEFAULT_MAX_TOOL_ROUNDS, SYSTEM_PROMPT_PATH
 from .hitl import ApprovalRequest, HITLApprovalManager
+from .knowledge_routing import has_sufficient_evidence, requires_authorized_knowledge
 from .observability import Observability, create_observability
 from .observability.audit import AuditEventType, AuditLogger, get_audit_logger
 from .observability.context import ObservabilityContext
@@ -50,6 +51,7 @@ class AgentExecutionResult:
     error: str | None = None
     approval_requests: list[ApprovalRequest] = field(default_factory=list)
     correlation_id: str = ""
+    citations: list[dict[str, Any]] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -68,6 +70,7 @@ class AgentExecutionResult:
             "error": self.error,
             "approval_requests": [req.as_dict() for req in self.approval_requests],
             "correlation_id": self.correlation_id,
+            "citations": self.citations,
         }
 
 
@@ -215,6 +218,101 @@ class AgentOrchestrator:
             created_approvals: list[ApprovalRequest] = []
             current_round = 0
 
+            # Banking policy/product questions must be grounded before generation.
+            knowledge_required = requires_authorized_knowledge(user_message)
+            knowledge_tool = self._registry.get_tool("search_knowledge")
+            if knowledge_required:
+                self._metrics.increment("knowledge_required_count")
+            if knowledge_required and knowledge_tool is None:
+                self._metrics.increment("knowledge_tool_missed_count")
+                self._metrics.increment("knowledge_abstention_count")
+                return AgentExecutionResult(
+                    answer=(
+                        "No encuentro información suficiente en la base de conocimiento "
+                        "autorizada para confirmar ese dato."
+                    ),
+                    customer_id=customer_id,
+                    rounds=0,
+                    success=True,
+                    approval_requests=created_approvals,
+                    correlation_id=obs_ctx.correlation_id,
+                )
+            if knowledge_required and knowledge_tool is not None:
+                self._audit.record(
+                    event_type=AuditEventType.TOOL_PROPOSED,
+                    correlation_id=obs_ctx.correlation_id,
+                    customer_id=customer_id,
+                    actor="GROUNDING_POLICY",
+                    payload={"tool_name": "search_knowledge"},
+                )
+                knowledge_start = time.perf_counter()
+                with trace_span(
+                    "retrieval.search_knowledge",
+                    attributes={"tool.name": "search_knowledge"},
+                ):
+                    knowledge_result = self._registry.execute(
+                        "search_knowledge", {"query": user_message}, context
+                    )
+                self._metrics.increment("knowledge_tool_invoked_count")
+                self._metrics.record_latency(
+                    "tool_latencies_ms", (time.perf_counter() - knowledge_start) * 1000.0
+                )
+                executed_records.append(
+                    ToolCallRecord(
+                        tool_name="search_knowledge",
+                        arguments={"query": user_message},
+                        result=knowledge_result,
+                    )
+                )
+                self._audit.record(
+                    event_type=AuditEventType.TOOL_EXECUTED,
+                    correlation_id=obs_ctx.correlation_id,
+                    customer_id=customer_id,
+                    actor="GROUNDING_POLICY",
+                    payload={"tool_name": "search_knowledge", "result": knowledge_result.data},
+                )
+                if not knowledge_result.success or not has_sufficient_evidence(
+                    user_message, knowledge_result.data
+                ):
+                    self._metrics.increment("knowledge_abstention_count")
+                    self._audit.record(
+                        event_type=AuditEventType.AGENT_RUN_COMPLETED,
+                        correlation_id=obs_ctx.correlation_id,
+                        customer_id=customer_id,
+                        actor="GROUNDING_POLICY",
+                        payload={"status": "ABSTAIN", "reason": "KNOWLEDGE_GAP"},
+                    )
+                    citations = [
+                        {
+                            key: hit[key]
+                            for key in ("document_id", "chunk_id", "title", "version")
+                            if key in hit
+                        }
+                        for hit in (knowledge_result.data or {}).get("hits", [])
+                    ]
+                    return AgentExecutionResult(
+                        answer=(
+                            "No encuentro información suficiente en la base de conocimiento "
+                            "autorizada para confirmar ese dato."
+                        ),
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=True,
+                        approval_requests=created_approvals,
+                        correlation_id=obs_ctx.correlation_id,
+                        citations=citations,
+                    )
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": (
+                            "Usa exclusivamente esta evidencia autorizada para responder. "
+                            f"{json.dumps(knowledge_result.data, ensure_ascii=False)}"
+                        ),
+                    }
+                )
+
             while current_round < self._max_rounds:
                 current_round += 1
 
@@ -257,6 +355,23 @@ class AgentOrchestrator:
                 choice = response.choices[0]
                 msg = choice.message
                 tool_calls = getattr(msg, "tool_calls", None)
+                raw_finish_reason = getattr(choice, "finish_reason", None)
+                finish_reason = (
+                    raw_finish_reason
+                    if raw_finish_reason is None
+                    or isinstance(raw_finish_reason, (str, int, float, bool))
+                    else None
+                )
+                self._logger.info(
+                    "llm_response_observed",
+                    context=obs_ctx,
+                    extra={
+                        "tools_provided": len(tools),
+                        "tool_choice": "auto",
+                        "finish_reason": finish_reason,
+                        "structured_tool_call": bool(tool_calls),
+                    },
+                )
 
                 if not tool_calls:
                     # Model provided direct final text answer

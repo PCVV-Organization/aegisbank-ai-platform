@@ -195,3 +195,12 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 ### ADR
 * **Nombre completo:** Architecture Decision Record (Registro de Decisión de Arquitectura).
 * **¿Qué es?** Documento inmutable y versionado que captura una decisión arquitectónica clave, su contexto, sus alternativas evaluadas y sus consecuencias.
+
+---
+
+### Tool Routing y Knowledge Gap
+* **Tool routing (enrutamiento de herramientas):** Decisión del sistema sobre cuándo y cómo ejecutar una herramienta. `tool_choice=auto` deja esa decisión al LLM; el routing impuesto por policy la exige para clases de preguntas concretas.
+* **Knowledge base (base de conocimiento):** Colección autorizada de documentos y chunks que el sistema puede recuperar.
+* **Knowledge gap:** No existe evidencia suficiente en la base autorizada para responder. AegisBank debe abstenerse, no completar el dato con memoria del LLM.
+* **Routing gap:** La evidencia podría existir, pero el agente no emitió un `tool_call` estructurado. Es distinto de un knowledge gap.
+* **En AegisBank:** Políticas, requisitos, tasas, comisiones y plazos se recuperan antes de la generación; las citas conservan `document_id`, versión y `chunk_id`.

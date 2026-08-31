@@ -13,11 +13,11 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 
 | Paquete del Repositorio | Cantidad de Pruebas | Estado |
 |---|---|---|
-| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability) | **180 tests** | PASS |
+| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing) | **198 tests** | PASS |
 | `ai/rag` (Chunking, Retrieval Léxico/Denso/RRF, Grounding, Evaluaciones) | **62 tests** | PASS |
 | `ml/intent-classifier` (Dataset sintético, TF-IDF, Logistic Regression) | **17 tests** | PASS |
 | `services/mock-core-banking` (Entidades, Restricciones, Repositorios, Outbox) | **55 tests** | PASS |
-| **TOTAL GENERAL DEL REPOSITORIO** | **314 tests** | **100% PASS** |
+| **TOTAL GENERAL DEL REPOSITORIO** | **332 tests** | **100% PASS** |
 
 ---
 
@@ -44,6 +44,7 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | **Métricas Operativas & AgentOps** | `LAB-COVERED` | v0.9 | `OperationalMetrics` (p50/p95/p99) y `AgentOpsSummary`. |
 | **Registro de Auditoría Inmutable** | `LAB-COVERED` / `PROD-PARTIAL` | v0.9 | `AuditLogger` append-only para eventos críticos de seguridad y transacciones. |
 | **Supervisión HOTL & Kill-Switch** | `LAB-COVERED` | v0.9 | `HOTLSupervisor` con monitoreo operativo y Kill-Switch para deshabilitar escrituras. |
+| **Grounded Knowledge Tool Routing** | `LAB-COVERED` | v0.9.1 | Policy determinista ejecuta `search_knowledge` antes de preguntas bancarias, registra métricas y se abstiene ante `KNOWLEDGE_GAP`; tests de pseudo-tool text. |
 | **CI/CD & DevSecOps** | `CLOUD-PENDING` | v0.10 | Planificado para v0.10 (GitHub Actions, SAST, SBOM, Contract testing). |
 | **Contenedores / Cloud Deployment** | `CLOUD-PENDING` | v0.11 | Planificado para v0.11 (Docker, Azure Container Apps, Service Bus Emulator). |
 | **MLOps & Experiment Tracking** | `CLOUD-PENDING` | v0.12 | Planificado para v0.12 (MLflow, drift de datos, calibración). |
