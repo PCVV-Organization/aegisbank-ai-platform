@@ -32,7 +32,27 @@ Para evitar reclamos falsos de certificación o producción, todo componente se 
 
 ---
 
-## 3. Principio de Evidencia Real (*Proof of Execution*)
+## 3. Reglas Operativas Permanentes de Arquitectura y Concurrencia
+
+### Regla A: DISCOVER BEFORE CREATE (Buscar antes de Crear)
+Antes de crear cualquier nueva clase, función o módulo:
+1. Buscar en el repositorio mediante herramientas de búsqueda (`grep_search` / `rg`).
+2. Consultar el catálogo oficial en [`docs/architecture/CANONICAL-COMPONENTS.md`](file:///c:/aegisbank-ai-platform-ai-env/aegisbank-ai-platform/docs/architecture/CANONICAL-COMPONENTS.md).
+3. Clasificar la decisión en una de tres opciones:
+   - **`REUSE`**: Reutilizar el componente canónico existente.
+   - **`EXTEND`**: Extender el componente canónico en su punto de extensión oficial.
+   - **`NEW_COMPONENT_JUSTIFIED`**: Justificar por qué la responsabilidad es genuinamente nueva y no solapa nada existente.
+
+### Regla B: ONE WRITER, MANY READERS (Un Escritor, Múltiples Lectores)
+Para evitar condiciones de carrera entre sesiones de IA locales sobre el mismo working tree:
+1. Cada sesión debe adquirir un bloqueo atómico exclusivo mediante `python scripts/session_guard.py acquire` antes de escribir.
+2. Cada sesión debe validar su lock y rutas autorizadas con `python scripts/session_guard.py check` antes de modificar, stagear y commitear.
+3. Al finalizar el commit, debe liberar el lock con `python scripts/session_guard.py release`.
+4. El estado del lock reside exclusivamente en `.coordination/active-writer.json` (ignorado en `.gitignore`).
+
+---
+
+## 4. Principio de Evidencia Real (*Proof of Execution*)
 
 * Nunca se reportará `PASS` basándose en la mera existencia de un archivo de configuración o código fuente.
 * Todo `PASS` requiere la ejecución real del comando y la captura verificable de su salida con código de salida 0.

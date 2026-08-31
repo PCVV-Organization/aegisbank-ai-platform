@@ -19,6 +19,7 @@ venv/
 .mypy_cache/
 .ruff_cache/
 artifacts/
+.coordination/
 .coverage
 coverage.xml
 htmlcov/
@@ -42,6 +43,7 @@ dist/
 build/
 .tox/
 reports/
+.coordination/
 
 # Infrastructure local state
 .terraform/

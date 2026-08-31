@@ -14,11 +14,11 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 
 | Paquete del Repositorio | Cantidad de Pruebas | Estado |
 |---|---|---|
-| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing, Contracts, E2E) | **225 tests** | PASS |
+| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing, Contracts, E2E, Session Guard) | **232 tests** | PASS |
 | `ai/rag` (Chunking, Retrieval Léxico/Denso/RRF, Grounding, Evaluaciones) | **62 tests** | PASS |
 | `ml/intent-classifier` (Dataset sintético, TF-IDF, Logistic Regression) | **17 tests** | PASS |
 | `services/mock-core-banking` (Entidades, Restricciones, Repositorios, Outbox, OpenAPI Contracts) | **55 tests** | PASS |
-| **TOTAL GENERAL DEL REPOSITORIO** | **359 tests** | **100% PASS** |
+| **TOTAL GENERAL DEL REPOSITORIO** | **366 tests** | **100% PASS** |
 
 ---
 
@@ -50,6 +50,7 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | **Layered Quality Engineering** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Pirámide de pruebas (Unit, Integration, Contract, E2E), 8 journeys críticos A-H, y `quality_gate.py`. |
 | **Contract Testing & API Tests** | `LAB-COVERED` | v0.10 | Contratos JSON Schema OpenAPI, MCP tool registry y Outbox events; colección de pruebas de API de Core Banking. |
 | **DevSecOps Security Gates** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10 | Bandit (SAST), pip-audit (SCA), CycloneDX SBOM y secret scanning; compuertas documentadas en `DEVSECOPS-GATES.md`. |
-| **CI/CD Pipeline (GitHub Actions)** | `CI-CONFIGURED` | v0.10 | `.github/workflows/ci.yml` configurado con lint, tests, coverage, SAST, SCA, SBOM y secrets (`RUNNER-PENDING`). |
+| **CI/CD Pipeline (GitHub Actions)** | `CI-CONFIGURED` | v0.10 | `.github/workflows/ci.yml` configurado con lint, tests, coverage, SAST, SCA, SBOM, secrets y concurrency (`RUNNER-PENDING`). |
+| **Architecture Integrity & Coordination** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10.1 | `session_guard.py` (Single Writer, Many Readers), catálogo `CANONICAL-COMPONENTS.md`, regla `DISCOVER BEFORE CREATE`, Pylint R0801 duplicate-code baseline (9.98/10). |
 | **Contenedores / Cloud Deployment** | `CLOUD-PENDING` | v0.11 | Planificado para v0.11 (Docker, Azure Container Apps, Service Bus Emulator). |
 | **MLOps & Experiment Tracking** | `CLOUD-PENDING` | v0.12 | Planificado para v0.12 (MLflow, drift de datos, calibración). |

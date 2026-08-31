@@ -218,3 +218,26 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **SCA:** Software Composition Analysis (análisis de composición), auditoría de dependencias; AegisBank usa pip-audit.
 * **SBOM:** Software Bill of Materials (lista de materiales de software), inventario CycloneDX de componentes. No es un escaneo de vulnerabilidades.
 * **En AegisBank:** `scripts/quality_gate.py` encadena estos controles. La workflow es `CI-CONFIGURED / RUNNER-PENDING` hasta que un runner de GitHub produzca evidencia.
+
+---
+
+### Arquitectura, Integridad y Coordinación Cross-Session (v0.10.1)
+
+* **DRY (Don't Repeat Yourself / No te repitas):** Principio de diseño de software formulado por Andy Hunt y Dave Thomas que postula que "cada pieza de conocimiento o responsabilidad debe tener una representación única, inequívoca y autorizada dentro de un sistema". No prohíbe líneas de código sintácticamente similares que tienen propósitos de negocio distintos; prohíbe duplicar la misma regla de negocio en varios lugares.
+* **Code Duplication (Duplicación de código):** Existencia de múltiples bloques de código idénticos o estructuralmente equivalentes que resuelven exactamente la misma responsabilidad, aumentando el costo de mantenimiento y el riesgo de inconsistencia ante cambios.
+* **Code Smell (Olor a código):** Síntoma superficial en el código fuente que suele indicar un problema de diseño o arquitectura subyacente (e.g. clases monstruo, métodos excesivamente largos, lógica copiada y pegada).
+* **Technical Debt (Deuda técnica):** Metáfora de Ward Cunningham que describe el costo implícito del retrabajo futuro causado por elegir una solución rápida y subóptima en el presente en lugar de un diseño arquitectónicamente robusto.
+* **Refactoring (Refactorización):** Proceso disciplinado de reestructurar el código existente sin alterar su comportamiento observable externo, con el fin de mejorar su legibilidad, reducir su complejidad o facilitar su extensibilidad.
+* **Cohesion (Cohesión):** Grado en que los elementos internos de un módulo o clase pertenecen juntos y colaboran estrechamente para cumplir una única responsabilidad bien definida (*Single Responsibility Principle*).
+* **Coupling (Acoplamiento):** Nivel de interdependencia entre diferentes módulos o clases de software. Un bajo acoplamiento (*loose coupling*) permite modificar un componente sin afectar a otros.
+* **Canonical Component (Componente canónico):** Implementación oficial, autorizada y única designada para asumir una responsabilidad arquitectónica concreta dentro de la plataforma (e.g. `RetryPolicy` para reintentos, `HITLApprovalManager` para aprobaciones).
+* **Single-Writer Principle (Principio de escritor único):** Regla de concurrencia pesimista (*pessimistic coordination*) que establece que un único proceso, agente o sesión puede poseer permisos de escritura sobre un recurso compartido (en este caso, el working tree local de Git) a la vez, mientras múltiples lectores concurrentes están permitidos.
+* **Concurrency (Concurrencia):** Capacidad de un sistema para gestionar la ejecución de múltiples tareas o procesos que se solapan en el tiempo.
+* **Race Condition (Condición de carrera):** Modos de fallo donde el resultado final de una operación depende del orden temporal o entrelazado no controlado en que se ejecutan múltiples hilos o procesos concurrentes.
+* **Ownership (Propiedad / Dominio de código):** Delimitación explícita de qué componente o módulo es responsable de cada conjunto de rutas, datos o reglas de negocio dentro del repositorio.
+* **Lease / Lock (Arrendamiento / Bloqueo):** Mecanismo de sincronización que concede acceso exclusivo temporal a un recurso a un titular específico mediante la creación atómica de un identificador no reescribible.
+* **HEAD:** Puntero en Git que referencia el commit actual sobre el que está posicionado el repositorio.
+* **Working Tree (Árbol de trabajo):** Directorio local del sistema de archivos donde residen los archivos descomprimidos y editables del proyecto.
+* **Staging / Index (Área de preparación):** Espacio intermedio de Git donde se seleccionan y preparan explícitamente los cambios que formarán parte del siguiente commit.
+* **CI Concurrency (Concurrencia en CI):** Configuración en pipelines de integración continua (e.g. GitHub Actions) que previene la ejecución simultánea de múltiples ejecuciones de workflow sobre la misma rama o pull request, cancelando ejecuciones obsoletas intermedias.
+* **CODEOWNERS:** Mecanismo nativo de plataformas como GitHub y GitLab que asigna automáticamente revisores o aprobadores obligatorios a pull requests en función de las rutas de archivos modificadas.

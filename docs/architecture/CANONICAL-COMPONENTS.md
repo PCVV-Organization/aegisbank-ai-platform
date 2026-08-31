@@ -1,0 +1,42 @@
+# AegisBank — Catálogo de Componentes Canónicos
+
+> **Propósito:** Inventario oficial de las implementaciones canónicas del repositorio.
+> **Regla permanente:** Todo desarrollo futuro debe consultar este catálogo antes de crear código nuevo bajo la regla **DISCOVER BEFORE CREATE**. Está estrictamente prohibido duplicar responsabilidades existentes.
+
+---
+
+## Inventario Canónico de Responsabilidades
+
+| Responsabilidad | Componente Canónico | Ruta Canónica | Interfaz Pública Principal | Consumidores | Punto de Extensión | Directiva DO NOT DUPLICATE |
+|---|---|---|---|---|---|---|
+| **1. Agent Orchestration** | `AgentOrchestrator` | `ai/agent/src/aegisbank_agent/agent.py` | `run(prompt, customer_id, correlation_id) -> AgentExecutionResult` | CLI, Evaluadores, Tests E2E | Agregar handlers de ciclo de vida o políticas de parada | **NO** crear orquestadores paralelos ni clases `ChatbotManager` alternativas. |
+| **2. Tool Registry** | `ToolRegistry` | `ai/agent/src/aegisbank_agent/tools/registry.py` | `register(tool)`, `get(name)`, `list_tools()`, `export_openai_tools()` | `AgentOrchestrator`, Servidor MCP | Registrar nuevas subclases de `BaseTool` | **NO** mantener diccionarios ad-hoc de herramientas en el orquestador. |
+| **3. Banking Routing Policy** | `requires_account_data` / `requires_banking_read` | `ai/agent/src/aegisbank_agent/agent.py` | `requires_account_data(prompt) -> bool`, `build_banking_routing_plan()` | `AgentOrchestrator` | Añadir reglas deterministas basadas en intenciones de cuenta | **NO** delegar en el LLM la decisión de acceder a datos bancarios privados. |
+| **4. RAG Retrieval** | `KnowledgeRetriever` / `SearchKnowledgeTool` | `ai/rag/src/aegisbank_rag/` & `ai/agent/src/aegisbank_agent/tools/knowledge_tools.py` | `retrieve(query, top_k) -> list[Chunk]`, `SearchKnowledgeTool.execute(args)` | `AgentOrchestrator`, Pipeline RAG | Añadir nuevos corpora documentales autorizados | **NO** reimplementar algoritmos de búsqueda o TF-IDF/BM25 en `ai/agent`. |
+| **5. LLM Provider Adapter** | `OpenAIClient` / `FoundryLocalAdapter` | `ai/agent/src/aegisbank_agent/` | `client.chat.completions.create(model, messages, tools, tool_choice)` | `AgentOrchestrator`, Evaluadores | Añadir soporte para Azure OpenAI o SDKs de nube | **NO** mezclar llamadas HTTP directas con endpoints de inferencia. |
+| **6. Human-in-the-Loop (HITL)** | `HITLApprovalManager` | `ai/agent/src/aegisbank_agent/hitl.py` | `create_request()`, `approve()`, `reject()`, `validate_tampering()` | `AgentOrchestrator`, Servidor MCP, CLI | Integrar canales de aprobación externos (Slack/Teams) | **NO** crear gestores de aprobación paralelos (`HumanApprovalService`). |
+| **7. MCP Server & Boundary** | `AegisBank Local MCP` / `create_mcp_server` | `ai/agent/src/aegisbank_agent/mcp_boundary.py` | `create_mcp_server(db, ctx, hitl_manager)`, `run_stdio_async()` | Clientes MCP, Subprocesos | Registrar nuevas herramientas bancarias con anotaciones | **NO** implementar servidores MCP paralelos con frameworks de terceros. |
+| **8. Idempotency Guard** | `IdempotencyGuard` | `ai/agent/src/aegisbank_agent/reliability/idempotency.py` | `execute(key, operation, *args) -> tuple[Any, bool]` | `CreateServiceRequestTool`, Core Banking | Adaptar a Redis/Cosmos DB distribuido en nube | **NO** duplicar lógica de hashing de idempotencia en herramientas individuales. |
+| **9. Bounded Retry Policy** | `RetryPolicy` | `ai/agent/src/aegisbank_agent/reliability/retry.py` | `execute(fn, *args, **kwargs) -> T` | Clientes HTTP, llamadas MCP, Base de datos | Personalizar `transient_classifier` para excepciones de red | **NO** escribir bucles `while retry < 3` ad-hoc en el código. |
+| **10. Circuit Breaker (FSM)** | `CircuitBreaker` | `ai/agent/src/aegisbank_agent/reliability/circuit_breaker.py` | `execute(operation, *args, **kwargs) -> T`, `state` | Clientes de Core Banking, Adaptadores externos | Configurar umbrales de fallo y tiempos de enfriamiento | **NO** ignorar fallos en cascada ni crear cortacircuitos simplistas. |
+| **11. Timeout Guard** | `with_timeout` / `TimeoutException` | `ai/agent/src/aegisbank_agent/reliability/timeout.py` | `@with_timeout(seconds)`, `execute_with_timeout(fn, seconds)` | Invocaciones LLM, consultas de base de datos | Integrar timeouts nativos de sockets | **NO** usar `time.sleep` en bucles de espera indefinidos. |
+| **12. Transactional Outbox** | `OutboxRepository` / `OutboxEvent` | `mock_core_banking/persistence/repositories/` & `models.py` | `save(event)`, `list_pending(limit)`, `mark_published(event_id)` | `CreateServiceRequestTool`, `OutboxProcessor` | Añadir nuevos tipos de eventos de dominio | **NO** publicar eventos a brokers antes de commitear la transacción SQL. |
+| **13. Message Bus & Consumer** | `LocalMessageBus` / `IdempotentConsumer` / `DeadLetterQueue` | `ai/agent/src/aegisbank_agent/reliability/messaging.py` | `publish(topic, msg)`, `subscribe(topic, handler)`, `handle(msg)` | Background workers, Consumidores de eventos | Conectar drivers de Azure Service Bus o Kafka | **NO** acoplar consumidores directamente con productores de eventos. |
+| **14. OpenTelemetry Tracing** | `TracerProvider` / `get_tracer` | `ai/agent/src/aegisbank_agent/observability/tracer.py` | `start_as_current_span(name, attributes)`, `trace_span()` | Todos los módulos del agente y tools | Exportar trazas a Azure Monitor / Application Insights | **NO** usar `print` para rastreo de flujos de ejecución. |
+| **15. Structured Logging** | `StructuredLogger` | `ai/agent/src/aegisbank_agent/observability/logging.py` | `info(msg, **extra)`, `error(msg, **extra)`, `redact(text)` | Todo el sistema AegisBank | Añadir patrones de redacción de datos sensibles (PII) | **NO** usar `logging.basicConfig` sin el filtro de redacción bancaria. |
+| **16. Operational Metrics** | `OperationalMetrics` | `ai/agent/src/aegisbank_agent/observability/metrics.py` | `increment_counter()`, `record_timing()`, `get_percentiles()` | `AgentOrchestrator`, Evaluadores | Exportar métricas a Prometheus / Azure Monitor | **NO** calcular percentiles manuales en módulos individuales. |
+| **17. Immutable Audit Logger** | `AuditLogger` | `ai/agent/src/aegisbank_agent/observability/audit.py` | `log_event(event_type, severity, details, customer_id)` | `HITLApprovalManager`, `HOTLSupervisor` | Persistir en almacenamiento WORM inmutable de nube | **NO** mezclar logs operativos con registros legales de auditoría. |
+| **18. HOTL Supervisor** | `HOTLSupervisor` | `ai/agent/src/aegisbank_agent/observability/hotl.py` | `engage_kill_switch(reason)`, `disengage_kill_switch()`, `is_write_allowed` | `AgentOrchestrator`, Admin CLI | Añadir reglas de desenganche automático por anomalías | **NO** saltarse la verificación de `is_write_allowed` en escrituras. |
+| **19. Quality Gate Runner** | `scripts/quality_gate.py` | `scripts/quality_gate.py` | `run_quality_gates() -> int` (código 0 o != 0) | CI/CD, Desarrollador local | Añadir nuevas compuertas estáticas o de seguridad | **NO** ejecutar validaciones desordenadas o silenciar errores en CI. |
+
+---
+
+## Regla de Oro: DISCOVER BEFORE CREATE
+
+Antes de crear un nuevo archivo o clase:
+1. **Buscar:** Ejecutar `grep_search` / `rg` sobre los nombres de clases y responsabilidades.
+2. **Consultar:** Revisar este documento para identificar si la responsabilidad ya tiene un componente canónico.
+3. **Decidir y justificar en el PR/Commit:**
+   - **`REUSE`**: Usar el componente canónico directamente.
+   - **`EXTEND`**: Añadir la funcionalidad faltante en el punto de extensión oficial sin romper compatibilidad.
+   - **`NEW_COMPONENT_JUSTIFIED`**: Solo si la responsabilidad es genuinamente nueva (e.g. `ContainerHealthProbe` en v0.11).

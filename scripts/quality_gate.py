@@ -1,6 +1,6 @@
 """Unified Quality Gate & DevSecOps Verification Script for AegisBank AI Platform.
 
-Executes all automated quality, security, contract, and test gates in deterministic order.
+Executes all automated quality, security, contract, architecture integrity, and test gates in deterministic order.
 Produces a machine-readable JSON report (reports/quality_gate_summary.json) and terminal summary.
 """
 
@@ -8,12 +8,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 
 @dataclass
@@ -114,11 +119,74 @@ def _scan_for_secrets(repo_root: Path) -> tuple[bool, str]:
     return True, f"Scanned {scanned_files} files. 0 unredacted secrets detected."
 
 
+def _check_architecture_inventory(repo_root: Path) -> tuple[bool, str]:
+    """Verify presence and validity of canonical components catalog and ownership map."""
+    canonical_file = repo_root / "docs" / "architecture" / "CANONICAL-COMPONENTS.md"
+    ownership_file = repo_root / "docs" / "engineering" / "OWNERSHIP-MAP.md"
+
+    if not canonical_file.exists():
+        return False, f"Missing {canonical_file}"
+    if not ownership_file.exists():
+        return False, f"Missing {ownership_file}"
+
+    canonical_text = canonical_file.read_text(encoding="utf-8")
+    required_sections = [
+        "AgentOrchestrator",
+        "ToolRegistry",
+        "HITLApprovalManager",
+        "RetryPolicy",
+        "CircuitBreaker",
+    ]
+    missing = [s for s in required_sections if s not in canonical_text]
+    if missing:
+        return (
+            False,
+            f"CANONICAL-COMPONENTS.md missing required components: {', '.join(missing)}",
+        )
+
+    return True, "Canonical Components catalog and Ownership Map verified."
+
+
+def _session_guard_result(repo_root: Path) -> GateResult:
+    """Validate active writer if running under an active session."""
+    from scripts.session_guard import SessionGuard
+
+    guard = SessionGuard(repo_root)
+    if not guard.lock_file.exists():
+        return GateResult(
+            name="Cross-Session Writer Guard",
+            command="internal:session_guard.check",
+            status="SKIPPED",
+            duration_seconds=0.0,
+            output_snippet="No active session lock; standalone quality run permitted.",
+        )
+
+    session_id = os.environ.get("AEGISBANK_SESSION_ID", "opencode-v0101")
+    started = time.time()
+    ret = guard.check(session_id)
+    dur = round(time.time() - started, 3)
+    return GateResult(
+        name="Cross-Session Writer Guard",
+        command="internal:session_guard.check",
+        status="PASS" if ret == 0 else "FAIL",
+        duration_seconds=dur,
+        output_snippet="Session lock verified for active session."
+        if ret == 0
+        else "Session guard check failed.",
+    )
+
+
 def run_quality_gates(
     repo_root: Path, secrets_only: bool = False
 ) -> tuple[int, list[GateResult]]:
     results: list[GateResult] = []
     py_exec = sys.executable
+
+    # Session Guard verification
+    session_result = _session_guard_result(repo_root)
+    results.append(session_result)
+    if session_result.status == "FAIL":
+        return 1, results
 
     # Define all gates
     if secrets_only:
@@ -200,6 +268,27 @@ def run_quality_gates(
                 error_message=stderr if ret != 0 else None,
             )
         )
+
+    # Architecture Inventory Gate
+    print("[*] Running gate: Architecture Inventory & Ownership Gate...")
+    start_time = time.time()
+    ok, msg = _check_architecture_inventory(repo_root)
+    duration = round(time.time() - start_time, 3)
+    if not ok:
+        all_passed = False
+        print(f"    [!] FAILED ({duration}s)")
+    else:
+        print(f"    [+] PASSED ({duration}s)")
+
+    results.append(
+        GateResult(
+            name="Architecture Inventory Gate",
+            command="internal:check_architecture_inventory",
+            status="PASS" if ok else "FAIL",
+            duration_seconds=duration,
+            output_snippet=msg,
+        )
+    )
 
     # Secret scanning gate
     print("[*] Running gate: Secret Scanning Gate...")
@@ -284,7 +373,11 @@ def main() -> int:
     print(f"Report written to: {report_file}")
     print("=" * 70)
     for r in results:
-        badge = "[PASS]" if r.status == "PASS" else "[FAIL]"
+        badge = (
+            "[PASS]"
+            if r.status == "PASS"
+            else ("[SKIP]" if r.status == "SKIPPED" else "[FAIL]")
+        )
         print(f"  {badge:7} | {r.duration_seconds:6.2f}s | {r.name}")
     print("=" * 70)
 
