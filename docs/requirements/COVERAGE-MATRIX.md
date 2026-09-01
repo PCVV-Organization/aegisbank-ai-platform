@@ -14,11 +14,11 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 
 | Paquete del Repositorio | Cantidad de Pruebas | Estado |
 |---|---|---|
-| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing, Contracts, E2E, Session Guard, Container & Service Bus Acceptance, Kubernetes Acceptance, Cosmos DB NoSQL & Change Feed Acceptance) | **255 tests** | PASS |
+| `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing, Contracts, E2E, Session Guard, Container & Service Bus Acceptance, Kubernetes Acceptance, Cosmos DB NoSQL & Change Feed Acceptance, Grounded Response Consistency & Provenance) | **262 tests** | PASS |
 | `ai/rag` (Chunking, Retrieval Léxico/Denso/RRF, Grounding, Evaluaciones, PostgreSQL + pgvector Acceptance) | **69 tests** | PASS |
 | `ml/intent-classifier` (Dataset sintético, TF-IDF, Logistic Regression) | **17 tests** | PASS |
 | `services/mock-core-banking` (Entidades, Restricciones, Repositorios, Outbox, OpenAPI Contracts) | **58 tests** | PASS |
-| **TOTAL GENERAL DEL REPOSITORIO** | **399 tests** | **100% PASS** |
+| **TOTAL GENERAL DEL REPOSITORIO** | **406 tests** | **100% PASS** |
 
 ---
 
@@ -56,5 +56,6 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | **Orquestación y Runtime Kubernetes Local** | `LOCAL-K8S-COVERED` / `AKS-CLOUD-PENDING` | v0.11.1 | Namespace `aegisbank-local`, Deployment hardened (non-root, securityContext, probes, limits), Service ClusterIP, rolling updates, rollbacks, manual horizontal scale, port-forward E2E verification, y troubleshooting guide (`KUBERNETES-TROUBLESHOOTING.md`). |
 | **PostgreSQL + pgvector Vector Data Foundation** | `LOCAL-PGVECTOR-COVERED` / `AZURE-POSTGRESQL-CLOUD-PENDING` | v0.12.0 | PostgreSQL 17 + pgvector 0.8.0 local en Docker Compose, adaptador `PgVectorRetriever`, modelo de embedding local determinista (`LocalDenseEmbeddingModel`), índices HNSW/IVFFlat, filtrado relacional por metadatos, planes de ejecución `EXPLAIN ANALYZE BUFFERS`, evaluación RAG unificada (`v012_retrieval_comparison.json`) y estándar de seguridad (`DATA-LAYER-SECURITY.md`). |
 | **Cosmos DB NoSQL Emulator + Change Feed** | `LOCAL-COSMOS-COVERED` / `COSMOS-CLOUD-PENDING` | v0.12.1 | Azure Cosmos DB Emulator vNext Linux en Docker Compose, adaptador `CosmosRepository`, `CosmosChangeFeedProcessor` con checkpoints y deduplicación idempotente, point reads, particionamiento por `/customer_id` (`COSMOS-PARTITION-DESIGN.md`), expiración TTL y contrato JSON Schema (`cosmos-event-item.schema.json`). |
+| **Grounded Response Consistency & Provenance** | `LAB-COVERED` / `PROD-READY` | v0.12.0-R1 | Demostración formal de procedencia factual (`ServiceRequestCategory` en `mock_core_banking.domain.enums`), derivación dinámica de esquemas de tools, eliminación de frases vagas en prompts, diferenciación entre consultas de taxonomía (`Tools Executed = 0`), procedimentales (RAG), de cuenta (Core Banking) y de mutación (HITL), con 7 tests de consistencia (`test_grounded_response_consistency.py`). |
 | **Redis Cache + Vector/Search Semantics** | `CLOUD-PENDING` | v0.12.2 | Planificado para v0.12.2 (Redis Community local, cache-aside, invalidación, expiración). |
 | **MLOps & Experiment Tracking** | `CLOUD-PENDING` | v0.15 | Planificado para v0.15 (MLflow, drift de datos, calibración). |

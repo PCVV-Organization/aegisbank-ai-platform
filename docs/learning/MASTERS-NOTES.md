@@ -441,3 +441,45 @@ graph TD
 | **Destrucción de Datos** | Los cambios persisten en el documento; leer el Change Feed no borra el item. | Los mensajes se consumen y eliminan (`Complete`) de la cola. |
 | **Ordenamiento** | Orden garantizado dentro de cada partición lógica (`customer_id`). | Orden garantizado solo con sesiones de mensajes activadas. |
 | **Casos de Uso en AegisBank** | Auditoría reactiva, réplica de estado a motores analíticos, triggers de IA. | Enrutamiento de comandos transaccionales (`service-requests`), HITL approvals, DLQ. |
+
+---
+
+## 15. v0.12.0-R1: Consistencia de Respuestas, Fundamentación y Procedencia (AI-103 & Enterprise Quality)
+
+### 1. Determinismo Factual vs Error de Repetición (*Deterministic Facts ≠ Repetition Bug*)
+
+En aplicaciones bancarias y financieras, la estabilidad y consistencia de las respuestas factuales es un **requisito de seguridad y confiabilidad**, no un defecto:
+* **Hechos Inmutables:** Para preguntas como *"¿Qué tipos de reclamos soporta el banco?"*, las categorías oficiales (`LOAN`, `INSTALLMENT`, `FEE`, `GENERAL`) deben ser 100% idénticas y consistentes en cada invocación.
+* **Variación Léxica:** La redacción puede variar moderadamente según el contexto conversacional, pero el conjunto factual subyacente nunca debe fluctuar ni inventar categorías inexistentes (`PAYMENT`, `CARD`, `FRAUD`).
+* **Hiperparámetros de Inferencia:** En banca empresarial se prefiere `temperature=0.0` (o valores bajos) para minimizar alucinaciones y asegurar respuestas ancladas en la evidencia autorizada.
+
+```mermaid
+graph TD
+    subgraph "Fuentes Autorizadas de Grounding en AegisBank"
+        CB["1. Core Banking API / DB<br>(Datos privados del cliente: saldos, cuotas, préstamos)"]
+        RAG["2. Corpus RAG / pgvector<br>(Políticas, tasas, requisitos normativos)"]
+        Domain["3. Domain & Tool Schema<br>(Taxonomía canónica del sistema: LOAN, INSTALLMENT, FEE, GENERAL)"]
+    end
+```
+
+---
+
+### 2. Fundamentación Más Allá de RAG (*Grounding ≠ RAG Only*)
+
+El anclaje factual (*grounding*) no se limita exclusivamente a la recuperación vectorial (RAG). Existen tres fuentes de verdad legítimas en un sistema multi-capa:
+
+| Tipo de Consulta | Fuente de Grounding Canónica | Herramientas Invocadas | Comportamiento Esperado |
+|---|---|---|---|
+| **Taxonomía / Capacidades del Sistema** | Domain Schema & Tool Registry (`ServiceRequestCategory`) | `Tools Executed = 0` (el esquema está visible en el contexto del prompt del agente) | Respuesta directa con las categorías canónicas exactas, sin alucinaciones ni instrucciones no solicitadas. |
+| **Políticas y Procedimientos Generales** | Corpus RAG (`SearchKnowledgeTool` / `PgVectorRetriever`) | `Tools Executed = 1` (`search_knowledge`) | Recuperación de chunks autorizados, validación de citas y abstención controlada si no hay evidencia. |
+| **Datos Financieros del Cliente** | Core Banking READ Tools (`GetMyLoansTool`, `GetNextInstallmentTool`) | `Tools Executed >= 1` | Validación de pertenencia del cliente sintético y consulta determinista a SQLite/PostgreSQL. |
+| **Operaciones de Modificación de Estado** | Core Banking WRITE Tool (`CreateServiceRequestTool`) | `Tools Executed = 1` | Propuesta de cambio de estado sujeta a aprobación humana obligatoria (**HITL**). |
+
+---
+
+### 3. Principio DRY y Fuente Única de Verdad (*Single Source of Truth*)
+
+Para evitar discrepancias entre capas:
+1. Las categorías de reclamo se definen una sola vez en el enum canónico: `mock_core_banking.domain.enums.ServiceRequestCategory`.
+2. El esquema de parámetros de la herramienta (`CreateServiceRequestTool.parameters_schema`) deriva dinámicamente sus valores desde el enum (`[c.value for c in ServiceRequestCategory]`).
+3. El system prompt del agente (`agent-system-v002.json`) documenta la misma taxonomía canónica institucional, asegurando cero desalineación conceptual.

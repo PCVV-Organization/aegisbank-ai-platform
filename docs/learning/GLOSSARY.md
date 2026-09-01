@@ -362,6 +362,26 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **Consistency Level (Nivel de consistencia):** Configuración que equilibra el compromiso entre coherencia de datos, latencia y disponibilidad en sistemas distribuidos (Strong, Bounded Staleness, Session, Consistent Prefix, Eventual).
 * **Request Unit / RU (Unidad de solicitud):** Medida normalizada de rendimiento en Azure Cosmos DB que abstrae los recursos de CPU, memoria e IOPS necesarios para ejecutar una operación.
 * **Indexing Policy (Política de indexación):** Configuración declarativa que define qué rutas del documento JSON se indexan automáticamente (por defecto `/*` indexa todos los campos) y qué tipo de índices usar (Range, Spatial, Vector).
-* **Gateway Mode (Modo de conexión Gateway):** Modo de conexión del SDK de Cosmos DB donde todas las solicitudes pasan a través de un proxy/puerta de enlace central (puerto 8081 en el emulador local).
 * **Emulator (Emulador local de Cosmos DB):** Entorno local contenedorizado provisto por Microsoft que simula la API for NoSQL de Azure Cosmos DB para pruebas de desarrollo e integración sin costo cloud.
 * **Cloud Parity (Paridad con la nube):** Grado de fidelidad y equivalencia funcional entre un entorno de emulación local y el servicio administrado real en producción de Azure.
+
+---
+
+### Consistencia de Respuestas, Fundamentación y Procedencia (v0.12.0-R1)
+
+* **LLM Determinism (Determinismo del LLM):** Propiedad de un modelo de lenguaje por la cual, ante entradas idénticas (system prompt, user prompt, tool schemas, hiperparámetros y semilla), produce exactamente la misma secuencia de tokens o hechos factuales de salida.
+* **Stochasticity (Estocasticidad / Aleatoriedad):** Naturaleza probabilística inherente a los modelos de lenguaje autorregresivos donde el siguiente token se selecciona mediante muestreo sobre una distribución de probabilidades.
+* **Temperature (Temperatura):** Hiperparámetro que escala los logits antes de aplicar softmax (valores cercanos a 0 aplanan la distribución favoreciendo los tokens más probables y respuestas deterministas; valores altos aumentan la dispersión y creatividad).
+* **Top-p / Nucleus Sampling (Muestreo de núcleo):** Técnica de decodificación que restringe la selección de tokens al subconjunto más probable cuya probabilidad acumulada alcanza el umbral $p$ (e.g. 0.9).
+* **Seed (Semilla pseudoaleatoria):** Entero fijo que inicializa el generador de números pseudoaleatorios del motor de inferencia para maximizar la reproducibilidad de las respuestas entre llamadas idénticas.
+* **Grounding (Fundamentación / Anclaje factual):** Principio de diseño de IA generativa que exige que cada afirmación factual de la respuesta esté directamente respaldada por una fuente de verdad verificable y autorizada (Core Banking, RAG o Esquemas de Dominio).
+* **Provenance (Procedencia / Trazabilidad de origen):** Capacidad de rastrear y documentar la fuente exacta (documento, fila de base de datos, esquema de API o enum) de donde provino cada dato emitido por el modelo.
+* **Source of Truth (Fuente de verdad):** Repositorio o definición canónica autorizada y única para una entidad o regla de negocio dentro del sistema (e.g. `ServiceRequestCategory` en el dominio de Core Banking).
+* **Tool Schema (Esquema de herramienta):** Definición JSON Schema que describe los parámetros, tipos y enumeraciones que el modelo puede utilizar al invocar una función o tool.
+* **Domain Schema (Esquema de dominio):** Estructura canónica de entidades y enumeraciones definida en el código de la lógica de negocio (`mock_core_banking.domain.enums`).
+* **Response Consistency (Consistencia de respuesta):** Medida en que múltiples ejecuciones de una misma consulta factual devuelven el mismo conjunto de datos y hechos correctos sin contradicciones.
+* **Semantic Consistency (Consistencia semántica):** Garantía de que el significado y los hechos centrales de la respuesta permanecen inalterados aunque varíe moderadamente la sintaxis o redacción léxica.
+* **Lexical Variation (Variación léxica):** Fluctuación en la elección de palabras, sinónimos y estructura gramatical entre respuestas generadas por un LLM, la cual es secundaria frente a la exactitud factual en banca.
+* **Relevance (Relevancia):** Grado en que la respuesta del agente responde directamente a la intención del usuario sin incluir instrucciones no solicitadas o información superflua.
+* **Completeness (Exhaustividad de respuesta):** Grado en que la respuesta cubre todos los aspectos esenciales requeridos por la consulta del usuario.
+* **Abstention (Abstención / Safe Fallback):** Comportamiento controlado donde el agente declara explícitamente no tener información suficiente en lugar de fabricar o adivinar datos no respaldados.

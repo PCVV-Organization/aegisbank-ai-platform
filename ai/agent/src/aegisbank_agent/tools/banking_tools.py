@@ -278,14 +278,15 @@ class CreateServiceRequestTool(FunctionTool):
 
     @property
     def parameters_schema(self) -> dict[str, Any]:
+        categories = [c.value for c in ServiceRequestCategory]
         return {
             "type": "object",
             "properties": {
                 "category": {
                     "type": "string",
-                    "enum": ["LOAN", "INSTALLMENT", "FEE", "GENERAL"],
+                    "enum": categories,
                     "description": (
-                        "Categoría de la solicitud o reclamo (LOAN, INSTALLMENT, FEE, GENERAL)."
+                        f"Categoría canónica de la solicitud o reclamo ({', '.join(categories)})."
                     ),
                 },
                 "description": {
