@@ -5,7 +5,7 @@
 
 ---
 
-## Inventario Canónico de las 19 Responsabilidades
+## Inventario Canónico de las 20 Responsabilidades
 
 | Responsabilidad | Componente Canónico | Ruta Canónica | Interfaz Pública Principal | Consumidores | Punto de Extensión | Directiva DO NOT DUPLICATE |
 |---|---|---|---|---|---|---|
@@ -28,6 +28,7 @@
 | **17. Immutable Audit Logger** | `AuditLogger` | `ai/agent/src/aegisbank_agent/observability/audit.py` | `log_event(event_type, severity, details, customer_id)` | `HITLApprovalManager`, `HOTLSupervisor` | Persistir en almacenamiento WORM inmutable de nube | **NO** mezclar logs operativos con registros legales de auditoría. |
 | **18. HOTL Supervisor** | `HOTLSupervisor` | `ai/agent/src/aegisbank_agent/observability/hotl.py` | `engage_kill_switch(reason)`, `disengage_kill_switch()`, `is_write_allowed` | `AgentOrchestrator`, Admin CLI | Añadir reglas de desenganche automático por anomalías | **NO** saltarse la verificación de `is_write_allowed` en escrituras. |
 | **19. Quality Gate Runner** | `scripts/quality_gate.py` | `scripts/quality_gate.py` | `run_quality_gates() -> int` (código 0 o != 0) | CI/CD, Desarrollador local | Añadir nuevas compuertas estáticas o de seguridad | **NO** ejecutar validaciones desordenadas o silenciar errores en CI. |
+| **20. Cosmos NoSQL & Change Feed** | `CosmosRepository` / `CosmosChangeFeedProcessor` | `ai/agent/src/aegisbank_agent/cosmos.py` | `create_item()`, `read_item()`, `query_items()`, `read_change_feed()`, `process_latest_changes()` | Agente, Workers reactivos | Integrar triggers de Azure Functions o Change Feed Processor | **NO** duplicar motores de persistencia documental ni procesadores de eventos ad-hoc. |
 
 ---
 

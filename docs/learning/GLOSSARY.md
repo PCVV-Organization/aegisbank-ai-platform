@@ -331,3 +331,37 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **Throughput (Rendimiento / Capacidad de procesamiento):** Número de consultas o transacciones procesadas con éxito por unidad de tiempo (e.g. consultas por segundo - QPS).
 * **Vector Store:** Abstracción de capa de acceso a datos que encapsula las operaciones de almacenamiento, actualización y búsqueda por similitud vectorial.
 * **Migration (Migración de base de datos):** Script versionado y determinista de cambios de esquema (DDL/DML) que evoluciona la estructura de la base de datos de manera controlada y reversible.
+
+---
+
+### Azure Cosmos DB NoSQL y Change Feed (v0.12.1)
+
+* **NoSQL (Not Only SQL / No Solo SQL):** Paradigma de bases de datos no relacionales optimizadas para esquemas flexibles, escalabilidad horizontal masiva, baja latencia y modelos de datos específicos (documentos, clave-valor, grafos, columnas).
+* **Document Database (Base de datos documental):** Tipo de motor NoSQL que almacena, recupera y gestiona datos semi-estructurados en formato de documentos jerárquicos (comúnmente JSON).
+* **Azure Cosmos DB:** Servicio de base de datos distribuida globalmente y multi-modelo administrado por Microsoft en Azure, diseñado para latencias de un solo dígito en milisegundos y alta disponibilidad.
+* **API for NoSQL:** Modelo de datos y dialecto de consulta principal de Cosmos DB que almacena documentos JSON y permite consultarlos mediante sintaxis SQL declarativa.
+* **Database (Base de datos en Cosmos DB):** Unidad lógica administrativa dentro de una cuenta de Cosmos DB que actúa como espacio de nombres para contenedores y gestiona el rendimiento compartido (*throughput*).
+* **Container (Contenedor en Cosmos DB):** Unidad de escalabilidad y particionamiento en Cosmos DB (equivalente conceptual a una colección o tabla) donde se almacenan los items y se define la clave de partición.
+* **Item / Document (Item / Documento en Cosmos DB):** Entidad atómica de datos representada como un objeto JSON arbitrario con un identificador único obligatorio (`id`) y el valor de la clave de partición.
+* **JSON (JavaScript Object Notation):** Formato ligero de intercambio de datos basado en texto estructurado en pares clave-valor y arreglos, estándar en la API for NoSQL.
+* **Partition Key (Clave de partición / PK):** Propiedad fija de cada item (e.g. `/customer_id`) que determina la partición lógica a la que pertenece y guía el enrutamiento físico y distribución de datos.
+* **Logical Partition (Partición lógica):** Conjunto de items que comparten el mismo valor de la clave de partición; tiene un límite de tamaño de **20 GB** en Azure Cloud.
+* **Physical Partition (Partición física):** Unidad interna de cómputo y almacenamiento SSD administrada y autoescalada por Azure que aloja un conjunto de particiones lógicas.
+* **Cardinality (Cardinalidad de clave de partición):** Número de valores únicos distintos que puede tomar la clave de partición; una alta cardinalidad garantiza una distribución uniforme de datos y rendimiento.
+* **Hot Partition (Partición saturada / Cuello de botella):** Partición lógica o física que recibe un volumen desproporcionadamente alto de lecturas/escrituras, agotando sus RUs y degradando el rendimiento general.
+* **Point Read (Lectura puntual directa):** Operación de lectura más rápida y económica en Cosmos DB que recupera un item específico conociendo simultáneamente su `id` y su `partitionKey` (1 RU exacto en nube).
+* **Cross-Partition Query (Consulta entre particiones):** Consulta SQL que no incluye la clave de partición en su cláusula `WHERE`, obligando al motor a consultar en abanico (*fan-out*) todas las particiones físicas.
+* **TTL (Time-To-Live / Tiempo de vida):** Capacidad nativa de Cosmos DB para eliminar automáticamente items de un contenedor tras un periodo de tiempo determinado en segundos, sin consumir RUs de escritura adicionales.
+* **Change Feed (Flujo de cambios):** Registro de auditoría persistente, ordenado y de solo lectura que emite en tiempo real todas las inserciones y modificaciones que ocurren en los documentos de un contenedor.
+* **Change Feed Processor (Procesador del flujo de cambios):** Biblioteca / componente que distribuye la lectura del Change Feed entre múltiples instancias de consumidores garantizando tolerancia a fallos y avance coordinado mediante leases.
+* **Checkpoint (Punto de control):** Mecanismo de persistencia del estado que almacena el último token de continuación procesado para permitir reanudar la lectura tras caídas o reinicios sin procesar eventos desde el inicio.
+* **Lease (Arrendamiento en Change Feed):** Bloqueo distribuido temporal que asigna la lectura de una partición física a un consumidor específico para evitar que múltiples instancias procesen la misma partición simultáneamente.
+* **At-Least-Once Delivery (Entrega al menos una vez):** Garantía de mensajería/eventos donde ningún mensaje se pierde, pero pueden ocurrir reentregas o duplicados ante fallos de red o reinicios, exigiendo consumidores idempotentes.
+* **Idempotent Consumer (Consumidor idempotente):** Patrón arquitectónico donde el procesamiento repetido del mismo evento o cambio produce exactamente el mismo efecto lógico que procesarlo una sola vez.
+* **Continuation Token (Token de continuación):** Cadena opaca emitida por Cosmos DB que codifica el cursor de posición exacto en el flujo de cambios para solicitudes de lectura posteriores.
+* **Consistency Level (Nivel de consistencia):** Configuración que equilibra el compromiso entre coherencia de datos, latencia y disponibilidad en sistemas distribuidos (Strong, Bounded Staleness, Session, Consistent Prefix, Eventual).
+* **Request Unit / RU (Unidad de solicitud):** Medida normalizada de rendimiento en Azure Cosmos DB que abstrae los recursos de CPU, memoria e IOPS necesarios para ejecutar una operación.
+* **Indexing Policy (Política de indexación):** Configuración declarativa que define qué rutas del documento JSON se indexan automáticamente (por defecto `/*` indexa todos los campos) y qué tipo de índices usar (Range, Spatial, Vector).
+* **Gateway Mode (Modo de conexión Gateway):** Modo de conexión del SDK de Cosmos DB donde todas las solicitudes pasan a través de un proxy/puerta de enlace central (puerto 8081 en el emulador local).
+* **Emulator (Emulador local de Cosmos DB):** Entorno local contenedorizado provisto por Microsoft que simula la API for NoSQL de Azure Cosmos DB para pruebas de desarrollo e integración sin costo cloud.
+* **Cloud Parity (Paridad con la nube):** Grado de fidelidad y equivalencia funcional entre un entorno de emulación local y el servicio administrado real en producción de Azure.

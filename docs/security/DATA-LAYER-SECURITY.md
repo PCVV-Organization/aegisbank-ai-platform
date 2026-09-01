@@ -43,3 +43,15 @@ graph TD
    - La tabla `rag_chunks` restringe el tipo a `vector(32)`. Cualquier intento de insertar un vector con dimensión distinta es rechazado a nivel de motor de base de datos (`dimension mismatch`).
 3. **Parametrización del Operador de Distancia Coseno:**
    - El vector de búsqueda se envía como parámetro de tipo binario/vector mediante `register_vector(conn)` y `%(query_vec)s::vector`, impidiendo inyecciones a través del vector.
+
+---
+
+## 4. Controles de Seguridad en Azure Cosmos DB NoSQL (v0.12.1)
+
+| Control de Seguridad Cosmos DB | Implementación Local (`LOCAL-COSMOS-COVERED`) | Producción Cloud Azure (`COSMOS-CLOUD-PENDING`) |
+|---|---|---|
+| **Gestión de Llaves de Conexión** | Llave estándar de emulador local públicamente documentada por Microsoft. Cero secretos de producción en código o Git. | Autenticación con **Microsoft Entra ID (Azure AD)** y roles RBAC para Cosmos DB (`Cosmos DB Built-in Data Reader/Contributor`) sin llaves maestras estáticas. |
+| **Aislamiento por Clave de Partición** | Partición lógica estricta `/customer_id` que impide que consultas de un cliente lean accidentalmente datos de otro. | Mismo estándar lógico reforzado con Azure Policy y aislamiento de red en VNet / Private Endpoints. |
+| **Cifrado en Reposo y en Tránsito** | Contenedor local en red bridge `aegisbank-net`. | Cifrado en reposo automático de Microsoft con Customer-Managed Keys (CMK) en Azure Key Vault + TLS 1.3 forzado. |
+| **Procesamiento de Eventos (Change Feed)** | Consumidor idempotente con deduplicación por clave combinada `id:etag` para evitar dobles efectos ante reintentos. | Azure Functions con Cosmos DB Trigger o Change Feed Processor administrado con escalado automático y lease container. |
+| **Gobernanza de Datos y TTL** | Expiración automática determinista vía `default_ttl` en datos de sesión y telemetría efímera; prohibido en auditoría bancaria. | Políticas de retención continuas con Azure Cosmos DB Analytical Store (Synapse Link) y backups continuos (30 días PITR). |

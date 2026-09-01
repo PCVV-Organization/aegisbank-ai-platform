@@ -382,3 +382,62 @@ graph TD
 * **`v0.12.2 — Redis Cache + Vector/Search Semantics`**:
   - Implementación de cache-aside con Redis Community local.
   - TTL dinámico, estrategias de expiración e invalidación de conocimiento ante cambios en el corpus, y semántica de búsqueda vectorial en memoria.
+
+---
+
+## 14. v0.12.1: Azure Cosmos DB NoSQL Emulator + Change Feed (AI-200 Event-Driven Data)
+
+Azure Cosmos DB es la base de datos distribuida NoSQL de Microsoft evaluada en **Microsoft AI-200** para almacenamiento de estado conversacional, eventos de agentes y arquitecturas guiadas por eventos con el **Change Feed**.
+
+```mermaid
+graph TD
+    subgraph "Arquitectura de Persistencia Híbrida en AegisBank"
+        RAG["PostgreSQL 17 + pgvector<br>(Corpus y Búsqueda Vectorial)"]
+        Cosmos["Azure Cosmos DB NoSQL<br>(Documentos JSON / Estado de Agente / Partición /customer_id)"]
+        CF["Change Feed<br>(Historial ordenado de cambios)"]
+        Processor["CosmosChangeFeedProcessor<br>(Consumidor Idempotente con Checkpoints)"]
+
+        Cosmos --> CF
+        CF --> Processor
+    end
+```
+
+---
+
+### 1. Tríada de Madurez de Cosmos DB (AI-200 Mapping Matrix)
+
+| Dimensión Cosmos DB | Laboratorio Local (`LOCAL-COSMOS-COVERED`) | Producción Cloud Azure (`COSMOS-CLOUD-PENDING`) |
+|---|---|---|
+| **Motor NoSQL** | Azure Cosmos DB Emulator vNext Linux en Docker (`azure-cosmos-emulator:vnext-latest`). | Cuenta de Azure Cosmos DB con replicación multirregión y SLA del 99.999%. |
+| **API y Dialecto** | API for NoSQL con operaciones CRUD y consultas SQL parametrizadas. | Misma API con soporte de consultas distribuidas complejas e indexación automática. |
+| **Particionamiento** | Contenedores particionados lógicamente por `/customer_id` (4 particiones simuladas). | Escalado horizontal masivo con particiones físicas autoescaladas por Azure. |
+| **Point Reads vs Queries** | Point Read directo vía `read_item(id, partition_key)` vs consultas SQL filtradas. | Point read con costo fijo de 1 RU; optimización de queries para evitar fan-out cross-partition. |
+| **Time-To-Live (TTL)** | Expiración automática demostrada en items efímeros (`default_ttl`). | TTL nativo en segundo plano sin consumo de RU de escritura ni costo de almacenamiento. |
+| **Change Feed** | Lectura incremental de cambios vía `query_items_change_feed()` y processor con checkpoints. | Change Feed Processor administrado en Azure Functions con escalado dinámico y lease container. |
+| **Request Units (RU)** | `EMULATOR-LIMITATION`: El emulador vNext reporta `RU = NOT YET IMPLEMENTED`. | Modelo de aprovisionamiento de RUs (Manual, Autoscale, Serverless) con métricas en Azure Monitor. |
+| **Políticas de Indexación** | `EMULATOR-LIMITATION`: Las políticas personalizadas son `NO-OP` en el emulador actual. | Políticas de indexación avanzadas (inclusiones/exclusiones, índices espaciales y compuestos). |
+| **Niveles de Consistencia** | Conceptos cubiertos (`Strong`, `Bounded Staleness`, `Session`, `Consistent Prefix`, `Eventual`). | Consistencia configurable por cuenta o por solicitud respaldada por SLAs en producción. |
+| **Búsqueda Vectorial** | `COSMOS_VECTOR_SEARCH_CLOUD_PENDING`: Implementación vectorial real cubierta en pgvector v0.12. | Indexación vectorial DiskANN / Flat en Cosmos DB NoSQL en Azure Cloud. |
+
+---
+
+### 2. Point Reads vs Consultas Cross-Partition
+
+1. **Point Read (`read_item(id, partition_key)`):**
+   - El SDK calcula el hash de la clave de partición y enruta la solicitud directamente a la partición física correspondiente.
+   - En Azure Cloud tiene un costo determinista de **1 RU** (para items < 1 KB) y latencia < 2 ms.
+2. **Consulta en la Misma Partición (*In-Partition Query*):**
+   - Consulta SQL que incluye `WHERE c.customer_id = 'CUST-001'`. Solo busca en la partición lógica indicada.
+3. **Consulta Entre Particiones (*Cross-Partition Query*):**
+   - Consulta SQL sin filtro de partition key. Obliga al cliente/gateway a consultar en paralelo (*fan-out*) todas las particiones físicas, multiplicando el consumo de RUs y la latencia.
+
+---
+
+### 3. Change Feed vs Message Brokers (Service Bus)
+
+| Dimensión | Cosmos DB Change Feed | Azure Service Bus Queue / Topic |
+|---|---|---|
+| **Naturaleza** | Historial persistente e incremental de cambios del datastore. | Broker de mensajería empresarial transaccional desacoplado. |
+| **Destrucción de Datos** | Los cambios persisten en el documento; leer el Change Feed no borra el item. | Los mensajes se consumen y eliminan (`Complete`) de la cola. |
+| **Ordenamiento** | Orden garantizado dentro de cada partición lógica (`customer_id`). | Orden garantizado solo con sesiones de mensajes activadas. |
+| **Casos de Uso en AegisBank** | Auditoría reactiva, réplica de estado a motores analíticos, triggers de IA. | Enrutamiento de comandos transaccionales (`service-requests`), HITL approvals, DLQ. |

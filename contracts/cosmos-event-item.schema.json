@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aegisbank:contracts:cosmos-event-item:v1",
+  "title": "CosmosEventItemContract",
+  "description": "JSON Schema validating structured items stored in Azure Cosmos DB NoSQL.",
+  "type": "object",
+  "required": [
+    "id",
+    "customer_id",
+    "schema_version",
+    "event_type",
+    "correlation_id",
+    "timestamp_utc",
+    "payload"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "customer_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp_utc": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": -1
+    }
+  },
+  "additionalProperties": true
+}

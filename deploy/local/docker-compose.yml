@@ -92,7 +92,26 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-      start_period: 10s
+  cosmos-emulator:
+    profiles: ["cosmos", "data"]
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest
+    container_name: aegisbank-cosmos-emulator
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+      - "8080:8080"
+      - "1234:1234"
+    environment:
+      AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 4
+      AZURE_COSMOS_EMULATOR_ENABLE_DATA_EXPLORER: "true"
+    networks:
+      - aegisbank-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -k -f http://127.0.0.1:8080/ready || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
 
 networks:
   aegisbank-net:

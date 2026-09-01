@@ -190,6 +190,7 @@ def run_quality_gates(
     containers: bool = False,
     kubernetes: bool = False,
     data: bool = False,
+    cosmos: bool = False,
 ) -> tuple[int, list[GateResult]]:
     results: list[GateResult] = []
     py_exec = sys.executable
@@ -349,6 +350,32 @@ def run_quality_gates(
         if ret:
             all_passed = False
 
+    if cosmos:
+        cosmos_cmd = [
+            py_exec,
+            "-m",
+            "pytest",
+            "ai/agent/tests/cosmos",
+            "ai/agent/tests/contracts/test_cosmos_contracts.py",
+        ]
+        print("[*] Running gate: Azure Cosmos DB NoSQL Acceptance...")
+        started = time.time()
+        ret, stdout, stderr = _run_cmd(cosmos_cmd, repo_root)
+        duration = round(time.time() - started, 3)
+        output = stdout.strip() if stdout.strip() else stderr.strip()
+        results.append(
+            GateResult(
+                name="Azure Cosmos DB NoSQL Acceptance",
+                command=" ".join(cosmos_cmd),
+                status="PASS" if ret == 0 else "FAIL",
+                duration_seconds=duration,
+                output_snippet=output[-500:],
+                error_message=stderr if ret else None,
+            )
+        )
+        if ret:
+            all_passed = False
+
     # Architecture Inventory Gate
     print("[*] Running gate: Architecture Inventory & Ownership Gate...")
     start_time = time.time()
@@ -445,6 +472,13 @@ def main() -> int:
         action="store_true",
         help="Run opt-in PostgreSQL + pgvector data integration acceptance; requires local PostgreSQL",
     )
+    parser.add_argument(
+        "--gate-cosmos",
+        "--include-cosmos",
+        dest="gate_cosmos",
+        action="store_true",
+        help="Run opt-in Azure Cosmos DB NoSQL integration acceptance; requires local Cosmos emulator",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
@@ -457,6 +491,7 @@ def main() -> int:
         containers=args.gate_containers,
         kubernetes=args.gate_kubernetes,
         data=args.gate_data,
+        cosmos=args.gate_cosmos,
     )
 
     report_payload = {
