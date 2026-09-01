@@ -268,3 +268,48 @@ AegisBank domina estos conceptos de forma local y reproducible mediante el sigui
 
 > [!NOTE]
 > **Principio de Realismo de Laboratorio:** `Service Bus Emulator != Azure Service Bus producción`. El emulador local carece de SLA bancario, autenticación Microsoft Entra ID (Azure AD), VNet integration y geo-replicación, pero permite validar el protocolo AMQP, el ciclo de vida de mensajes (settlement), deduplicación y enrutamiento a Dead-Letter Queue (DLQ) con cero costo de infraestructura en la nube.
+
+---
+
+## 12. v0.11.1: Runtime y Orquestación Kubernetes Local (AI-200 Mapping)
+
+Kubernetes introduce la capa de **orquestación declarativa** sobre la contenerización básica: en lugar de gestionar ciclos de vida de procesos individuales en el host, se declara el estado deseado (*desired state*) en manifiestos YAML y el **Plano de Control (*Control Plane*)** se encarga de reconciliar y mantener ese estado continuamente mediante un bucle de control (*reconciliation loop*).
+
+### 1. Tríada de Madurez Cloud / Local (AI-200 Target Matrix)
+
+Para evitar inflar el alcance del laboratorio, AegisBank distingue estrictamente tres estados de madurez:
+
+| Dimensión de Orquestación | Local Lab Kubernetes (`LOCAL-K8S-COVERED`) | Azure Kubernetes Service (`AKS-CLOUD-PENDING`) | Azure Container Apps (`CONTAINER-APPS-CLOUD-PENDING`) |
+|---|---|---|---|
+| **Plano de Control** | Docker Desktop / containerd en WSL2 single-node. | Control plane administrado por Microsoft (SLA 99.95%). | Totalmente serverless y abstraído por Microsoft. |
+| **Aislamiento de Cargas** | Namespace `aegisbank-local` (lógico). | Namespaces + Azure Network Policies / Calico / Cilium. | Ambientes dedicados (*Container Apps Environments*). |
+| **Despliegue y Replicación** | `Deployment` + `ReplicaSet` (1 -> 2 -> 1 réplicas). | `Deployment` multinodo con Node Pools heterogéneos. | `Revision` inmutable con asignación de tráfico %. |
+| **Descubrimiento y Red** | `Service` tipo `ClusterIP` + CoreDNS. | `ClusterIP` + Ingress Controller + Azure Application Gateway. | Ingress HTTPS administrado con TLS automático. |
+| **Sondas de Ciclo de Vida** | Readiness (`/health/ready`) y Liveness (`/health/live`). | Mismas sondas con monitorización en Azure Monitor / Prometheus. | Health Probes integradas en la consola de Container Apps. |
+| **Actualizaciones y Resiliencia**| Rolling Updates (`maxSurge: 1, maxUnavailable: 0`) + Rollback. | Blue-Green / Canary con Service Meshes (Istio/Linkerd). | Revision-based Blue-Green con división porcentual de tráfico. |
+| **Autoescalado** | Escalado manual vía `kubectl scale`. | Horizontal Pod Autoscaler (HPA) + Cluster Autoscaler. | **KEDA** nativo escalando desde 0 según longitud de Service Bus. |
+| **Gestión de Secretos** | ConfigMaps no confidenciales + variables inyectadas. | Azure Key Vault Secrets Store CSI Driver. | Container Apps Secrets vinculados a Azure Key Vault. |
+
+### 2. Diseño de Arquitectura: Azure Container Apps + KEDA para Consumidores de Eventos
+
+En arquitecturas bancarias modernas orientadas a eventos (como el procesamiento de solicitudes de servicio `service-requests` generado por el *Transactional Outbox*), el patrón de autoescalado guiado por eventos se diseña de la siguiente manera:
+
+```mermaid
+graph LR
+    subgraph "Azure Service Bus"
+        Q["Queue: service-requests"]
+    end
+    subgraph "Azure Container Apps Environment"
+        KEDA["KEDA Scaler (Azure Service Bus Trigger)"]
+        KEDA -. "Longitud de cola > 0" .-> Scaler["Scale Controller"]
+        Scaler --> R1["Replica 1 (Consumer)"]
+        Scaler --> R2["Replica 2 (Consumer)"]
+        Scaler -. "Cola vacía (0 msgs)" .-> ScaleZero["Scale-to-Zero (0 réplicas / 0 costo)"]
+    end
+    Q --> R1
+    Q --> R2
+```
+
+1. **Escalado a Cero (*Scale-to-Zero*):** Cuando no hay solicitudes pendientes en la cola, las instancias se apagan por completo, reduciendo el costo de infraestructura a cero.
+2. **Activación Inmediata por Evento:** Cuando entra un mensaje a la cola, KEDA detecta el cambio en la métrica `activeMessageCount` e instancia réplicas inmediatamente para procesar la carga en paralelo.
+3. **Idempotencia Garantizada:** Debido a que KEDA puede instanciar múltiples consumidores concurrentes que procesan mensajes de la misma cola, el componente canónico [`IdempotentConsumer`](file:///c:/aegisbank-ai-platform-ai-env/aegisbank-ai-platform/ai/agent/src/aegisbank_agent/reliability/messaging.py) garantiza que cada `event_id` se procese exactamente una sola vez.

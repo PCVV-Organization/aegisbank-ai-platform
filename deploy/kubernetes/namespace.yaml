@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aegisbank-local
+  labels:
+    app.kubernetes.io/part-of: aegisbank-ai-platform
+    environment: local-lab

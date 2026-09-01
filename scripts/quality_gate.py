@@ -185,7 +185,10 @@ def _session_guard_result(repo_root: Path) -> GateResult:
 
 
 def run_quality_gates(
-    repo_root: Path, secrets_only: bool = False, containers: bool = False
+    repo_root: Path,
+    secrets_only: bool = False,
+    containers: bool = False,
+    kubernetes: bool = False,
 ) -> tuple[int, list[GateResult]]:
     results: list[GateResult] = []
     py_exec = sys.executable
@@ -297,6 +300,31 @@ def run_quality_gates(
         if ret:
             all_passed = False
 
+    if kubernetes:
+        k8s_cmd = [
+            py_exec,
+            "-m",
+            "pytest",
+            "ai/agent/tests/kubernetes/test_kubernetes_acceptance.py",
+        ]
+        print("[*] Running gate: Kubernetes Integration Acceptance...")
+        started = time.time()
+        ret, stdout, stderr = _run_cmd(k8s_cmd, repo_root)
+        duration = round(time.time() - started, 3)
+        output = stdout.strip() if stdout.strip() else stderr.strip()
+        results.append(
+            GateResult(
+                name="Kubernetes Integration Acceptance",
+                command=" ".join(k8s_cmd),
+                status="PASS" if ret == 0 else "FAIL",
+                duration_seconds=duration,
+                output_snippet=output[-500:],
+                error_message=stderr if ret else None,
+            )
+        )
+        if ret:
+            all_passed = False
+
     # Architecture Inventory Gate
     print("[*] Running gate: Architecture Inventory & Ownership Gate...")
     start_time = time.time()
@@ -379,6 +407,13 @@ def main() -> int:
         action="store_true",
         help="Run opt-in Docker Compose integration acceptance; requires Docker and MSSQL_SA_PASSWORD",
     )
+    parser.add_argument(
+        "--gate-kubernetes",
+        "--include-kubernetes",
+        dest="gate_kubernetes",
+        action="store_true",
+        help="Run opt-in Kubernetes integration acceptance; requires local Kubernetes cluster",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
@@ -386,7 +421,10 @@ def main() -> int:
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     exit_code, results = run_quality_gates(
-        repo_root, secrets_only=args.gate_secrets_only, containers=args.gate_containers
+        repo_root,
+        secrets_only=args.gate_secrets_only,
+        containers=args.gate_containers,
+        kubernetes=args.gate_kubernetes,
     )
 
     report_payload = {

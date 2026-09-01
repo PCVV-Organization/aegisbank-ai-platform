@@ -2,11 +2,11 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: aegisbank-core-banking-config
-  namespace: aegisbank
+  namespace: aegisbank-local
   labels:
     app.kubernetes.io/name: mock-core-banking
     app.kubernetes.io/part-of: aegisbank-ai-platform
     app.kubernetes.io/version: "0.11.0"
 data:
-  AEGISBANK_ENV: "production-simulation"
-  AEGISBANK_DATABASE_URL: "sqlite:////app/data/local/aegisbank-dev.db"
+  AEGISBANK_ENV: "kubernetes-local"
+  AEGISBANK_DATABASE_URL: "sqlite:////app/data/aegisbank-dev.db"

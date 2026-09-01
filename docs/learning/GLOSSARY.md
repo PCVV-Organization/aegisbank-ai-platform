@@ -269,3 +269,26 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **Azure Container Apps:** Plataforma serverless totalmente administrada de Azure construida sobre Kubernetes que permite ejecutar microservicios y trabajos en contenedores con autoescalado KEDA, revisiones automáticas y baja sobrecarga operativa.
 * **Kubernetes (K8s):** Sistema de código abierto de nivel empresarial para automatizar el despliegue, escalado, balanceo de carga y gestión de aplicaciones contenerizadas en clústeres de servidores.
 * **AKS (Azure Kubernetes Service):** Servicio de Kubernetes administrado por Microsoft en Azure donde el plano de control (*control plane*) es operado por Microsoft, permitiendo control exhaustivo de infraestructura, pods, deployments e ingress.
+
+---
+
+### Orquestación y Runtime Kubernetes Local (v0.11.1)
+
+* **Cluster (Clúster Kubernetes):** Conjunto completo de nodos de cómputo (físicos o virtuales) coordinados por un plano de control común que ejecutan aplicaciones contenerizadas.
+* **Control Plane (Plano de control):** Cerebro central de Kubernetes (`kube-apiserver`, `etcd`, `kube-scheduler`, `kube-controller-manager`) que mantiene y reconcilia el estado deseado del clúster frente al estado real.
+* **Node (Nodo de cómputo):** Máquina de trabajo individual (física o virtual) dentro del clúster donde el agente `kubelet` y el runtime de contenedores (`containerd`) instancian y ejecutan los Pods.
+* **Pod:** Unidad atómica mínima de ejecución y despliegue en Kubernetes; encapsula uno o más contenedores estrechamente acoplados que comparten almacenamiento, red (IP única) y especificaciones de ciclo de vida.
+* **Deployment:** Objeto declarativo de alto nivel que gestiona el ciclo de vida, actualizaciones progresivas (*rolling updates*), historial de revisiones y auto-recuperación de un conjunto de Pods idénticos.
+* **ReplicaSet:** Controlador de nivel inferior gestionado por el Deployment cuyo único propósito es asegurar que un número exacto de réplicas de Pods saludables estén ejecutándose en todo momento.
+* **Namespace (Espacio de nombres):** Mecanismo de particionamiento lógico y aislamiento de nombres/recursos dentro de un mismo clúster físico (e.g. `aegisbank-local`, `kube-system`); no constituye un límite de seguridad estanco.
+* **ConfigMap:** Objeto de configuración desacoplado para almacenar datos no confidenciales en formato clave-valor, inyectables como variables de entorno o archivos montados en los Pods.
+* **kubeconfig:** Archivo estructurado YAML (comúnmente en `~/.kube/config`) que define clústeres, usuarios, credenciales y contextos para autenticar comandos `kubectl`.
+* **Context (Contexto de Kubernetes):** Tupla lógica dentro de `kubeconfig` que combina un Clúster específico, un Usuario/Credencial y un Namespace predeterminado (e.g. `docker-desktop`).
+* **Rollout (Despliegue progresivo):** Proceso automatizado mediante el cual Kubernetes reemplaza gradualmente Pods de una versión antigua por una nueva versión sin interrumpir la disponibilidad del servicio.
+* **Rollback (Reversión de despliegue):** Operación de emergencia (`kubectl rollout undo`) que restaura de forma inmediata el Deployment a una revisión previa conocida y saludable ante fallos en producción.
+* **Replica (Réplica de Pod):** Instancia idéntica e intercambiable de un Pod ejecutando la misma imagen y configuración para balanceo de carga o tolerancia a fallos.
+* **Resource Request (Solicitud de recursos):** Cantidad garantizada mínima de CPU (e.g. `100m`) y Memoria (e.g. `128Mi`) que el planificador (*scheduler*) reserva en un nodo para ubicar un Pod.
+* **Resource Limit (Límite de recursos):** Techo máximo estricto de CPU y Memoria (e.g. `256Mi`) que un contenedor puede consumir antes de ser estrangulado (CPU throttling) o terminado por el kernel (`OOMKilled`).
+* **SecurityContext (Contexto de seguridad):** Directivas de endurecimiento a nivel de Pod y Contenedor (`runAsNonRoot`, `allowPrivilegeEscalation: false`, `drop: [ALL]`, `seccompProfile: RuntimeDefault`) para restringir privilegios y mitigar escapes de contenedor.
+* **imagePullPolicy (Política de descarga de imágenes):** Regla de obtención de imágenes (`IfNotPresent`, `Never`, `Always`); en laboratorio local `IfNotPresent`/`Never` permite usar imágenes de Docker Desktop sin descargarlas de internet.
+* **port-forward (Reenvío de puertos):** Túnel TCP seguro temporal creado por `kubectl` que redirige el tráfico desde un puerto del host local hacia un puerto interno de un Pod o Service en el clúster.
