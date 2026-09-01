@@ -292,3 +292,42 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **SecurityContext (Contexto de seguridad):** Directivas de endurecimiento a nivel de Pod y Contenedor (`runAsNonRoot`, `allowPrivilegeEscalation: false`, `drop: [ALL]`, `seccompProfile: RuntimeDefault`) para restringir privilegios y mitigar escapes de contenedor.
 * **imagePullPolicy (Política de descarga de imágenes):** Regla de obtención de imágenes (`IfNotPresent`, `Never`, `Always`); en laboratorio local `IfNotPresent`/`Never` permite usar imágenes de Docker Desktop sin descargarlas de internet.
 * **port-forward (Reenvío de puertos):** Túnel TCP seguro temporal creado por `kubectl` que redirige el tráfico desde un puerto del host local hacia un puerto interno de un Pod o Service en el clúster.
+
+---
+
+### Gestión de Datos para IA y Búsqueda Vectorial (v0.12.0)
+
+* **DBMS (Database Management System / Sistema Gestor de Bases de Datos):** Software del sistema responsable de almacenar, consultar, indexar y proteger datos estructurados o no estructurados (e.g. PostgreSQL, SQL Server, Redis, Cosmos DB).
+* **RDBMS (Relational Database Management System / Sistema Gestor de Bases de Datos Relacional):** DBMS basado en el modelo relacional de tablas, filas y columnas vinculadas mediante claves y restricciones de integridad.
+* **PostgreSQL:** Sistema gestor de bases de datos relacional de objetos de código abierto, altamente extensible y conforme con los estándares SQL y transaccionales ACID.
+* **SQL (Structured Query Language / Lenguaje de Consulta Estructurado):** Lenguaje declarativo estándar para definir esquemas (*DDL*), manipular datos (*DML*) y consultar información relacional (*DQL*).
+* **Schema (Esquema de base de datos):** Estructura organizativa formal y espacio de nombres que agrupa tablas, vistas, tipos de datos, índices y procedimientos dentro de una base de datos.
+* **Table (Tabla):** Estructura bidimensional de almacenamiento compuesta por un conjunto fijo de columnas con tipo de datos y cero o más filas de datos.
+* **Row (Fila / Registro / Tupla):** Instancia única y atómica de datos dentro de una tabla que representa una entidad concreta (e.g. un chunk de documento o una solicitud de servicio).
+* **Primary Key (Clave primaria / PK):** Columna o combinación de columnas cuyos valores identifican de forma única e inequívoca cada fila de una tabla, prohibiendo valores nulos o duplicados.
+* **Foreign Key (Clave foránea / FK):** Restricción de integridad referencial que vincula una columna de una tabla con la clave primaria de otra tabla.
+* **Transaction (Transacción de base de datos):** Unidad lógica de trabajo compuesta por una o más operaciones SQL que deben ejecutarse bajo garantías atómicas de todo o nada (*all-or-nothing*).
+* **ACID (Atomicidad, Consistencia, Aislamiento, Durabilidad):** Cuatro propiedades fundamentales que garantizan la fiabilidad y corrección de las transacciones de bases de datos ante fallos del sistema o concurrencia.
+* **Index (Índice de base de datos):** Estructura de datos secundaria (e.g. B-Tree, Hash, HNSW) que acelera la búsqueda y recuperación de filas a costa de espacio en disco y sobrecarga de escritura.
+* **Query Plan (Plan de ejecución de consulta):** Secuencia ordenada de pasos y algoritmos elegidos por el optimizador del motor de base de datos para ejecutar una consulta SQL con el menor costo estimado.
+* **EXPLAIN:** Comando SQL que muestra el plan de ejecución previsto por el optimizador (estimaciones de costo, escaneos secuenciales vs escaneos por índice) sin ejecutar la consulta.
+* **ANALYZE:** Modificador de `EXPLAIN` que ejecuta realmente la consulta SQL y reporta tiempos de ejecución reales, número de filas procesadas y bloques de memoria leídos (*Buffers*).
+* **Connection (Conexión de base de datos):** Sesión TCP activa y autenticada establecida entre un proceso de aplicación cliente y el servidor de base de datos.
+* **Connection Pool (Pool de conexiones):** Almacén administrado de conexiones reutilizables en memoria que elimina el costo recurrente de abrir y cerrar conexiones TCP para cada consulta.
+* **Embedding (Incrustación / Vector de características):** Representación matemática densa y continua de un texto, imagen o concepto en un espacio vectorial multidimensional (e.g. 32 o 1536 dimensiones), donde la cercanía geométrica refleja similitud semántica.
+* **Vector:** Arreglo unidimensional ordenado de números flotantes (e.g. `[0.14, -0.72, 0.33, ...]`) que codifica las propiedades semánticas de un dato.
+* **Vector Database (Base de datos vectorial):** Motor de base de datos especializado u optimizado para indexar, almacenar y consultar vectores densos mediante algoritmos de búsqueda por similitud.
+* **pgvector:** Extensión de código abierto para PostgreSQL que introduce el tipo de datos `vector`, operadores de distancia (Coseno, L2, Producto Interno) e índices vectoriales HNSW e IVFFlat.
+* **Cosine Similarity (Similitud Coseno):** Métrica de similitud geométrica que mide el coseno del ángulo entre dos vectores no nulos, variando de -1 (opuestos) a 1 (idénticos), independiente de su magnitud.
+* **L2 / Euclidean Distance (Distancia Euclidiana L2):** Distancia geométrica en línea recta entre dos puntos en un espacio multidimensional euclidiano; operador `<->` en pgvector.
+* **Inner Product (Producto Interno / Dot Product):** Suma del producto elemento a elemento de dos vectores; para vectores unitarios normalizados equivale a la similitud coseno; operador `<#>` en pgvector.
+* **Exact Nearest-Neighbor Search (Búsqueda exacta del vecino más cercano):** Búsqueda exhaustiva que compara el vector de consulta contra el 100% de los vectores de la tabla sin aproximaciones (recall del 100%, pero latencia lineal $O(N)$).
+* **ANN (Approximate Nearest Neighbor / Vecino más próximo aproximado):** Familia de algoritmos de búsqueda que sacrifican una fracción mínima de exactitud/recall para lograr búsquedas sub-lineales ultrarrápidas ($O(\log N)$) en conjuntos de datos masivos.
+* **HNSW (Hierarchical Navigable Small World):** Algoritmo de indexación vectorial basado en grafos jerárquicos multicapa que ofrece la mejor relación de velocidad y recall para búsqueda ANN a cambio de mayor consumo de memoria RAM y tiempo de construcción.
+* **IVFFlat (Inverted File Flat):** Algoritmo de indexación vectorial que divide el espacio en conglomerados (*clusters*) mediante cuantización vectorial (Voronoi cells), buscando solo en los grupos más cercanos.
+* **Metadata Filtering (Filtrado por metadatos):** Capacidad de combinar restricciones relacionales clásicas (`WHERE status = 'active' AND topic = 'creditos'`) con ordenamiento por similitud vectorial dentro de la misma consulta SQL.
+* **Recall (Exhaustividad):** Proporción de documentos relevantes recuperados respecto al total de documentos relevantes existentes en la base de conocimiento para una consulta.
+* **Latency (Latencia):** Tiempo total transcurrido desde que se emite una consulta hasta que se recibe el conjunto ordenado de resultados.
+* **Throughput (Rendimiento / Capacidad de procesamiento):** Número de consultas o transacciones procesadas con éxito por unidad de tiempo (e.g. consultas por segundo - QPS).
+* **Vector Store:** Abstracción de capa de acceso a datos que encapsula las operaciones de almacenamiento, actualización y búsqueda por similitud vectorial.
+* **Migration (Migración de base de datos):** Script versionado y determinista de cambios de esquema (DDL/DML) que evoluciona la estructura de la base de datos de manera controlada y reversible.

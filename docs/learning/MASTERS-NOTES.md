@@ -313,3 +313,72 @@ graph LR
 1. **Escalado a Cero (*Scale-to-Zero*):** Cuando no hay solicitudes pendientes en la cola, las instancias se apagan por completo, reduciendo el costo de infraestructura a cero.
 2. **Activación Inmediata por Evento:** Cuando entra un mensaje a la cola, KEDA detecta el cambio en la métrica `activeMessageCount` e instancia réplicas inmediatamente para procesar la carga en paralelo.
 3. **Idempotencia Garantizada:** Debido a que KEDA puede instanciar múltiples consumidores concurrentes que procesan mensajes de la misma cola, el componente canónico [`IdempotentConsumer`](file:///c:/aegisbank-ai-platform-ai-env/aegisbank-ai-platform/ai/agent/src/aegisbank_agent/reliability/messaging.py) garantiza que cada `event_id` se procese exactamente una sola vez.
+
+---
+
+## 13. v0.12.0: Gestión de Datos para IA y Búsqueda Vectorial con PostgreSQL + pgvector (AI-200 Data Layer)
+
+El examen oficial **Microsoft AI-200** (*Designing and Implementing a Microsoft Azure AI Solution*) dedica su bloque más extenso (**25–30% del examen**) a **Data Management for AI Solutions**, evaluando exhaustivamente:
+1. **Azure Database for PostgreSQL con extensión `pgvector`:** Diseño de esquemas relacionales, indexación de embeddings (HNSW, IVFFlat, DiskANN), operadores de distancia y metadata filtering en patrones RAG.
+2. **Azure Cosmos DB for NoSQL:** Modelado jerárquico JSON, partition keys, Change Feed para reactividad de IA, TTL e indexación vectorial nativa.
+3. **Azure Managed Redis:** Patrones de cache-aside, políticas de expiración e invalidación de conocimiento, y búsqueda por similitud vectorial en memoria.
+
+---
+
+### 1. Tríada de Madurez de la Capa de Datos (AI-200 Mapping Matrix)
+
+| Dimensión de Datos | Laboratorio Local (`LOCAL-PGVECTOR-COVERED`) | Producción Cloud Azure (`AZURE-POSTGRESQL-CLOUD-PENDING`) |
+|---|---|---|
+| **Motor de Base de Datos** | PostgreSQL 17 oficial en contenedor Docker (`pgvector/pgvector:0.8.0-pg17`). | Azure Database for PostgreSQL Flexible Server (Burstable / General Purpose). |
+| **Extensión Vectorial** | `pgvector v0.8.0` (`CREATE EXTENSION vector;`). | Extensión `pgvector` pre-instalada y administrada por Azure. |
+| **Tipo de Datos y Dimensión** | `embedding vector(32)` con normalización L2 unitaria. | `vector(1536)` (e.g. `text-embedding-3-small`) o `vector(3072)`. |
+| **Estrategias de Indexación** | Exact Search (baseline), **HNSW** (`vector_cosine_ops`) e **IVFFlat**. | Exact, HNSW, IVFFlat y **DiskANN** (exclusivo de Azure PostgreSQL). |
+| **Filtrado Combinado** | SQL con cláusulas relacionales (`WHERE status = 'active' AND topic = '...'`). | Mismo estándar relacional combinado con Azure AI Search / Cognitive Search. |
+| **Gestión de Conexiones** | Driver `psycopg 3` con registro de tipos de pgvector (`register_vector`). | PgBouncer integrado nativamente en Azure Database for PostgreSQL Flexible Server. |
+| **Seguridad y Acceso** | Consultas 100% parametrizadas (`%(param)s::type`) con usuario `aegisuser`. | Autenticación Microsoft Entra ID (Azure AD), Private Endpoints y TDE. |
+| **Análisis de Rendimiento** | `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` en queries vectoriales. | Azure Database for PostgreSQL Query Store y Performance Insights. |
+
+---
+
+### 2. Comparativa Algorítmica: Búsqueda Exacta vs HNSW vs IVFFlat
+
+```mermaid
+graph TD
+    subgraph "1. Exact Search (No Index)"
+        E["Comparación 1 a 1 contra N vectores"]
+        E --> ER["Recall: 100% | Latencia: O(N) | Memoria: 0 B"]
+    end
+    subgraph "2. HNSW (Hierarchical Navigable Small World)"
+        H["Grafo multicapa jerárquico navegable"]
+        H --> HR["Recall: 98-99% | Latencia: O(log N) | Memoria: Alta (RAM)"]
+    end
+    subgraph "3. IVFFlat (Inverted File Flat)"
+        I["Cuantización por centroides (Voronoi)"]
+        I --> IR["Recall: 90-95% | Latencia: Rápida | Memoria: Baja"]
+    end
+```
+
+1. **Exact Nearest Neighbor (`Exact`):**
+   - Compara exhaustivamente el vector de consulta contra cada fila de la tabla.
+   - **Ventaja:** Cero pérdida de recall (100% exacto).
+   - **Desventaja:** Escala de forma lineal $O(N)$. En millones de vectores satura el CPU.
+2. **HNSW (*Hierarchical Navigable Small World*):**
+   - Construye una jerarquía de grafos tipo "mundo pequeño" donde las capas superiores tienen enlaces largos para saltos rápidos y las capas inferiores afinan la búsqueda local.
+   - Parámetros clave: $m$ (número máximo de conexiones por nodo) y $ef_{construction}$ (tamaño de la lista dinámica durante la construcción del índice).
+   - **Ventaja:** Mejor relación velocidad/recall de la industria.
+   - **Desventaja:** Mayor tiempo de indexación y consumo de memoria RAM.
+3. **IVFFlat (*Inverted File Flat*):**
+   - Divide el espacio vectorial en listas de Voronoi mediante k-means (*lists*). La consulta solo explora las listas más cercanas (*probes*).
+   - **Ventaja:** Construcción rápida y bajo consumo de memoria.
+   - **Desventaja:** Requiere datos de entrenamiento previos y el recall es sensible al número de `probes`.
+
+---
+
+### 3. Hoja de Ruta de los Siguientes Micro-Hitos de Datos
+
+* **`v0.12.1 — Cosmos DB NoSQL Emulator + Change Feed`**:
+  - Implementación con el emulador local oficial de Azure Cosmos DB vNext (Linux Docker).
+  - Modelado de documentos JSON particionados, partición por `customer_id` / `topic`, TTL automático y procesamiento de eventos reactivos mediante **Change Feed**.
+* **`v0.12.2 — Redis Cache + Vector/Search Semantics`**:
+  - Implementación de cache-aside con Redis Community local.
+  - TTL dinámico, estrategias de expiración e invalidación de conocimiento ante cambios en el corpus, y semántica de búsqueda vectorial en memoria.

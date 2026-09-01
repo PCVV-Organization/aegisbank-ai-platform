@@ -189,6 +189,7 @@ def run_quality_gates(
     secrets_only: bool = False,
     containers: bool = False,
     kubernetes: bool = False,
+    data: bool = False,
 ) -> tuple[int, list[GateResult]]:
     results: list[GateResult] = []
     py_exec = sys.executable
@@ -325,6 +326,29 @@ def run_quality_gates(
         if ret:
             all_passed = False
 
+    if data:
+        data_cmd = [
+            py_exec,
+            "scripts/evaluate_retrievers_v012.py",
+        ]
+        print("[*] Running gate: PostgreSQL + pgvector Data Acceptance...")
+        started = time.time()
+        ret, stdout, stderr = _run_cmd(data_cmd, repo_root)
+        duration = round(time.time() - started, 3)
+        output = stdout.strip() if stdout.strip() else stderr.strip()
+        results.append(
+            GateResult(
+                name="PostgreSQL + pgvector Data Acceptance",
+                command=" ".join(data_cmd),
+                status="PASS" if ret == 0 else "FAIL",
+                duration_seconds=duration,
+                output_snippet=output[-500:],
+                error_message=stderr if ret else None,
+            )
+        )
+        if ret:
+            all_passed = False
+
     # Architecture Inventory Gate
     print("[*] Running gate: Architecture Inventory & Ownership Gate...")
     start_time = time.time()
@@ -414,6 +438,13 @@ def main() -> int:
         action="store_true",
         help="Run opt-in Kubernetes integration acceptance; requires local Kubernetes cluster",
     )
+    parser.add_argument(
+        "--gate-data",
+        "--include-data",
+        dest="gate_data",
+        action="store_true",
+        help="Run opt-in PostgreSQL + pgvector data integration acceptance; requires local PostgreSQL",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
@@ -425,6 +456,7 @@ def main() -> int:
         secrets_only=args.gate_secrets_only,
         containers=args.gate_containers,
         kubernetes=args.gate_kubernetes,
+        data=args.gate_data,
     )
 
     report_payload = {

@@ -72,6 +72,28 @@ services:
       retries: 12
       start_period: 30s
 
+  postgres-pgvector:
+    profiles: ["data"]
+    image: pgvector/pgvector:0.8.0-pg17
+    container_name: aegisbank-postgres-pgvector
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: aegisbank_rag
+      POSTGRES_USER: aegisuser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the shell; never commit it}
+    networks:
+      - aegisbank-net
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegisuser -d aegisbank_rag"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
 networks:
   aegisbank-net:
     driver: bridge
@@ -79,3 +101,5 @@ networks:
 volumes:
   core-banking-data:
     name: aegisbank-core-banking-data
+  pgvector-data:
+    name: aegisbank-pgvector-data

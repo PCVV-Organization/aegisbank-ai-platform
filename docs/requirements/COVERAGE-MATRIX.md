@@ -15,10 +15,10 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | Paquete del Repositorio | Cantidad de Pruebas | Estado |
 |---|---|---|
 | `ai/agent` (Agente, Tools, MCP, HITL, Reliability, Observability, Knowledge Routing, Banking Routing, Contracts, E2E, Session Guard, Container & Service Bus Acceptance, Kubernetes Acceptance) | **246 tests** | PASS |
-| `ai/rag` (Chunking, Retrieval Léxico/Denso/RRF, Grounding, Evaluaciones) | **62 tests** | PASS |
+| `ai/rag` (Chunking, Retrieval Léxico/Denso/RRF, Grounding, Evaluaciones, PostgreSQL + pgvector Acceptance) | **69 tests** | PASS |
 | `ml/intent-classifier` (Dataset sintético, TF-IDF, Logistic Regression) | **17 tests** | PASS |
-| `services/mock-core-banking` (Entidades, Restricciones, Repositorios, Outbox, OpenAPI Contracts) | **55 tests** | PASS |
-| **TOTAL GENERAL DEL REPOSITORIO** | **380 tests** | **100% PASS** |
+| `services/mock-core-banking` (Entidades, Restricciones, Repositorios, Outbox, OpenAPI Contracts) | **58 tests** | PASS |
+| **TOTAL GENERAL DEL REPOSITORIO** | **390 tests** | **100% PASS** |
 
 ---
 
@@ -54,4 +54,7 @@ Este documento mapea cada competencia y requisito técnico exigido en los perfil
 | **Architecture Integrity & Coordination** | `LAB-COVERED` / `CI-CONFIGURED` | v0.10.1 | `session_guard.py` (Single Writer, Many Readers), catálogo `CANONICAL-COMPONENTS.md`, regla `DISCOVER BEFORE CREATE`, Pylint R0801 duplicate-code baseline (9.98/10). |
 | **Contenedores y Mensajería Azure Local** | `LAB-COVERED` / `CLOUD-PENDING` | v0.11 | Docker multi-stage Linux non-root (`aegisbank/mock-core-banking:0.11.0`), Compose `aegisbank-net`, Azure Service Bus Emulator AMQP `5672`, adapter `AzureServiceBusMessageBus`, 9 journeys aceptación A-I (`test_container_e2e.py`), decisión ACA vs AKS (`CONTAINER-PLATFORM-DECISION.md`), endurecimiento (`CONTAINER-SECURITY.md`). |
 | **Orquestación y Runtime Kubernetes Local** | `LOCAL-K8S-COVERED` / `AKS-CLOUD-PENDING` | v0.11.1 | Namespace `aegisbank-local`, Deployment hardened (non-root, securityContext, probes, limits), Service ClusterIP, rolling updates, rollbacks, manual horizontal scale, port-forward E2E verification, y troubleshooting guide (`KUBERNETES-TROUBLESHOOTING.md`). |
-| **MLOps & Experiment Tracking** | `CLOUD-PENDING` | v0.12 | Planificado para v0.12 (MLflow, drift de datos, calibración). |
+| **PostgreSQL + pgvector Vector Data Foundation** | `LOCAL-PGVECTOR-COVERED` / `AZURE-POSTGRESQL-CLOUD-PENDING` | v0.12.0 | PostgreSQL 17 + pgvector 0.8.0 local en Docker Compose, adaptador `PgVectorRetriever`, modelo de embedding local determinista (`LocalDenseEmbeddingModel`), índices HNSW/IVFFlat, filtrado relacional por metadatos, planes de ejecución `EXPLAIN ANALYZE BUFFERS`, evaluación RAG unificada (`v012_retrieval_comparison.json`) y estándar de seguridad (`DATA-LAYER-SECURITY.md`). |
+| **Cosmos DB NoSQL Emulator + Change Feed** | `CLOUD-PENDING` | v0.12.1 | Planificado para v0.12.1 (Cosmos DB Emulator Linux, particionamiento, TTL, Change Feed). |
+| **Redis Cache + Vector/Search Semantics** | `CLOUD-PENDING` | v0.12.2 | Planificado para v0.12.2 (Redis Community local, cache-aside, invalidación, expiración). |
+| **MLOps & Experiment Tracking** | `CLOUD-PENDING` | v0.15 | Planificado para v0.15 (MLflow, drift de datos, calibración). |
