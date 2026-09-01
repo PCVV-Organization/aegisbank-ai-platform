@@ -55,3 +55,15 @@ graph TD
 | **Cifrado en Reposo y en Tránsito** | Contenedor local en red bridge `aegisbank-net`. | Cifrado en reposo automático de Microsoft con Customer-Managed Keys (CMK) en Azure Key Vault + TLS 1.3 forzado. |
 | **Procesamiento de Eventos (Change Feed)** | Consumidor idempotente con deduplicación por clave combinada `id:etag` para evitar dobles efectos ante reintentos. | Azure Functions con Cosmos DB Trigger o Change Feed Processor administrado con escalado automático y lease container. |
 | **Gobernanza de Datos y TTL** | Expiración automática determinista vía `default_ttl` en datos de sesión y telemetría efímera; prohibido en auditoría bancaria. | Políticas de retención continuas con Azure Cosmos DB Analytical Store (Synapse Link) y backups continuos (30 días PITR). |
+
+---
+
+## 5. Controles de Seguridad en Redis Cache y RediSearch (v0.12.2)
+
+| Control de Seguridad Redis | Implementación Local (`LOCAL-REDIS-COVERED`) | Producción Cloud Azure (`AZURE-MANAGED-REDIS-CLOUD-PENDING`) |
+|---|---|---|
+| **Aislamiento de Datos Sensibles** | Prohibición estricta de almacenar saldos, cuotas, transacciones o PII en memoria. Solo se cachea conocimiento público y vectores del corpus. | Misma política reforzada con DLP (*Data Loss Prevention*) y reglas de redacción de logs. |
+| **Autenticación y Control de Acceso** | Conexión local en loopback / red bridge `aegisbank-net` sin exposición pública. | Autenticación con **Microsoft Entra ID (Azure AD)** y RBAC nativo en Azure Managed Redis; sin contraseñas estáticas en texto plano. |
+| **Cifrado en Tránsito y Reposo** | Contenedor local en red bridge `aegisbank-net`. | Cifrado en tránsito TLS 1.2/1.3 obligatorio + Cifrado en disco para persistencia RDB/AOF. |
+| **Protección contra Inundación (*Stampede Lock*)** | Bloqueo distribuido single-flight con token único y liberación atómica por script Lua (`RELEASE_LOCK_LUA`). | Bloqueos distribuidos administrados con Redlock o single-flight proxy en Container Apps / AKS. |
+| **Gestión de Memoria y Evicción** | Configuración de límites de memoria y política `noeviction` / `volatile-lru` controlada. | Dimensionamiento elástico con Azure Managed Redis (Tiers Memory Optimized / Compute Optimized) y monitoreo de métricas de memoria en Azure Monitor. |

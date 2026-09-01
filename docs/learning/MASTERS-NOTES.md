@@ -483,3 +483,53 @@ Para evitar discrepancias entre capas:
 1. Las categorías de reclamo se definen una sola vez en el enum canónico: `mock_core_banking.domain.enums.ServiceRequestCategory`.
 2. El esquema de parámetros de la herramienta (`CreateServiceRequestTool.parameters_schema`) deriva dinámicamente sus valores desde el enum (`[c.value for c in ServiceRequestCategory]`).
 3. El system prompt del agente (`agent-system-v002.json`) documenta la misma taxonomía canónica institucional, asegurando cero desalineación conceptual.
+
+---
+
+## 16. v0.12.2: Redis Cache + Vector/Search Semantics (AI-200 & Low-Latency Retrieval)
+
+### 1. Patrón Cache-Aside y Mitigación de Cache Stampede (Single-Flight)
+
+El patrón **Cache-Aside** desacopla la aplicación de la persistencia de caché:
+1. **Lectura Perezosa (*Lazy Loading*):** La aplicación consulta a Redis únicamente cuando se necesita el dato. Si ocurre un *Cache Miss*, lee la base de datos canónica y puebla la caché con un **TTL acotado**.
+2. **Protección contra Inundación (*Cache Stampede / Thundering Herd*):** Ante expiración de claves de alto tráfico o arranques en frío, múltiples hilos intentan consultar la base de datos simultáneamente. AegisBank implementa el patrón **Single-Flight**:
+   - Solo la primera petición adquiere un bloqueo distribuido ligero en Redis (`SET lock:key token NX EX 5`).
+   - Las peticiones concurrentes esperan un breve período (*backoff*) y leen el resultado recién almacenado en caché.
+   - La liberación del bloqueo utiliza un script atómico en Lua para evitar borrar bloqueos de otros procesos si expiró el tiempo de espera.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Hilos as 10 Hilos Concurrentes
+    participant Redis as Redis Cache (127.0.0.1:6379)
+    participant DB as PostgreSQL / Core Banking
+
+    Hilos->>Redis: GET key (MISS en frío)
+    Note over Hilos,Redis: Hilo 1 adquiere lock; Hilos 2..10 esperan backoff
+    Hilos->>DB: 1 Consulta Única a Base de Datos
+    DB-->>Hilos: Retorna dato canónico
+    Hilos->>Redis: SET key + TTL (300s)
+    Hilos->>Redis: Libera lock
+    Note over Hilos,Redis: Hilos 2..10 reintentan GET y obtienen HIT inmediato
+```
+
+---
+
+### 2. Búsqueda Vectorial con RediSearch (KNN HNSW) vs PgVector
+
+| Dimensión Arquitectónica | PostgreSQL + pgvector (`PgVectorRetriever`) | Redis Search Vector Index (`RedisVectorRetriever`) |
+|---|---|---|
+| **Almacenamiento Primario** | Disco / SSD (con buffer pool relacional en RAM). | 100% Memoria RAM (con persistencia opcional RDB/AOF). |
+| **Rol en AegisBank** | **System of Record** canónico para embeddings persistentes. | **Acelerador en Memoria** de baja latencia para evaluación comparativa. |
+| **Índice Vectorial** | HNSW / IVFFlat sobre tablas relacionales SQL. | HNSW / Flat sobre Hashes indexados en memoria. |
+| **Filtrado de Metadatos** | Cláusulas relacionales SQL compuestas (`WHERE status = 'active'`). | Sintaxis de consulta de etiquetas `@status:{active} @topic:{creditos}`. |
+| **Métricas de Calidad (Qrels)** | nDCG@5: `0.3364`, MRR@5: `0.5065` | nDCG@5: `0.3523`, MRR@5: `0.5324` |
+| **Latencia Típica** | 5 ms – 20 ms por consulta relacional. | < 2 ms por consulta en memoria. |
+
+---
+
+### 3. Seguridad de Caché: Diferimiento de Semantic Caching (`SEMANTIC_CACHE_DEFERRED`)
+
+AegisBank adopta la decisión de seguridad conservadora de **no habilitar caché semántica para respuestas finales del LLM**:
+* **Riesgo de Falsos Positivos:** Dos preguntas bancarias con alta similitud coseno (e.g. *"¿Puedo pagar mi cuota por adelantado?"* vs *"¿Puedo aplazar mi cuota?"*) tienen vectores cercanos pero requieren respuestas regulatorias y financieras radicalmente distintas.
+* **Política Autorizada:** La caché en Redis se limita a **resultados de retrieval de documentos públicos autorizados** y **metadatos de corpus**. Los datos privados de clientes (saldos, cuotas) y respuestas transaccionales se consultan siempre en tiempo real.

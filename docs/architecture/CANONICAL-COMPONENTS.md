@@ -29,6 +29,7 @@
 | **18. HOTL Supervisor** | `HOTLSupervisor` | `ai/agent/src/aegisbank_agent/observability/hotl.py` | `engage_kill_switch(reason)`, `disengage_kill_switch()`, `is_write_allowed` | `AgentOrchestrator`, Admin CLI | Añadir reglas de desenganche automático por anomalías | **NO** saltarse la verificación de `is_write_allowed` en escrituras. |
 | **19. Quality Gate Runner** | `scripts/quality_gate.py` | `scripts/quality_gate.py` | `run_quality_gates() -> int` (código 0 o != 0) | CI/CD, Desarrollador local | Añadir nuevas compuertas estáticas o de seguridad | **NO** ejecutar validaciones desordenadas o silenciar errores en CI. |
 | **20. Cosmos NoSQL & Change Feed** | `CosmosRepository` / `CosmosChangeFeedProcessor` | `ai/agent/src/aegisbank_agent/cosmos.py` | `create_item()`, `read_item()`, `query_items()`, `read_change_feed()`, `process_latest_changes()` | Agente, Workers reactivos | Integrar triggers de Azure Functions o Change Feed Processor | **NO** duplicar motores de persistencia documental ni procesadores de eventos ad-hoc. |
+| **21. Redis Cache & Vector Search** | `RedisCacheManager` / `RedisVectorRetriever` | `ai/rag/src/aegisbank_rag/cache.py` & `redis_retriever.py` | `get()`, `set()`, `invalidate_prefix()`, `execute_single_flight()`, `search()` | RAG, Retrieval de conocimiento, Búsqueda vectorial KNN | Integrar Azure Managed Redis y RediSearch cloud | **NO** duplicar abstracciones de caché ni cachear datos financieros privados del cliente. |
 
 ---
 

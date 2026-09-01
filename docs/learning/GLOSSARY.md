@@ -385,3 +385,41 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **Relevance (Relevancia):** Grado en que la respuesta del agente responde directamente a la intención del usuario sin incluir instrucciones no solicitadas o información superflua.
 * **Completeness (Exhaustividad de respuesta):** Grado en que la respuesta cubre todos los aspectos esenciales requeridos por la consulta del usuario.
 * **Abstention (Abstención / Safe Fallback):** Comportamiento controlado donde el agente declara explícitamente no tener información suficiente en lugar de fabricar o adivinar datos no respaldados.
+
+---
+
+### Gestión de Datos en Memoria, Caché y Búsqueda Vectorial con Redis (v0.12.2)
+
+* **Redis (Remote Dictionary Server):** Almacén de estructura de datos en memoria de código abierto utilizado como base de datos, caché y motor de búsqueda de baja latencia.
+* **In-Memory Database (Base de datos en memoria):** Sistema de gestión de bases de datos que mantiene el conjunto activo de datos primariamente en la memoria RAM para lograr tiempos de respuesta de microsegundos.
+* **Key-Value Store (Almacén clave-valor):** Paradigma NoSQL donde los datos se organizan y recuperan mediante identificadores únicos (*keys*) asociados a valores simples o estructurados.
+* **Cache (Caché):** Capa de almacenamiento temporal de alta velocidad que almacena un subconjunto de datos para que futuras solicitudes se sirvan más rápidamente que consultando la fuente primaria.
+* **Cache-Aside (Lectura perezosa / Lazy Loading):** Patrón arquitectónico donde la aplicación consulta primero la caché; si existe (*HIT*) lo devuelve; si no (*MISS*), consulta la base de datos canónica, actualiza la caché con TTL y devuelve el dato.
+* **Cache Hit (Acierto de caché):** Suceso en el cual el dato solicitado se encuentra presente y vigente en la memoria de la caché.
+* **Cache Miss (Fallo de caché):** Suceso en el cual el dato solicitado no está presente o ha expirado en la caché, forzando una consulta a la fuente de verdad.
+* **Hit Ratio (Tasa de aciertos):** Métrica porcentual $\frac{\text{Hits}}{\text{Hits} + \text{Misses}}$ que cuantifica la efectividad operativa de la capa de caché.
+* **TTL / Time To Live (Tiempo de vida):** Intervalo de tiempo máximo que un registro puede residir en caché antes de ser automáticamente eliminado por expiración.
+* **Expiration (Expiración):** Proceso automático de depuración por el cual Redis marca y elimina claves cuyo TTL ha transcurrido.
+* **Invalidation (Invalidación de caché):** Acción explícita de purgar o borrar entradas de caché cuando los datos subyacentes en la fuente de verdad han cambiado.
+* **Stale Data (Datos obsoletos):** Condición indeseable donde la caché sirve una copia desactualizada de la información debido a una falta de invalidación o un TTL excesivamente largo.
+* **Cache Key (Clave de caché):** Cadena identificadora única y determinista utilizada para direccionar un elemento almacenado en la memoria de Redis.
+* **Namespace / Prefix (Espacio de nombres):** Prefijo jerárquico (`aegisbank:rag:v1:...`) utilizado para agrupar lógicamente claves de caché y permitir invalidaciones selectivas sin colisiones.
+* **Serialization (Serialización):** Proceso de transformar estructuras de datos u objetos en memoria a una representación de bytes o JSON almacenable y recuperable desde Redis.
+* **Cache Stampede / Thundering Herd (Inundación de caché):** Fenómeno donde múltiples peticiones concurrentes sufren un Cache Miss simultáneo sobre una misma clave y saturan la base de datos relacional subyacente.
+* **Single-Flight (Vuelo único):** Patrón de concurrencia donde solo una petición adquiere el derecho de cargar la fuente de verdad mientras las demás esperan el resultado en caché.
+* **Distributed Lock (Bloqueo distribuido):** Mecanismo de sincronización entre procesos distribuidos mediante claves con expiración y tokens únicos en Redis (`SET ... NX EX`).
+* **Eviction Policy (Política de evicción):** Algoritmo que decide qué claves eliminar cuando la memoria asignada a Redis alcanza su límite máximo (`maxmemory`).
+* **LRU / Least Recently Used (Menos usado recientemente):** Política de evicción que descarta las claves que no han sido leídas o escritas durante el período de tiempo más prolongado.
+* **LFU / Least Frequently Used (Menos frecuentemente usado):** Política de evicción que descarta las claves con el menor contador acumulado de accesos.
+* **No-Eviction (Sin evicción):** Política donde Redis retorna un error ante escrituras cuando la memoria está llena, preservando todas las claves existentes.
+* **Persistence / RDB & AOF (Persistencia en Redis):** Mecanismos para salvar el estado en memoria a disco: RDB (*Redis Database Backup*, snapshots periódicos) y AOF (*Append Only File*, log de comandos continuos).
+* **Redis Search / RediSearch:** Módulo oficial de Redis que agrega capacidades de indexación secundaria, búsqueda de texto completo y búsqueda vectorial sobre Hashes y JSON.
+* **Vector Index (Índice vectorial):** Estructura de datos optimizada en memoria que organiza representaciones vectoriales densas para acelerar búsquedas de similitud geométrica.
+* **KNN / K-Nearest Neighbors (K-Vecinos más cercanos):** Algoritmo que identifica los $K$ vectores de la base de datos con menor distancia matemática respecto al vector de consulta.
+* **HNSW / Hierarchical Navigable Small World:** Grafo multicapa de alta eficiencia para búsqueda aproximada de vecinos más cercanos (*ANN*) soportado nativamente en RediSearch.
+* **Semantic Cache (Caché semántica):** Técnica de caché basada en similitud vectorial de consultas en lugar de coincidencias de texto exacto; diferida en banca por riesgo de respuestas inexactas (*false positives*).
+* **Similarity Threshold (Umbral de similitud):** Valor de distancia o similitud coseno mínima requerida para considerar que dos consultas o documentos son semánticamente equivalentes.
+* **False Positive (Falso positivo en búsqueda/caché):** Error donde el sistema considera equivalente una consulta diferente debido a una similitud matemática engañosa.
+* **Redis Connection Pool (Grupo de conexiones):** Conjunto reutilizable de conexiones TCP abiertas hacia Redis que reduce el costo de handshake y evita agotamiento de sockets.
+* **Azure Managed Redis:** Servicio administrado de Redis de nivel empresarial en Microsoft Azure que integra Redis Enterprise y RediSearch con alta disponibilidad y escalabilidad automática.
+* **Local Emulator vs Cloud Parity:** Uso de Redis Open Source / Redis Stack en Docker para simular semánticas vectoriales y de caché sin costo cloud, reconociendo diferencias operativas con Azure Managed Redis.

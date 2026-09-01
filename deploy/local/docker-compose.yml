@@ -113,6 +113,24 @@ services:
       retries: 20
       start_period: 15s
 
+  redis:
+    profiles: ["redis", "data"]
+    image: redis/redis-stack-server:latest
+    container_name: aegisbank-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_ARGS: "--save 60 1 --loglevel notice"
+    networks:
+      - aegisbank-net
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+
 networks:
   aegisbank-net:
     driver: bridge

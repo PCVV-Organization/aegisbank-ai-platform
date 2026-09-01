@@ -28,8 +28,10 @@ def run_v012_evaluation() -> dict:
     chunks = chunk_corpus(corpus)
 
     from aegisbank_rag.pgvector_retriever import DEFAULT_PG_URL
+    from aegisbank_rag.redis_retriever import DEFAULT_REDIS_URL, RedisVectorRetriever
 
     pg_url = os.environ.get("AEGISBANK_PGVECTOR_URL", DEFAULT_PG_URL)
+    redis_url = os.environ.get("REDIS_URL", DEFAULT_REDIS_URL)
 
     retrievers = {
         LexicalRetriever().name: LexicalRetriever(),
@@ -40,11 +42,18 @@ def run_v012_evaluation() -> dict:
         ),
     }
 
+    try:
+        redis_ret = RedisVectorRetriever(redis_url=redis_url)
+        redis_ret.ensure_schema(force_recreate=True)
+        retrievers[redis_ret.name] = redis_ret
+    except (OSError, RuntimeError, ValueError) as err:
+        print(f"[-] Redis vector retriever skipped in evaluation: {err}")
+
     report = evaluate(chunks, queries, qrels, retrievers, top_k=5)
 
     output_path = reports_dir / "v012_retrieval_comparison.json"
-    output_path.write_text(
-        json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+    output_path.write_bytes(
+        (json.dumps(report, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
     )
     print(f"[+] v0.12 Retrieval Comparison Report saved to {output_path}")
 
