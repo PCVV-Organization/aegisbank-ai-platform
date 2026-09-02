@@ -422,4 +422,28 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
 * **False Positive (Falso positivo en búsqueda/caché):** Error donde el sistema considera equivalente una consulta diferente debido a una similitud matemática engañosa.
 * **Redis Connection Pool (Grupo de conexiones):** Conjunto reutilizable de conexiones TCP abiertas hacia Redis que reduce el costo de handshake y evita agotamiento de sockets.
 * **Azure Managed Redis:** Servicio administrado de Redis de nivel empresarial en Microsoft Azure que integra Redis Enterprise y RediSearch con alta disponibilidad y escalabilidad automática.
-* **Local Emulator vs Cloud Parity:** Uso de Redis Open Source / Redis Stack en Docker para simular semánticas vectoriales y de caché sin costo cloud, reconociendo diferencias operativas con Azure Managed Redis.
+* **Local Emulator vs Cloud Parity:** Azure Managed Redis no tiene emulador oficial. AegisBank usa Redis Open Source 8 en Docker para validar semánticas locales de caché y búsqueda, sin asumir paridad operativa con Azure Managed Redis.
+
+---
+
+### Reproducibilidad, Cadena de Suministro y Evidencia de Rendimiento (v0.12.2-R1)
+
+* **Reproducible Build (Construcción reproducible):** Principio de ingeniería de software que garantiza que el mismo código fuente, bajo la misma configuración, genere exactamente el mismo artefacto binario o entorno de ejecución en cualquier momento y máquina.
+* **Immutable Artifact (Artefacto inmutable):** Paquete de software, imagen de contenedor o modelo cuya composición y contenido no pueden ser alterados una vez construido y publicado.
+* **Docker Tag (Etiqueta Docker):** Alias alfanumérico legible por humanos asignado a una imagen de contenedor en un registro (por ejemplo, el tag GA exacto `8.10.1-trixie`).
+* **Floating Tag (Etiqueta flotante / Mutable):** Tag no determinista (como `:latest`, `:8` o `:v1`) cuyo puntero cambia periódicamente cuando el mantenedor publica una nueva versión, rompiendo la reproducibilidad.
+* **Image Digest (Digest criptográfico de imagen):** Hash criptográfico inmutable `sha256:...` del manifiesto del contenedor que garantiza de forma matemática la identidad exacta de la imagen descargada.
+* **Supply-Chain Risk (Riesgo de cadena de suministro):** Vulnerabilidad originada por cambios imprevistos, dependencias dinámicas o sustituciones maliciosas en imágenes o librerías de terceros.
+* **Semantic Version / SemVer (Versionado semántico):** Estándar de nomenclatura formal `MAJOR.MINOR.PATCH` donde cada incremento comunica el tipo de cambio (ruptura de API, nueva funcionalidad compatible o corrección de bugs).
+* **Maturity Level (Nivel de madurez de evidencia):** Taxonomía formal del proyecto para clasificar rigurosamente el estado de verificación de cada capacidad técnica:
+  - **`LAB-COVERED`:** Capacidad validada localmente con pruebas unitarias, de integración o evaluación en memoria.
+  - **`LOCAL-REDIS-COVERED`:** Capacidad validada contra un contenedor local de Redis 8 / RediSearch.
+  - **`CI-CONFIGURED`:** Flujo o compuerta automatizada en GitHub Actions (`RUNNER-PENDING`).
+  - **`PROD-PARTIAL`:** Patrón parcialmente implementado que requiere almacén o clúster productivo para paridad total.
+  - **`CLOUD-PENDING`:** Capacidad arquitectónica diseñada pero pendiente de despliegue en infraestructura de Microsoft Azure.
+  - **`SAFETY-DEFERRED`:** Decisión arquitectónica de posponer una técnica (e.g. caché semántica) para salvaguardar la seguridad bancaria.
+* **Benchmark Evidence (Evidencia cuantitativa de rendimiento):** Mediciones reproducibles bajo condiciones controladas (muestras, calentamiento, distribución) que respaldan afirmaciones de latencia o throughput.
+* **Latency Percentile (Percentil de latencia):** Métrica estadística que indica el tiempo máximo en el que se completó un porcentaje determinado de solicitudes:
+  - **`p50` (Mediana):** El 50% de las solicitudes se completaron en este tiempo o menos.
+  - **`p95`:** El 95% de las solicitudes se completaron en este tiempo o menos; captura la experiencia de la gran mayoría de usuarios.
+  - **`p99`:** El 99% de las solicitudes se completaron en este tiempo o menos; mide el comportamiento ante colas o fluctuaciones extremas (*tail latency*).

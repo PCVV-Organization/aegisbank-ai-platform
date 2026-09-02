@@ -524,7 +524,7 @@ sequenceDiagram
 | **Índice Vectorial** | HNSW / IVFFlat sobre tablas relacionales SQL. | HNSW / Flat sobre Hashes indexados en memoria. |
 | **Filtrado de Metadatos** | Cláusulas relacionales SQL compuestas (`WHERE status = 'active'`). | Sintaxis de consulta de etiquetas `@status:{active} @topic:{creditos}`. |
 | **Métricas de Calidad (Qrels)** | nDCG@5: `0.3364`, MRR@5: `0.5065` | nDCG@5: `0.3523`, MRR@5: `0.5324` |
-| **Latencia Típica** | 5 ms – 20 ms por consulta relacional. | < 2 ms por consulta en memoria. |
+| **Latencia** | `LATENCY_NOT_COMPARABLE_YET`: no existe benchmark controlado con percentiles para comparar ambos adapters. | `LATENCY_NOT_COMPARABLE_YET`: los tests funcionales no constituyen evidencia de rendimiento. |
 
 ---
 
@@ -533,3 +533,41 @@ sequenceDiagram
 AegisBank adopta la decisión de seguridad conservadora de **no habilitar caché semántica para respuestas finales del LLM**:
 * **Riesgo de Falsos Positivos:** Dos preguntas bancarias con alta similitud coseno (e.g. *"¿Puedo pagar mi cuota por adelantado?"* vs *"¿Puedo aplazar mi cuota?"*) tienen vectores cercanos pero requieren respuestas regulatorias y financieras radicalmente distintas.
 * **Política Autorizada:** La caché en Redis se limita a **resultados de retrieval de documentos públicos autorizados** y **metadatos de corpus**. Los datos privados de clientes (saldos, cuotas) y respuestas transaccionales se consultan siempre en tiempo real.
+
+---
+
+## 17. v0.12.2-R1: Redis Reproducibility, Supply-Chain Hardening & Evidence
+
+### 1. El Riesgo de los Tags Flotantes (*Floating Tags*) en Entornos Financieros
+
+En arquitecturas bancarias, el uso de etiquetas mutables como `:latest`, `:8` o `:8.10` introduce **riesgo de cadena de suministro (*Supply-Chain Risk*)**:
+* **No determinismo:** una ejecución hoy puede descargar una imagen distinta mañana aunque Git no cambie.
+* **Artefacto verificado:** Compose referencia `redis:8.10.1-trixie` y el digest observado localmente `sha256:298e5b3bc566bade82f46ad5511777a4a07a294097ce16ada2f6a42be5239df5`.
+* **Gate:** `quality_gate.py` rechaza Redis Stack, tags flotantes, versiones sin patch, prereleases y referencias sin digest.
+* **Licencia:** Redis Open Source 8 ofrece AGPLv3, RSALv2 y SSPLv1. Este laboratorio no formula una conclusión jurídica para distribución externa.
+
+### 2. Evidencia de Rendimiento: De Cifras Sueltas a Percentiles (p50, p95, p99)
+
+En ingeniería de software de alta exigencia, no es admisible afirmar *"Redis responde en <2 ms"* sin un protocolo de medición reproducible.
+* **Mediana (`p50`):** Representa el tiempo típico de respuesta del 50% de las consultas.
+* **Percentil 95 (`p95`):** Refleja la latencia que experimentan los usuarios ante condiciones habituales de carga sin sesgos de casos aislados.
+* **Percentil 99 (`p99`):** Detecta la latencia de cola (*tail latency*) provocada por pausas de recolección de basura, handshakes de red o contención de sockets.
+
+No se ejecutó un benchmark aislado y repetible en este corrective. El estado correcto es `LATENCY_NOT_COMPARABLE_YET`. Una medición futura deberá fijar, como mínimo, warm-up, número de muestras, dataset, concurrencia, hardware, versiones, p50, p95 y p99. Un test funcional local o una cifra única no demuestra rendimiento productivo.
+
+### 3. Reconciliación de Métricas de Recuperación (pgvector vs RediSearch)
+
+La comparación usa el experimento `0.4.0`, 18 queries, 18 qrels, `top_k=5` y `random_state=42`:
+* `RedisVectorRetriever`: nDCG@5 `0.3523`, MRR@5 `0.5324`.
+* `PgVectorRetriever`: nDCG@5 `0.3364`, MRR@5 `0.5065`.
+* Los bloques pgvector de `044de3e`, `c526982` y `d97eca6` son idénticos. El gran diff de `v012_retrieval_comparison.json` en `d97eca6` corresponde a añadir `redis_vector_search`, no a cambiar pgvector.
+* El reporte pgvector depende del estado de la base local y contiene el fixture histórico `chk_test_active_001`; esta limitación ya estaba presente en `044de3e`. No se regeneran ni sobrescriben métricas en este corrective.
+
+### 4. Madurez, Mibanco y AI-200
+
+| Evidencia | Estado | Aplicación profesional |
+|---|---|---|
+| Cache-aside, TTL, invalidación, single-flight y KNN/HNSW ejecutados en Redis OSS 8 local | `LOCAL-REDIS-COVERED` | Demuestra diseño de caché y vector indexing exigidos por AI-200 y relevantes para ingeniería de IA en Mibanco. |
+| Pin exacto, digest y gate de reproducibilidad | `LAB-COVERED` | Reduce variación de supply chain y hace auditable el runtime probado. |
+| Azure Managed Redis: identidad, red privada, HA, capacidad, SLA y recuperación | `CLOUD-PENDING` | Requiere evidencia real de Azure; no se deriva del contenedor local. |
+| Caché semántica de respuestas bancarias finales | `SAFETY-DEFERRED` | Evita falsos positivos que podrían reutilizar una respuesta financiera incorrecta. |

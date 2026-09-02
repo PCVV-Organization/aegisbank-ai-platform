@@ -147,6 +147,55 @@ def _check_architecture_inventory(repo_root: Path) -> tuple[bool, str]:
     return True, "Canonical Components catalog and Ownership Map verified."
 
 
+_REDIS_IMAGE_PATTERN = re.compile(
+    r"^redis:(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)"
+    r"(?:-(?P<variant>[a-z0-9][a-z0-9._-]*))?"
+    r"@sha256:(?P<digest>[0-9a-f]{64})$",
+    re.IGNORECASE,
+)
+
+
+def _check_redis_image_reproducibility(repo_root: Path) -> tuple[bool, str]:
+    """Require an official Redis 8 patch tag pinned to an observed image digest."""
+    compose_file = repo_root / "deploy" / "local" / "docker-compose.yml"
+    if not compose_file.exists():
+        return False, f"Missing {compose_file}"
+
+    redis_image: str | None = None
+    in_redis_service = False
+    for line in compose_file.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if line == "  redis:":
+            in_redis_service = True
+            continue
+        if in_redis_service and line.startswith("  ") and not line.startswith("    "):
+            break
+        if in_redis_service and stripped.startswith("image:"):
+            redis_image = stripped.partition(":")[2].strip().strip('"').strip("'")
+            break
+
+    if redis_image is None:
+        return False, "Redis service image is missing from Docker Compose."
+
+    match = _REDIS_IMAGE_PATTERN.fullmatch(redis_image)
+    if match is None:
+        return (
+            False,
+            (
+                "Redis image must use the Docker Official Image with an exact patch tag "
+                f"and sha256 digest; observed: {redis_image}"
+            ),
+        )
+    if match.group("major") != "8":
+        return False, f"Redis Open Source 8 is required; observed: {redis_image}"
+
+    variant = (match.group("variant") or "").lower()
+    if re.search(r"(?:^|[-.])(?:alpha|beta|rc|m)\d*(?:$|[-.])", variant):
+        return False, f"Pre-GA Redis image tags are forbidden; observed: {redis_image}"
+
+    return True, f"Redis image is reproducibly pinned: {redis_image}"
+
+
 def _session_guard_result(repo_root: Path) -> GateResult:
     """Validate active writer if running under an active session."""
     from scripts.session_guard import SessionGuard
@@ -218,6 +267,27 @@ def run_quality_gates(
         )
         return (0 if ok else 1), results
 
+    all_passed = True
+
+    print("[*] Running gate: Redis Image Reproducibility...")
+    start_time = time.time()
+    ok, msg = _check_redis_image_reproducibility(repo_root)
+    duration = round(time.time() - start_time, 3)
+    results.append(
+        GateResult(
+            name="Redis Image Reproducibility Gate",
+            command="internal:check_redis_image_reproducibility",
+            status="PASS" if ok else "FAIL",
+            duration_seconds=duration,
+            output_snippet=msg,
+        )
+    )
+    if not ok:
+        all_passed = False
+        print(f"    [!] FAILED ({duration}s)")
+    else:
+        print(f"    [+] PASSED ({duration}s)")
+
     gates = [
         ("Static Analysis: Ruff Lint", [py_exec, "-m", "ruff", "check", "."]),
         (
@@ -254,8 +324,6 @@ def run_quality_gates(
         ),
         ("SCA Audit (pip-audit)", [py_exec, "-m", "pip_audit"]),
     ]
-
-    all_passed = True
 
     for name, cmd in gates:
         print(f"[*] Running gate: {name}...")

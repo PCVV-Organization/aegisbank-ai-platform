@@ -115,13 +115,12 @@ services:
 
   redis:
     profiles: ["redis", "data"]
-    image: redis/redis-stack-server:latest
+    image: redis:8.10.1-trixie@sha256:298e5b3bc566bade82f46ad5511777a4a07a294097ce16ada2f6a42be5239df5
     container_name: aegisbank-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
-    environment:
-      REDIS_ARGS: "--save 60 1 --loglevel notice"
+      - "127.0.0.1:6379:6379"
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "notice"]
     networks:
       - aegisbank-net
     healthcheck:
