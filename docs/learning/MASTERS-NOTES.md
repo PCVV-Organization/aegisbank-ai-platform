@@ -425,7 +425,7 @@ graph TD
 
 1. **Point Read (`read_item(id, partition_key)`):**
    - El SDK calcula el hash de la clave de partición y enruta la solicitud directamente a la partición física correspondiente.
-   - En Azure Cloud tiene un costo determinista de **1 RU** (para items < 1 KB) y latencia < 2 ms.
+   - En Azure Cloud el costo RU y la latencia deben observarse en la respuesta y telemetría del servicio; el emulador no aporta esa evidencia. Estado: `LATENCY_NOT_COMPARABLE_YET` / `COSMOS_RU_CLOUD_PENDING`.
 2. **Consulta en la Misma Partición (*In-Partition Query*):**
    - Consulta SQL que incluye `WHERE c.customer_id = 'CUST-001'`. Solo busca en la partición lógica indicada.
 3. **Consulta Entre Particiones (*Cross-Partition Query*):**
