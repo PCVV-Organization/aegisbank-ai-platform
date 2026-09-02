@@ -42,11 +42,13 @@ def run_v012_evaluation() -> dict:
         ),
     }
 
+    from redis.exceptions import RedisError
+
     try:
         redis_ret = RedisVectorRetriever(redis_url=redis_url)
         redis_ret.ensure_schema(force_recreate=True)
         retrievers[redis_ret.name] = redis_ret
-    except (OSError, RuntimeError, ValueError) as err:
+    except (OSError, RuntimeError, ValueError, RedisError) as err:
         print(f"[-] Redis vector retriever skipped in evaluation: {err}")
 
     report = evaluate(chunks, queries, qrels, retrievers, top_k=5)
