@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:aegisbank:contracts:cloudevents:service-request-created:v1",
+  "title": "ServiceRequestCreatedCloudEventContract",
+  "description": "Strict CloudEvents 1.0 mapping for the canonical ServiceRequestCreated domain event.",
+  "type": "object",
+  "required": [
+    "specversion",
+    "id",
+    "source",
+    "type",
+    "subject",
+    "time",
+    "datacontenttype",
+    "dataschema",
+    "correlationid",
+    "data"
+  ],
+  "properties": {
+    "specversion": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "source": {
+      "const": "urn:aegisbank:mock-core-banking"
+    },
+    "type": {
+      "const": "com.aegisbank.service-request.created.v1"
+    },
+    "subject": {
+      "type": "string",
+      "pattern": "^/service-requests/[A-Za-z0-9._-]+$",
+      "maxLength": 256
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "datacontenttype": {
+      "const": "application/json"
+    },
+    "dataschema": {
+      "const": "urn:aegisbank:contracts:service-request-created:v1"
+    },
+    "correlationid": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "traceparent": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{2}-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "service_request_id",
+        "customer_id",
+        "category",
+        "status"
+      ],
+      "properties": {
+        "service_request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "customer_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "category": {
+          "enum": ["LOAN", "INSTALLMENT", "FEE", "GENERAL"]
+        },
+        "status": {
+          "enum": ["OPEN", "IN_REVIEW", "RESOLVED", "REJECTED"]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

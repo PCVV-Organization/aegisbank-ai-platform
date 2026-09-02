@@ -571,3 +571,111 @@ La comparación usa el experimento `0.4.0`, 18 queries, 18 qrels, `top_k=5` y `r
 | Pin exacto, digest y gate de reproducibilidad | `LAB-COVERED` | Reduce variación de supply chain y hace auditable el runtime probado. |
 | Azure Managed Redis: identidad, red privada, HA, capacidad, SLA y recuperación | `CLOUD-PENDING` | Requiere evidencia real de Azure; no se deriva del contenedor local. |
 | Caché semántica de respuestas bancarias finales | `SAFETY-DEFERRED` | Evita falsos positivos que podrían reutilizar una respuesta financiera incorrecta. |
+
+---
+
+## 18. v0.13.0: Azure Functions + Event Grid Local Serverless Foundation
+
+### 1. Serverless, FaaS y el Modelo de Programación Python v2
+
+**FaaS** (*Functions as a Service*, funciones como servicio) es el modelo de ejecución cloud donde una sola pieza de código reacciona a un evento sin que el operador reserve servidores. Microsoft lo materializa en **Azure Functions**, administrado por el **Functions Host** y ejecutado localmente con **Azure Functions Core Tools v4** (`func@4.14.0`).
+
+Cada Function tiene **exactamente un trigger** (la razón por la que se despierta) y cero o más *bindings* (conectores declarativos). El *Python v2 programming model* (recomendado para apps nuevas) centraliza el registro en un solo archivo `function_app.py` mediante decoradores (`@app.event_grid_trigger(arg_name="event")`), en lugar del legacy `function.json`.
+
+Una *Function App* agrupa varias funciones bajo el mismo host, runtime y configuración de despliegue. Su **statelessness** estricto garantiza que cada invocación es aislada; nada de estado local permanente, nada de caché en memoria entre invocaciones. Esto es exactamente lo opuesto al patrón de un servicio tradicional que mantiene sesiones, conexiones y cachés.
+
+AegisBank implementa una Function App mínima en [`functions/aegisbank-events/`](file:///c:/aegisbank-ai-platform-ai-env/aegisbank-ai-platform/functions/aegisbank-events):
+
+```python
+import azure.functions as func
+from service_request_handler import ServiceRequestEventHandler
+
+app = func.FunctionApp()
+_handler = ServiceRequestEventHandler()
+
+
+@app.function_name(name="service_request_created")
+@app.event_grid_trigger(arg_name="event")
+def service_request_created(event: func.CloudEvent) -> None:
+    _handler.handle_cloud_event(event)
+```
+
+Cada invocación del trigger crea una nueva ejecución del handler; ninguna variable de instancia persiste entre invocaciones. El estado de deduplicación reside en la tabla canónica `idempotency_records` (que el `IdempotencyGuard` ya gestiona), por lo que reinicios o escalados no rompen la garantía de *exactly-once*.
+
+### 2. CloudEvents 1.0 y Azure Event Grid
+
+**CloudEvents** es la especificación CNCF `1.0` que estandariza el sobre (envelope) JSON de un evento. Define campos obligatorios (`specversion`, `id`, `source`, `type`, `datacontenttype`, `time`) y permite *extension attributes* para contexto adicional. Azure Event Grid recomienda CloudEvents sobre su esquema propietario.
+
+**Azure Event Grid** es el *event router* serverless de Microsoft: entrega notificaciones *push* a webhooks HTTPS, con reintentos de hasta 30 intentos y TTL configurable hasta 1440 minutos. Su semántica es **at-least-once sin garantía de orden**, así que **toda deduplicación y verificación de integridad es responsabilidad del handler**.
+
+En AegisBank v0.13, el evento `ServiceRequestCreated` se mapea a CloudEvents 1.0 estricto en [`contracts/cloudevents/service-request-created-v1.schema.json`](file:///c:/aegisbank-ai-platform-ai-env/aegisbank-ai-platform/contracts/cloudevents/service-request-created-v1.schema.json). El envelope canónico es:
+
+| Campo | Valor | Propósito |
+|---|---|---|
+| `specversion` | `"1.0"` | Versión CloudEvents |
+| `id` | `domain_event.event_id` | Deduplicación + idempotencia |
+| `source` | `"urn:aegisbank:mock-core-banking"` | Productor del evento |
+| `type` | `"com.aegisbank.service-request.created.v1"` | Tipo de dominio versionado |
+| `subject` | `"/service-requests/{aggregate_id}"` | Recurso afectado |
+| `time` | ISO 8601 / RFC 3339 | Timestamp del productor |
+| `datacontenttype` | `"application/json"` | Formato de `data` |
+| `dataschema` | `"urn:aegisbank:contracts:service-request-created:v1"` | Contrato del payload |
+| `correlationid` | ID de negocio | Trazabilidad bancaria |
+| `traceparent` | W3C trace context | Continuidad OTel |
+| `data` | `{service_request_id, customer_id, category, status}` | Payload mínimo (sin descripción, sin PII) |
+
+El mapper (`functions/aegisbank-events/cloud_event.py`) **minimiza el payload**: el CloudEvent nunca lleva `description`, `created_at` ni cualquier otro campo del Outbox que no sea estrictamente necesario para el consumidor serverless. Esta es la aplicación directa del principio de **mínimo privilegio en eventos**: un consumidor solo recibe lo que necesita.
+
+### 3. Idempotencia, At-Least-Once y Exactly-Once de Negocio
+
+Event Grid garantiza **at-least-once delivery**: el handler verá cada evento al menos una vez, pero puede verlo varias. Sin deduplicación, dos invocaciones del mismo `id` producirían dos efectos en auditoría y dos incrementos de métricas.
+
+El handler (`functions/aegisbank-events/service_request_handler.py`) reutiliza el **`IdempotencyGuard`** canónico de v0.8, cuya llave es `event-grid:{event_id}`. La tabla `idempotency_records` (SQLite local por defecto) almacena el SHA-256 del evento y la respuesta cacheada. Si el mismo `event_id` reaparece con contenido distinto, el guard lanza `IdempotencyConflictError`, que el handler convierte en `EventIntegrityError` y registra como `AuditEventType.IDEMPOTENCY_CONFLICT`. Si reaparece con contenido idéntico, devuelve el resultado cacheado sin reejecutar la lógica.
+
+Esto convierte la semántica at-least-once de Event Grid en **exactly-once de negocio** desde la perspectiva del consumidor, sin escribir lógica de deduplicación nueva.
+
+### 4. Trazabilidad con OpenTelemetry y W3C traceparent
+
+Cuando el publicador del CloudEvent incluye una cabecera HTTP `traceparent` con formato W3C (`00-{32 hex}-{16 hex}-{2 hex}`), Event Grid la entrega al Functions Host como extensión CloudEvents. El handler lee esa cabecera, decodifica el `trace_id` y el `span_id` remotos, y abre un span local cuyo padre remoto es el span del publicador. Esto preserva la cadena causal a través de límites de proceso y, eventualmente, a través de límites de proveedor.
+
+Cada invocación genera además:
+
+- Un span OpenTelemetry (`functions.event_grid.service_request_created`) con atributos `messaging.system=azure_event_grid`, `messaging.message.id`, `aegisbank.correlation_id` y `aegisbank.event.type`.
+- Un evento en `AuditLogger` (`AuditEventType.SERVICE_REQUEST_CREATED` o `IDEMPOTENCY_REPLAY` según el caso).
+- Una entrada en `StructuredLogger` con redacción automática de secretos.
+- Incrementos de contadores en `OperationalMetrics` (`event_grid_invocation_count`, `event_grid_processed_count`, `event_grid_duplicate_count`, `event_grid_rejected_count`) y un histograma de latencia (`event_grid_handler_latencies_ms`).
+
+### 5. Event Grid vs Service Bus: Coexistencia Sin Colisión
+
+Documentado formalmente en [`docs/architecture/EVENT-GRID-VS-SERVICE-BUS.md`](file:///c:/aegisbank-ai-platform-ai-env/aegisbank-ai-platform/docs/architecture/EVENT-GRID-VS-SERVICE-BUS.md).
+
+| Responsabilidad | Transporte canónico |
+|---|---|
+| Notificación reactiva `ServiceRequestCreated` → Function serverless | **Event Grid** |
+| Comandos durables con settlement explícito | Service Bus |
+| FIFO estricto y sesiones | Service Bus |
+| DLQ integrada en el broker | Service Bus |
+| Reintentos administrados por la nube | **Event Grid** (1–30, TTL 1–1440 min) |
+| Suscripciones múltiples fan-out | **Event Grid** |
+| Mensajes > 1 MB | Service Bus |
+
+El **OutboxProcessor** de v0.8 sigue siendo la única fuente de publicación. Un consumidor Event Grid y un consumidor Service Bus reciben cada evento, sin que uno reemplace al otro. Ningún handler, bus, outbox, audit logger o metrics framework paralelo se introduce.
+
+### 6. Estado de Madurez y Emulación Local
+
+| Capacidad | Estado | Notas |
+|---|---|---|
+| Azure Functions Core Tools v4 + Python v2 model | `LOCAL-FUNCTIONS-COVERED` | `func@4.14.0` instalado globalmente vía pnpm |
+| `@app.event_grid_trigger` con `func.CloudEvent` | `LOCAL-FUNCTIONS-COVERED` | Single trigger per Function |
+| CloudEvents 1.0 envelope (JSON Schema estricto) | `LOCAL-FUNCTIONS-COVERED` | `Draft202012Validator` con `FormatChecker` |
+| Idempotencia local (`IdempotencyGuard`) | `LOCAL-FUNCTIONS-COVERED` | SQLite en memoria por defecto |
+| Auditoría, métricas, logging, tracing | `LOCAL-FUNCTIONS-COVERED` | REUSE de v0.9 |
+| Azure Event Grid service emulación local | `EVENT_GRID_SERVICE_EMULATED = NO` | Microsoft no publica emulador oficial |
+| Azure Functions Core Tools v5 (preview) | `NOT ADOPTED` | Solo Java/PowerShell no soportados; v4 sigue siendo baseline |
+| Event Grid topic + suscripción en Azure | `EVENTGRID-CLOUD-PENDING` | Requiere recurso cloud autorizado |
+| Flex/Consumption Plan + Managed Identity + VNet | `AZURE-FUNCTIONS-CLOUD-PENDING` | Requiere despliegue autorizado |
+| Azurite para storage-backed triggers | `NOT REQUIRED` | El trigger Event Grid no requiere storage |
+
+### 7. Diferencia con Mibanco y AI-200
+
+En Mibanco, la capacidad de **disparar procesos reactivos** (notificación al cliente, actualización de cola analítica, disparador de auditoría) sin acoplar el Core transaccional a cada consumidor es exactamente el patrón Event Grid + Function. AI-200 (study guide revisado `2026-09-02`) exige demostrar este patrón bajo el rubro *"Implement event-driven workflows by using Azure Event Grid, including filters, custom events, and retries"*. AegisBank demuestra la **parte local reproducible** del patrón: schema CloudEvents estricto, mapping desde el dominio, handler idempotente con auditoría completa y coexistencia con Service Bus para settlement durable. La parte cloud permanece explícitamente `CLOUD-PENDING` y no se afirma ninguna capacidad productiva.

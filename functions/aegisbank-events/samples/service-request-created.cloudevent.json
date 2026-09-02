@@ -1,0 +1,18 @@
+{
+  "specversion": "1.0",
+  "id": "EVT-SR-000123",
+  "source": "urn:aegisbank:mock-core-banking",
+  "type": "com.aegisbank.service-request.created.v1",
+  "subject": "/service-requests/SR-000123",
+  "time": "2026-09-01T22:56:00-05:00",
+  "datacontenttype": "application/json",
+  "dataschema": "urn:aegisbank:contracts:service-request-created:v1",
+  "correlationid": "CORR-V013-LOCAL-001",
+  "traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+  "data": {
+    "service_request_id": "SR-000123",
+    "customer_id": "CUST-0001",
+    "category": "GENERAL",
+    "status": "OPEN"
+  }
+}

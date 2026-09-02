@@ -447,3 +447,27 @@ Este glosario define cada término, sigla y concepto utilizado en la arquitectur
   - **`p50` (Mediana):** El 50% de las solicitudes se completaron en este tiempo o menos.
   - **`p95`:** El 95% de las solicitudes se completaron en este tiempo o menos; captura la experiencia de la gran mayoría de usuarios.
   - **`p99`:** El 99% de las solicitudes se completaron en este tiempo o menos; mide el comportamiento ante colas o fluctuaciones extremas (*tail latency*).
+
+---
+
+### Serverless, Azure Functions y Event Grid (v0.13.0)
+
+* **Serverless (Computación sin servidor):** Modelo de ejecución en la nube donde el desarrollador construye aplicaciones sin aprovisionar ni administrar directamente servidores, con escalado elástico automático (hasta cero instancias) y facturación por consumo real de recursos.
+* **FaaS / Function as a Service (Función como servicio):** Categoría de computación serverless donde el código se empaqueta en funciones atómicas, efímeras y reactivas desencadenadas por eventos discretos.
+* **Azure Functions:** Plataforma administrada FaaS de Microsoft Azure para ejecutar código reactivo en respuesta a eventos con múltiples lenguajes (Python, C#, Java, TypeScript).
+* **Functions Host (Runtime de Azure Functions):** Motor de ejecución subyacente que escucha eventos, gestiona triggers y bindings, orquesta los procesos worker de lenguaje y expone endpoints locales de diagnóstico.
+* **Azure Functions Core Tools (CLI `func`):** Toolchain oficial de Microsoft para compilar, ejecutar y depurar Function Apps localmente con paridad total respecto al runtime de nube.
+* **Trigger (Desencadenador):** Mecanismo declarativo que inicia la ejecución de una Azure Function. **Una Function tiene exactamente un trigger.**
+* **Binding (Enlace):** Conexión declarativa entre una Azure Function y recursos externos. Se divide en **Input Binding** (aporta datos al inicio) y **Output Binding** (persiste resultados al finalizar).
+* **Python Programming Model v2:** Modelo moderno de Azure Functions basado en decoradores nativos de Python (`@app.event_grid_trigger`, `@app.route`) dentro de un único archivo `function_app.py`.
+* **Stateless Function (Función sin estado):** Principio arquitectónico donde cada invocación es completamente independiente, sin memoria compartida ni persistencia en disco local permanente entre ejecuciones.
+* **Cold Start (Arranque en frío):** Latencia inicial incurrida al levantar una nueva instancia serverless desde cero tras un período de inactividad.
+* **Warm Instance (Instancia caliente):** Instancia de cómputo serverless ya inicializada y residente en memoria lista para atender solicitudes con latencia inmediata.
+* **Event-Driven Architecture / EDA (Arquitectura orientada a eventos):** Patrón de diseño donde el flujo de información y la orquestación entre servicios se rigen por la producción, detección y consumo reactivo de eventos.
+* **Azure Event Grid:** Servicio totalmente administrado de distribución y enrutamiento reactivo de eventos a gran escala con entrega push (*reactive pub/sub*).
+* **CloudEvents 1.0:** Estándar abierto de la CNCF para describir metadatos de eventos de manera uniforme (`specversion`, `id`, `source`, `type`, `subject`, `time`, `datacontenttype`, `data`).
+* **Event Grid Topic (Tópico de Event Grid):** Punto de conexión en la nube donde los productores envían eventos para su posterior enrutamiento.
+* **Event Subscription (Suscripción de eventos):** Regla que asocia un tópico con un suscriptor específico, definiendo filtros, reintentos y destinos de dead-letter.
+* **Dead-Letter Destination (Destino de mensajes muertos):** Contenedor de almacenamiento (Azure Blob Storage) donde Event Grid deposita eventos que no pudieron ser entregados tras agotar reintentos.
+* **At-Least-Once Delivery (Entrega al menos una vez):** Garantía de mensajería donde cada evento se entrega con seguridad al menos una vez, pudiendo ocurrir entregas duplicadas ante fallos de red.
+* **Idempotent Event Handler (Manejador de eventos idempotente):** Función receptora que procesa eventos garantizando que múltiples entregas del mismo identificador de evento generen un único efecto lógico.

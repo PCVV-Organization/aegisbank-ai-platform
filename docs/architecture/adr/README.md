@@ -61,6 +61,8 @@ Index:
   Emulator Messaging Adapter behind canonical MessageBus (v0.11).
 - [ADR-027](./ADR-027-container-platform-decision-container-apps-vs-aks.md) — Cloud Container
   Platform Decision: Azure Container Apps First vs. AKS Deferred (v0.11).
+- [ADR-028](./ADR-028-azure-functions-event-grid-local-serverless-foundation.md) — Local Serverless
+  Event-Driven Foundation with Azure Functions Python v2 and CloudEvents 1.0 (v0.13).
 
 Scope note: ADR-003 remains an accepted historical decision, but the current
 `v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly

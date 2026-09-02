@@ -45,6 +45,7 @@ All project data must be synthetic and reproducible.
 | `v0.10` | Quality Engineering + DevSecOps | NOT STARTED |
 | `v0.11` | Containers + AI-200 | NOT STARTED |
 | `v0.12` | MLOps + Experimental Statistics | NOT STARTED |
+| `v0.13` | Serverless Azure Functions + Event Grid (CloudEvents 1.0) | COMPLETE |
 | `v1.0` | Enterprise Hardening | NOT STARTED |
 | `v1.1` | AKS experiment | Optional after `v1.0` |
 | `v1.2` | Multi-agent experiment | Optional after `v1.0` |

@@ -241,6 +241,7 @@ def run_quality_gates(
     data: bool = False,
     cosmos: bool = False,
     redis: bool = False,
+    serverless: bool = False,
 ) -> tuple[int, list[GateResult]]:
     results: list[GateResult] = []
     py_exec = sys.executable
@@ -471,6 +472,31 @@ def run_quality_gates(
         if ret:
             all_passed = False
 
+    if serverless:
+        serverless_cmd = [
+            py_exec,
+            "-m",
+            "pytest",
+            "ai/agent/tests/serverless",
+        ]
+        print("[*] Running gate: Serverless Azure Functions & Event Grid Acceptance...")
+        started = time.time()
+        ret, stdout, stderr = _run_cmd(serverless_cmd, repo_root)
+        duration = round(time.time() - started, 3)
+        output = stdout.strip() if stdout.strip() else stderr.strip()
+        results.append(
+            GateResult(
+                name="Serverless Azure Functions & Event Grid Acceptance",
+                command=" ".join(serverless_cmd),
+                status="PASS" if ret == 0 else "FAIL",
+                duration_seconds=duration,
+                output_snippet=output[-500:],
+                error_message=stderr if ret else None,
+            )
+        )
+        if ret:
+            all_passed = False
+
     # Architecture Inventory Gate
     print("[*] Running gate: Architecture Inventory & Ownership Gate...")
     start_time = time.time()
@@ -581,6 +607,13 @@ def main() -> int:
         action="store_true",
         help="Run opt-in Redis Cache & Vector Search acceptance; requires local Redis",
     )
+    parser.add_argument(
+        "--gate-serverless",
+        "--include-serverless",
+        dest="gate_serverless",
+        action="store_true",
+        help="Run opt-in Azure Functions & Event Grid serverless acceptance",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
@@ -595,6 +628,7 @@ def main() -> int:
         data=args.gate_data,
         cosmos=args.gate_cosmos,
         redis=args.gate_redis,
+        serverless=args.gate_serverless,
     )
 
     report_payload = {
