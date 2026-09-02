@@ -102,7 +102,7 @@ config change.
 
 How (apply immediately):
 
-1. `npm install --save @upstash/context7-mcp` in `.opencode/`.
+1. `pnpm add @upstash/context7-mcp` in `.opencode/`.
 2. Add to `opencode.json`:
 
 ```jsonc
