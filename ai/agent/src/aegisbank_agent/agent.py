@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -16,7 +17,10 @@ from .constants import DEFAULT_MAX_TOOL_ROUNDS, SYSTEM_PROMPT_PATH
 from .hitl import ApprovalRequest, HITLApprovalManager
 from .knowledge_routing import (
     account_tool_allowlist,
+    classify_service_inquiry,
+    extract_loan_id,
     has_sufficient_evidence,
+    is_greeting,
     requires_account_data,
     requires_authorized_knowledge,
 )
@@ -179,6 +183,38 @@ class AgentOrchestrator:
             )
         raise AttributeError("LLM client does not provide a create completion interface")
 
+    @staticmethod
+    def _format_loan_details_answer(data: dict[str, Any]) -> str:
+        """Render a user-facing summary from a ``get_loan_details`` payload."""
+        if not isinstance(data, dict):
+            return "Tengo los datos del préstamo solicitados."
+        loan_id = data.get("loan_id", "")
+        product = data.get("product_code", "")
+        currency = data.get("currency", "")
+        outstanding = data.get("outstanding_balance", "")
+        principal = data.get("principal_amount", "")
+        status = data.get("status", "")
+        return (
+            f"Préstamo {loan_id} ({product}, {currency}): "
+            f"saldo pendiente {outstanding} de {principal}. Estado: {status}."
+        )
+
+    @staticmethod
+    def _format_installment_answer(data: dict[str, Any]) -> str:
+        """Render a user-facing summary from a ``get_next_installment`` payload."""
+        if not isinstance(data, dict):
+            return ""
+        if not data.get("has_next_installment"):
+            return "No hay cuotas pendientes ni vencidas para este préstamo."
+        installment_id = data.get("installment_id", "")
+        due_date = data.get("due_date", "")
+        total_due = data.get("total_due", "")
+        status = data.get("status", "")
+        return (
+            f"Próxima cuota {installment_id} (vence {due_date}): "
+            f"total a pagar {total_due}. Estado: {status}."
+        )
+
     def run(
         self,
         user_message: str,
@@ -215,15 +251,47 @@ class AgentOrchestrator:
                 "gen_ai.model": self._model,
             },
         ):
+            # Ambiguous claims / service request clarification
+            if classify_service_inquiry(user_message) == "CLARIFICATION":
+                self._logger.info(
+                    "clarification_requested",
+                    context=obs_ctx,
+                    execution_status="CLARIFICATION",
+                    extra={"routing_mode": "AMBIGUITY_CLARIFICATION"},
+                )
+                total_dur_ms = (time.perf_counter() - start_time) * 1000.0
+                self._metrics.record_latency("agent_run_latencies_ms", total_dur_ms)
+                clarification_text = (
+                    "Para orientarte adecuadamente, ¿podrías precisarme a qué te refieres?\n"
+                    "- Si deseas conocer los datos requeridos para registrar un reclamo en el "
+                    "sistema (categoría y motivo), te los indico desde nuestro catálogo "
+                    "de servicios.\n"
+                    "- Si buscas los requisitos o la política institucional para la procedencia de "
+                    "un reclamo, consulto la base de conocimiento autorizada."
+                )
+                return AgentExecutionResult(
+                    answer=clarification_text,
+                    customer_id=customer_id,
+                    tool_calls=[],
+                    rounds=0,
+                    success=True,
+                    correlation_id=obs_ctx.correlation_id,
+                )
+
             context = AgentContext(session_customer_id=customer_id)
             all_tools = self._registry.export_openai_tools()
             account_required = requires_account_data(user_message)
             account_allowlist = account_tool_allowlist(user_message) if account_required else []
-            if account_required:
+            if is_greeting(user_message):
+                tools = []
+            elif account_required:
                 self._metrics.increment("banking_data_required_count")
                 self._metrics.increment("forced_routing_count")
                 tools = [
-                    tool for tool in all_tools if tool["function"]["name"] in account_allowlist
+                    tool
+                    for tool in all_tools
+                    if tool["function"]["name"] in account_allowlist
+                    or tool["function"]["name"] in WRITE_TOOLS
                 ]
             else:
                 tools = all_tools
@@ -275,9 +343,99 @@ class AgentOrchestrator:
                 tools = [
                     tool
                     for tool in all_tools
-                    if tool["function"]["name"] in account_allowlist
+                    if (
+                        tool["function"]["name"] in account_allowlist
+                        or tool["function"]["name"] in WRITE_TOOLS
+                    )
                     and tool["function"]["name"] != "get_my_loans"
                 ]
+
+                loans = (account_result.data or {}).get("loans", [])
+                if (
+                    len(loans) > 1
+                    and extract_loan_id(user_message) is None
+                    and "detalle" in user_message.lower()
+                ):
+                    ids = ", ".join(str(loan_item.get("loan_id")) for loan_item in loans)
+                    messages.append(
+                        {
+                            "role": "system",
+                            "content": (
+                                "El cliente solicitó detalle de préstamo pero posee múltiples "
+                                f"préstamos ({ids}) sin especificar cuál. NO adivines ni inventes "
+                                "un préstamo. Pídele al cliente que elija cuál de ellos desea "
+                                "consultar."
+                            ),
+                        }
+                    )
+                    tools = []
+
+            # Deterministic loan-detail execution: when the user explicitly
+            # referenced a ``LOAN-XXXX`` and the allowlist already pinpoints the
+            # single detail tool, execute it without depending on the model's
+            # structured tool call. Without this block the orchestrator would
+            # bounce into the LLM with ``auto`` tool_choice on queries that
+            # mention only a loan id, which is exactly what produced the
+            # pseudo-tool-call bug discovered during manual E2E review.
+            forced_loan_id = extract_loan_id(user_message)
+            if (
+                account_required
+                and forced_loan_id is not None
+                and "get_my_loans" not in account_allowlist
+                and account_allowlist == ["get_loan_details"]
+            ):
+                forced_tool = "get_loan_details"
+                with trace_span(
+                    f"tool.{forced_tool}",
+                    attributes={
+                        "tool.name": forced_tool,
+                        "customer.id": customer_id,
+                        "routing.mode": "LOAN_ID_POLICY_FORCED",
+                        "aegisbank.loan_id": forced_loan_id,
+                    },
+                ):
+                    forced_result = self._registry.execute(
+                        forced_tool, {"loan_id": forced_loan_id}, context
+                    )
+                self._metrics.increment("banking_tool_invoked_count")
+                executed_records.append(
+                    ToolCallRecord(
+                        tool_name=forced_tool,
+                        arguments={"loan_id": forced_loan_id},
+                        result=forced_result,
+                    )
+                )
+                total_dur_ms = (time.perf_counter() - start_time) * 1000.0
+                self._metrics.record_latency("agent_run_latencies_ms", total_dur_ms)
+                if not forced_result.success:
+                    self._metrics.increment("banking_tool_missed_count")
+                    error_message = forced_result.error or (
+                        "No pude consultar el detalle del préstamo."
+                        if forced_tool == "get_loan_details"
+                        else "No pude consultar la próxima cuota del préstamo."
+                    )
+                    return AgentExecutionResult(
+                        answer=error_message,
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=False,
+                        error=forced_result.error,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
+                answer = (
+                    self._format_installment_answer(forced_result.data)
+                    if forced_tool == "get_next_installment"
+                    else self._format_loan_details_answer(forced_result.data)
+                )
+                return AgentExecutionResult(
+                    answer=answer,
+                    customer_id=customer_id,
+                    tool_calls=executed_records,
+                    rounds=0,
+                    success=True,
+                    correlation_id=obs_ctx.correlation_id,
+                )
 
             selected_tool = tools[0]["function"]["name"] if len(tools) == 1 else None
             effective_tool_choice: Any = (
@@ -452,9 +610,18 @@ class AgentOrchestrator:
                         rec.tool_name == "get_my_loans" for rec in executed_records
                     ):
                         executed_records.append(ToolCallRecord("get_my_loans", {}, account_result))
-                    if account_required and any(
-                        name in (msg.content or "") for name in account_allowlist
-                    ):
+                    content_str = msg.content or ""
+                    raw_tool_patterns = (
+                        r"\bget_loan_details\s*\(",
+                        r"\bget_my_loans\s*\(",
+                        r"\bget_next_installment\s*\(",
+                        r"\bcreate_service_request\s*\(",
+                    )
+                    is_pseudo_tool = account_required and (
+                        any(name in content_str for name in account_allowlist)
+                        or any(re.search(pat, content_str) for pat in raw_tool_patterns)
+                    )
+                    if is_pseudo_tool:
                         self._metrics.increment("pseudo_tool_call_count")
                         self._metrics.increment("banking_tool_missed_count")
                         self._audit.record(
@@ -464,7 +631,7 @@ class AgentOrchestrator:
                             actor="ROUTING_POLICY",
                             payload={
                                 "reason": "PSEUDO_TOOL_CALL",
-                                "content_length": len(msg.content or ""),
+                                "content_length": len(content_str),
                             },
                         )
                         return AgentExecutionResult(

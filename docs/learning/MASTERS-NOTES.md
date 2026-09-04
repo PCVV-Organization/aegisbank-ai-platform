@@ -679,3 +679,141 @@ El **OutboxProcessor** de v0.8 sigue siendo la única fuente de publicación. Un
 ### 7. Diferencia con Mibanco y AI-200
 
 En Mibanco, la capacidad de **disparar procesos reactivos** (notificación al cliente, actualización de cola analítica, disparador de auditoría) sin acoplar el Core transaccional a cada consumidor es exactamente el patrón Event Grid + Function. AI-200 (study guide revisado `2026-09-02`) exige demostrar este patrón bajo el rubro *"Implement event-driven workflows by using Azure Event Grid, including filters, custom events, and retries"*. AegisBank demuestra la **parte local reproducible** del patrón: schema CloudEvents estricto, mapping desde el dominio, handler idempotente con auditoría completa y coexistencia con Service Bus para settlement durable. La parte cloud permanece explícitamente `CLOUD-PENDING` y no se afirma ninguna capacidad productiva.
+
+---
+
+## 14. Robustez de Intenciones Semánticas, Relevancia Conversacional y Pruebas Metamórficas (v0.13.0-R1)
+
+> **Módulo:** Robustez Semántica, Prevención de Abstraction Leaks y Testing Metamórfico de Agentes
+> **Hito del Proyecto:** `v0.13.0-R1 — Intent Robustness + Conversational Relevance Regression`
+> **Principio Clave:** El LLM interpreta y propone; las políticas deterministas enrutan, aíslan y auditan.
+
+### 1. La Causa Raíz del "Semantic Drift" y las Pseudo-Tool-Calls
+
+Durante una sesión de verificación manual End-to-End (E2E), se descubrió una divergencia crítica en el enrutamiento conversacional:
+- `"Dame detalle de mi prestamo LOAN-0001"` $\rightarrow$ Ejecutaba `get_my_loans` + `get_loan_details`, devolviendo datos financieros verificados.
+- `"Dame detalle de mi LOAN-0001"` $\rightarrow$ Ejecutaba 0 herramientas y el modelo emitía como texto plano un string como `get_loan_details(LOAN-0001)`.
+
+Ambas consultas comparten el 100% de su intención semántica y su entidad objetivo (`LOAN-0001`). Sin embargo, una política de clasificación frágil basada en la presencia obligatoria de la palabra clave `"prestamo"` clasificaba la segunda frase como `requires_account_data == False`. Al no forzar la herramienta requerida, el LLM recibía `tool_choice="auto"` y, en lugar de invocar la API estructurada nativa de function calling, imitaba la sintaxis de llamada en texto libre (*pseudo-tool-call*).
+
+En la arquitectura de AegisBank, esta anomalía se neutraliza bajo tres pilares:
+1. **Detección Canónica de Entidades**: Extracción de identificadores canónicos (`LOAN-[0-9]{4}`) reutilizada en `knowledge_routing.py` (`extract_loan_id`). Si existe un ID de préstamo explícito, los datos bancarios son obligatorios con independencia de si el usuario empleó o no la palabra "préstamo".
+2. **Ejecución Determinista del Conjunto Mínimo**: Cuando la entidad ya está identificada inequívocamente y la política selecciona un único tool de detalle (`account_allowlist == ["get_loan_details"]`), el orquestador ejecuta la herramienta determinísticamente en el Core Banking y formatea la respuesta sin someter al usuario a la incertidumbre o latencia de una ronda extra del LLM.
+3. **Defensa Activa contra Pseudo-Tool-Calls**: Si en una consulta que requiere datos bancarios el modelo devuelve texto sin invocar herramientas estructuradas y dicho texto contiene firmas de funciones (`get_loan_details(`, etc.), el orquestador intercepta el mensaje, incrementa `pseudo_tool_call_count`, genera una entrada inmutable en auditoría (`AuditEventType.TOOL_DENIED` con razón `PSEUDO_TOOL_CALL`) y aborta con error seguro sin filtrar detalles internos.
+
+### 2. Pruebas Metamórficas (*Metamorphic Testing*) para Interfaces Agénticas
+
+En software determinista tradicional, una prueba unitaria compara un input específico contra un output exacto (*Test Oracle*). En sistemas conversacionales con LLMs, el espacio de entrada para una misma intención es infinito (sinónimos, dialectos, signos de puntuación, erratas ortográficas).
+
+Las **Pruebas Metamórficas** resuelven el problema del oráculo definiendo **Relaciones Metamórficas (MR)** que deben mantenerse invariantes ante transformaciones morfológicas de la entrada:
+
+$$\forall p \in \text{Paraphrases}(\text{"LOAN-0001"}), \quad \mathcal{I}(f(p)) \equiv (\text{tools\_called} == [\text{"get\_loan\_details"}] \land \text{success} == \text{True})$$
+
+La suite `ai/agent/tests/v013r1/test_intent_robustness_regression.py` evalúa formalmente esta matriz:
+- `Dame detalle de mi prestamo LOAN-0001` (canónica formal)
+- `Dame detalle de mi LOAN-0001` (sin palabra préstamo)
+- `Muéstrame LOAN-0001` (verbo visual)
+- `informacion del credito loan-0001` (minúsculas, sinónimo crédito)
+- `saldo de LOAN-0002` (enfoque en balance financiero)
+- `Detalle de mi préstamo LOAN-0001` (acentuación estándar)
+
+Todas las variantes preservan estrictamente el mismo comportamiento: invocación estructurada garantizada, respuesta fundamentada en el Core Banking y ausencia total de pseudo-tool-calls.
+
+### 3. Prevención de Abstraction Leaks y Calidad Conversacional
+
+Un fallo recurrente en prototipos de agentes LLM es el **Abstraction Leak** (fuga de abstracciones internas):
+- Ante `"¿Qué puedes hacer?"`, los agentes novatos responden listando código fuente o herramientas: *"Puedo ejecutar get_my_loans, search_knowledge y create_service_request"*.
+- Ante `"Hola"`, responden "vomitando" catálogos masivos de trámites no solicitados (*over-eager generation*).
+
+En AegisBank `v0.13.0-R1`:
+1. **Prompt v003 (`agent-system-v003.json`)**:
+   - Prohíbe terminantemente citar nombres de funciones o esquemas técnicos en texto dirigido al cliente.
+   - Establece reglas de saludo cortés y conciso sin enumerar proactivamente trámites ni capacidades a menos que el usuario lo solicite explícitamente.
+   - Traduce las capacidades internas al lenguaje bancario comercial del usuario final (consultar préstamos, revisar calendarios de cuotas, verificar políticas institucionales, registrar reclamos con supervisión).
+2. **Aislamiento en Saludos**: Al detectar un saludo social (`is_greeting`), el orquestador desactiva herramientas en la llamada de completion (`tools = []`), impidiendo que el LLM sufra alucinaciones de tool calling o filtre metadatos de las herramientas en respuestas de cortesía.
+
+### 4. Desambiguación sin Adivinación (*Disambiguation without Guessing*)
+
+Cuando el cliente formula una consulta incompleta (e.g. `"Dame detalle de mi préstamo"`) y posee múltiples préstamos activos (`LOAN-0001` y `LOAN-0002`):
+- **PROHIBIDO**: Adivinar o elegir arbitrariamente el primer préstamo encontrado.
+- **REGLA DETERMINISTA**: El orquestador ejecuta primero `get_my_loans` para descubrir los préstamos del cliente. Al constatar multiplicidad sin un `loan_id` explícito, inyecta una directriz de sistema vinculante: *"El cliente solicitó detalle pero posee múltiples préstamos (...) sin especificar cuál. NO adivines ni inventes un préstamo. Pídele al cliente que elija cuál desea consultar."*
+- Se retiran las herramientas de detalle para esa ronda, forzando al modelo a presentar la lista legítima y solicitar la elección humana.
+
+### 5. Triaje de Ambigüedades: DOMAIN_SCHEMA vs RAG vs CLARIFICATION
+
+Para consultas sobre trámites y reclamos (e.g. `"¿Qué requiero para que mi reclamo tenga efecto?"`), la función canónica `classify_service_inquiry` efectúa un triaje determinista antes de invocar modelos o bases de conocimiento:
+- **DOMAIN_SCHEMA**: Preguntas sobre campos y datos de registro del formulario (`"¿Qué datos necesito para registrar un reclamo?"`). Se resuelven con el catálogo/esquema del servicio.
+- **RAG**: Preguntas sobre políticas y procedimientos oficiales (`"¿Cuál es el procedimiento y plazos de un reclamo?"`). Se enrutan a búsqueda semántica fundamentada en la base de conocimiento autorizada (`search_knowledge`).
+- **CLARIFICATION**: Consultas con polisemia o ambigüedad estructural (`"¿Qué requiero para que mi reclamo proceda/tenga efecto?"`). El agente no asume una rama a ciegas; responde solicitando al cliente que aclare si desea conocer los campos requeridos por el sistema para radicar la solicitud o los requisitos normativos de fondo para su procedencia.
+
+---
+
+## 19. v0.13.0-R1: Intent Robustness + Conversational Relevance Regression
+
+### 1. Hallazgo Manual → Regresión Automatizada
+
+Una sesión manual E2E descubrió que dos frases con la misma intención semántica (`GET_LOAN_DETAILS`) producían dos rutas distintas:
+
+```text
+"Dame detalle de mi prestamo LOAN-0001"  → 2 tools ejecutadas  ✅
+"Dame detalle de mi LOAN-0001"           → 0 tools (pseudo-call) ❌
+```
+
+Microsoft Foundry AI-200 actualmente exige *"Implement event-driven workflows by using Azure Event Grid, including filters, custom events, and retries"*, y AI-103 destaca **Tool Selection Accuracy** y **Abstraction Leak** como dimensiones evaluables. El bug es exactamente la clase de defecto que un E2E con `phi-4-mini` expone cuando la dependencia del routing es léxica en lugar de estructural.
+
+### 2. Pruebas Metamórficas (*Metamorphic Tests*)
+
+En lugar de probar **una** frase exacta, el suite v0.13.0-R1 valida que **toda una familia de paráfrasis** preserve una propiedad observable:
+
+```text
+"Dame detalle de mi prestamo LOAN-0001"
+"Dame detalle de mi LOAN-0001"
+"Muéstrame LOAN-0001"
+"informacion del credito loan-0001"
+"saldo de LOAN-0002"
+"Detalle de mi préstamo LOAN-0001"
+```
+
+Todas deben:
+
+1. Marcar `requires_account_data == True`.
+2. Producir `get_loan_details(loan_id=LOAN-XXXX)` como tool ejecutada (estructurada).
+3. Pasar el chequeo de ownership contra `CUST-0001`.
+4. Nunca emitir pseudo-tool-call (`get_loan_details(...)`) como texto plano.
+
+### 3. Pseudo Tool Call y Determinismo
+
+El patrón anti-FaaS/AIAgent **pseudo-tool-call** ocurre cuando el modelo escribe `get_loan_details(LOAN-0001)` como texto en lugar de emitir una llamada estructurada por `tool_calls`. Para eliminarlo:
+
+- El router **extrae la entidad `LOAN-XXXX` con regex** (`\bLOAN-[0-9]{4}\b`), independiente del lenguaje natural.
+- Cuando el allowlist tiene una sola herramienta y existe `loan_id`, el orchestrator **ejecuta determinísticamente** la tool canónica (`get_loan_details` o `get_next_installment`) sin pasar por el LLM.
+- El fallback del LLM solo ocurre cuando no hay id (ej. "¿Cuáles son mis préstamos?") y se debe ejecutar `get_my_loans` + un follow-up opcional.
+
+### 4. Abstraction Leak y Conversational Relevance
+
+Para evitar que el usuario vea nombres internos de herramientas, el system prompt `agent-system-v003` codifica explícitamente:
+
+```text
+NUNCA menciones nombres de herramientas internas
+NO enumeres las categorías internas de solicitudes a menos que el usuario pregunte explícitamente
+NO adivines identificadores de préstamos
+```
+
+Y el orchestrator hace short-circuit de saludos (sin tool) y de clarificaciones (sin tool) con respuestas determinísticas en lenguaje de banco.
+
+### 5. CLARIFICATION ≠ AUTO TOOL
+
+Microsoft AI-103 indica que cuando un prompt es ambiguo, el agente debe **solicitar información faltante** en lugar de elegir una interpretación. La función `classify_service_inquiry(query)` clasifica preguntas ambiguas como `CLARIFICATION` y el orchestrator devuelve una respuesta que pide al usuario precisar. Ejemplo:
+
+```text
+User: "¿Qué requiero para que mi reclamo tenga efecto?"
+Aegis: "Para orientarte adecuadamente, ¿podrías precisarme a qué te refieres?
+        - Si deseas conocer los datos requeridos para registrar un reclamo en el sistema ...
+        - Si buscas los requisitos o la política institucional para la procedencia ..."
+```
+
+### 6. Madurez
+
+- `LOCAL-INTENT-ROBUSTNESS-COVERED` — El bug detectado manualmente es ahora una regresión automatizada.
+- Suite ampliada: `ai/agent/tests/v013r1/` (3 archivos, 44 tests) + suite v013r1 amplía el conteo total a **449 tests** con `--gate-intent-robustness` activo.
+- Mantiene `EVENT_GRID_HANDLER_LOCAL = COVERED` sin regresión.

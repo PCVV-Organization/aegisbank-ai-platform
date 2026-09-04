@@ -30,10 +30,84 @@ _ACCOUNT_PATTERNS = (
     r"\bdetalle\s+de\s+mi\s+prestamo\b",
 )
 
+_LOAN_ID_REGEX = re.compile(r"\bLOAN-[0-9]{4}\b", re.IGNORECASE)
+_GREETING_TERMS = ("hola", "buenos dias", "buenas tardes", "buenas noches", "saludos", "que tal")
+
 
 def _normalize(value: str) -> str:
     folded = unicodedata.normalize("NFKD", value.casefold())
     return "".join(char for char in folded if not unicodedata.combining(char))
+
+
+def extract_loan_id(query: str) -> str | None:
+    """Return a canonical ``LOAN-XXXX`` identifier or ``None`` if not found.
+
+    Reuses the canonical 4-digit format used by Core Banking (``LOAN-[0-9]{4}``).
+    The match is case-insensitive and returns the upper-cased string.
+    """
+    match = _LOAN_ID_REGEX.search(query)
+    if match is None:
+        return None
+    return match.group(0).upper()
+
+
+def detect_loan_details_request(query: str) -> dict[str, Any]:
+    """Classify a loan-detail intent."""
+    normalized = _normalize(query)
+    loan_id = extract_loan_id(query)
+    has_detail_trigger = any(
+        trigger in normalized
+        for trigger in (
+            "detalle",
+            "saldo",
+            "monto",
+            "estado",
+            "info",
+            "informacion",
+            "mostrar",
+            "muestrame",
+        )
+    )
+    has_loan_word = "prestamo" in normalized or "credito" in normalized
+    asks_for_installment = "cuota" in normalized or "vencimiento" in normalized
+    is_account_request = (has_detail_trigger or has_loan_word or loan_id is not None) and (
+        loan_id is not None or not requires_authorized_knowledge(query)
+    )
+    return {
+        "loan_id": loan_id,
+        "needs_loan_list_first": ((has_detail_trigger or has_loan_word) and loan_id is None),
+        "is_account_request": is_account_request,
+        "asks_for_installment": asks_for_installment,
+    }
+
+
+def is_greeting(query: str) -> bool:
+    """Return True for short social greetings."""
+    normalized = _normalize(query).strip()
+    if not normalized:
+        return False
+    if len(normalized.split()) > 6:
+        return False
+    banned_tokens = ("prestamo", "reclamo", "loan-", "puedes hacer", "credito")
+    if any(token in normalized for token in banned_tokens):
+        return False
+    return any(normalized.startswith(term) or normalized == term for term in _GREETING_TERMS)
+
+
+def is_capability_query(query: str) -> bool:
+    """Return True when the user asks about what the agent can do."""
+    normalized = _normalize(query)
+    triggers = (
+        "que puedes hacer",
+        "que puedes",
+        "que sabes hacer",
+        "que hace",
+        "en que me puedes ayudar",
+        "como me puedes ayudar",
+        "cuales son tus funciones",
+        "cuales son sus funciones",
+    )
+    return any(trigger in normalized for trigger in triggers)
 
 
 def requires_authorized_knowledge(query: str) -> bool:
@@ -44,6 +118,8 @@ def requires_authorized_knowledge(query: str) -> bool:
 
 def requires_account_data(query: str) -> bool:
     """Identify questions requiring authenticated Core Banking data."""
+    if extract_loan_id(query) is not None:
+        return True
     normalized = _normalize(query)
     return any(re.search(pattern, normalized) for pattern in _ACCOUNT_PATTERNS)
 
@@ -51,17 +127,107 @@ def requires_account_data(query: str) -> bool:
 def account_tool_allowlist(query: str) -> list[str]:
     """Return the smallest READ tool set for an authenticated account query."""
     normalized = _normalize(query)
+    loan_id = extract_loan_id(query)
     tools: list[str] = []
+
+    if loan_id is not None:
+        asks_installment = any(
+            t in normalized
+            for t in ("cuota", "vencimiento", "proxima cuota", "cuanto debo", "mis cuotas")
+        )
+        asks_details = (
+            any(
+                t in normalized
+                for t in (
+                    "detalle",
+                    "saldo",
+                    "informacion",
+                    "estado",
+                    "muestrame",
+                    "consultar",
+                    "prestamo",
+                    "credito",
+                )
+            )
+            or not asks_installment
+        )
+        if asks_details:
+            tools.append("get_loan_details")
+        if asks_installment:
+            tools.append("get_next_installment")
+        return tools or ["get_loan_details"]
+
     needs_loan_list = "mis prestamos" in normalized or "mi prestamo" in normalized
     if needs_loan_list:
         tools.append("get_my_loans")
-    if "proxima cuota" in normalized or "cuanto debo" in normalized:
+    if "proxima cuota" in normalized or "cuanto debo" in normalized or "mis cuotas" in normalized:
         tools.append("get_next_installment")
     if "detalle" in normalized:
+        if "get_my_loans" not in tools:
+            tools.append("get_my_loans")
         tools.append("get_loan_details")
     if "prestamo" in normalized and not tools:
         tools.append("get_my_loans")
     return tools or ["get_my_loans"]
+
+
+def classify_service_inquiry(query: str) -> str:
+    """Classify service request/claims inquiries into DOMAIN_SCHEMA, RAG, or CLARIFICATION."""
+    normalized = _normalize(query)
+    claim_terms = ("reclamo", "reclamacion", "queja", "solicitud de servicio", "solicitud")
+    if not any(term in normalized for term in claim_terms):
+        return "OTHER"
+
+    schema_triggers = (
+        "que campos",
+        "cuales son los campos",
+        "que datos necesito",
+        "que datos se requieren",
+        "datos obligatorios",
+        "campos obligatorios",
+        "que categorias",
+        "cuales son las categorias",
+        "tipos de solicitud",
+        "tipos de reclamo",
+        "categorias de reclamo",
+        "categorias soportadas",
+    )
+    if any(trigger in normalized for trigger in schema_triggers):
+        return "DOMAIN_SCHEMA"
+
+    policy_triggers = (
+        "politica de reclamo",
+        "politica de atencion",
+        "procedimiento de reclamo",
+        "procedimiento y requisitos",
+        "procedimiento",
+        "plazos legales",
+        "plazo de respuesta",
+        "normativa de reclamos",
+    )
+    if any(trigger in normalized for trigger in policy_triggers):
+        return "RAG"
+
+    ambiguous_triggers = (
+        "para que mi reclamo tenga efecto",
+        "para que mi reclamo proceda",
+        "para que proceda mi reclamo",
+        "para que sea valido mi reclamo",
+        "que requiero para que mi reclamo",
+        "que requiero para mi reclamo",
+        "que se requiere para un reclamo",
+        "requisitos para mi reclamo",
+        "requisitos de un reclamo",
+    )
+    if any(trigger in normalized for trigger in ambiguous_triggers):
+        return "CLARIFICATION"
+
+    if (
+        "requiero" in normalized or "requisito" in normalized or "se requiere" in normalized
+    ) and any(term in normalized for term in ("reclamo", "solicitud")):
+        return "CLARIFICATION"
+
+    return "OTHER"
 
 
 def has_sufficient_evidence(query: str, data: Any) -> bool:

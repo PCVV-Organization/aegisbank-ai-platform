@@ -242,6 +242,7 @@ def run_quality_gates(
     cosmos: bool = False,
     redis: bool = False,
     serverless: bool = False,
+    intent_robustness: bool = False,
 ) -> tuple[int, list[GateResult]]:
     results: list[GateResult] = []
     py_exec = sys.executable
@@ -497,6 +498,33 @@ def run_quality_gates(
         if ret:
             all_passed = False
 
+    if intent_robustness:
+        intent_cmd = [
+            py_exec,
+            "-m",
+            "pytest",
+            "ai/agent/tests/v013r1",
+        ]
+        print(
+            "[*] Running gate: Intent Robustness + Conversational Relevance Regression..."
+        )
+        started = time.time()
+        ret, stdout, stderr = _run_cmd(intent_cmd, repo_root)
+        duration = round(time.time() - started, 3)
+        output = stdout.strip() if stdout.strip() else stderr.strip()
+        results.append(
+            GateResult(
+                name="Intent Robustness + Conversational Relevance Regression",
+                command=" ".join(intent_cmd),
+                status="PASS" if ret == 0 else "FAIL",
+                duration_seconds=duration,
+                output_snippet=output[-500:],
+                error_message=stderr if ret else None,
+            )
+        )
+        if ret:
+            all_passed = False
+
     # Architecture Inventory Gate
     print("[*] Running gate: Architecture Inventory & Ownership Gate...")
     start_time = time.time()
@@ -614,6 +642,13 @@ def main() -> int:
         action="store_true",
         help="Run opt-in Azure Functions & Event Grid serverless acceptance",
     )
+    parser.add_argument(
+        "--gate-intent-robustness",
+        "--include-intent-robustness",
+        dest="gate_intent_robustness",
+        action="store_true",
+        help="Run opt-in v0.13.0-R1 intent robustness + conversational relevance regression",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]
@@ -629,6 +664,7 @@ def main() -> int:
         cosmos=args.gate_cosmos,
         redis=args.gate_redis,
         serverless=args.gate_serverless,
+        intent_robustness=args.gate_intent_robustness,
     )
 
     report_payload = {
