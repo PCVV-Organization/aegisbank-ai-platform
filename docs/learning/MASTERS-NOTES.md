@@ -876,3 +876,94 @@ Todos los 16 invariantes críticos enumerados en el Prompt 024 siguen cubiertos 
 - Critical WRITE E2E → `e2e/write_journeys/test_write_e2e.py`
 - Security/secret gates → `quality_gate.py --gate-secrets-only`
 - Docker/Kubernetes/Functions acceptance → `infra/`
+
+---
+
+## 16. Arquitectura Serverless, Azure Functions Runtime y Event-Driven Banking (v0.13.1)
+
+### 1. El Desacoplamiento Host vs. Language Worker vía gRPC
+
+En el modelo de ejecución de Azure Functions moderno (Python v2 programming model), existe una separación estricta entre dos procesos concurrentes:
+1. **Functions Host (WebHost / .NET)**: El proceso orquestador principal (`Microsoft.Azure.WebJobs.Script.WebHost`) gestiona el ciclo de vida del contenedor/nodo, expone los endpoints HTTP administrativos y webhooks de extensiones (como `/runtime/webhooks/eventgrid`), aplica las políticas de autenticación mediante llaves (`masterKey`, `functionKeys`, `systemKeys`) y resuelve los bindings.
+2. **Language Worker (Python)**: Un proceso hijo lanzado por el Host (`python worker.py`) que ejecuta el código de negocio del usuario, mantiene el bucle de eventos asíncrono y se comunica bidireccionalmente con el Host a través de un canal gRPC de alto rendimiento en loopback (`127.0.0.1:<port>`).
+
+```
++-------------------------------------------------------------------------+
+|                  CONTAINER / VM EXECUTION BOUNDARY                      |
+|                                                                         |
+|  [External Ingestion]                                                   |
+|          │                                                              |
+|          ▼                                                              |
+|  +───────────────────────────────────+                                  |
+|  |       Azure Functions Host        |                                  |
+|  |  (C# / .NET WebJobs Script Host)  |                                  |
+|  |  - Auth & Key Management          |                                  |
+|  |  - Event Grid Webhook Extensions  |                                  |
+|  +─────────────────┬─────────────────+                                  |
+|                    │                                                    |
+|                    │  gRPC Over Localhost (FunctionInvocationRequest)   |
+|                    ▼                                                    |
+|  +───────────────────────────────────+                                  |
+|  |      Python 3.14 Language Worker  |                                  |
+|  |  - Event Deserialization (SDK)    |                                  |
+|  |  - ServiceRequestEventHandler     |                                  |
+|  |  - Idempotency & Audit Logging    |                                  |
+|  +───────────────────────────────────+                                  |
++-------------------------------------------------------------------------+
+```
+
+### 2. Diagnóstico de Plataforma: La Falla `cygrpc` en Windows vs. Aislamiento OCI
+
+Durante las pruebas en Windows con Azure Functions Core Tools v4, se evidenció una limitación estructural del cargador dinámico de Windows:
+- **Síntoma**: `ImportError: DLL load failed while importing cygrpc: El nombre del archivo o la extensión es demasiado largo.`
+- **Causa Raíz Real**: El error mapea a Windows NT Status `0xCE` (`ERROR_FILENAME_EXCED_RANGE`). Cuando el Host de Core Tools orquesta el arranque del proceso worker con variables de entorno anidadas y rutas absolutas profundas, la llamada de Windows `LoadLibraryExW` falla al resolver las dependencias dinámicas del binario compilado en C++ (`cygrpc.cp314-win_amd64.pyd`).
+- **Solución Empresarial (Path B)**: El estándar en arquitecturas de misión crítica bancaria no depende de toolchains nativos del sistema operativo de desarrollo del programador. La solución aprobada es el **Aislamiento en Contenedores OCI** utilizando la imagen oficial de Microsoft `mcr.microsoft.com/azure-functions/python:4-python3.14`. En Linux (`glibc`), la carga de bibliotecas compartidas vía `dlopen` es determinista, inmune a limitaciones de paths de Windows y completamente idéntica a los nodos de producción en Azure App Service / ACA.
+
+### 3. Protocolo CloudEvents 1.0 y Handshake de Event Grid
+
+Azure Event Grid requiere cumplimiento riguroso de dos patrones de mensajería:
+1. **Subscription Validation Handshake**:
+   - Al registrar o actualizar una suscripción webhook, Event Grid envía una solicitud HTTP con encabezado `aeg-event-type: SubscriptionValidation`.
+   - El payload contiene un `validationCode`.
+   - La función o su extensión de webhook debe responder sincrónicamente con HTTP 200 y `{"validationResponse": "<validationCode>"}` para activar la ruta.
+2. **Event Delivery & Timestamp Precision**:
+   - Los eventos de negocio utilizan la especificación CloudEvents 1.0 (`specversion: "1.0"`).
+   - Los timestamps deben cumplir RFC 3339 en tiempo universal coordinado (UTC), terminando en `Z` o `+00:00` (e.g., `2026-09-01T22:56:00Z`). Timestamps con zonas horarias locales arbitrarias son rechazados por los deserializadores nativos del worker.
+
+### 4. Gobernanza de Secretos: `FileSystemSecretsRepository` y `ScriptSecretSerializerV1`
+
+En entornos locales sin conexión a Azure Storage Blob, el Host debe configurarse con almacenamiento de secretos en sistema de archivos:
+- Variable: `AzureWebJobsSecretStorageType=Files`
+- Ruta: `FUNCTIONS_SECRETS_PATH=/home/site/secrets`
+- El archivo `host.json` debe seguir estrictamente el esquema JSON validado por `ScriptSecretSerializerV1`:
+  ```json
+  {
+    "masterKey": {
+      "name": "master",
+      "value": "<secure_key>",
+      "encrypted": false
+    },
+    "functionKeys": [
+      {
+        "name": "default",
+        "value": "<function_key>",
+        "encrypted": false
+      }
+    ],
+    "systemKeys": [
+      {
+        "name": "eventgridextensionconfig_extension",
+        "value": "<system_key>",
+        "encrypted": false
+      }
+    ]
+  }
+  ```
+  *Nota Crítica de Esquema*: A diferencia de la percepción común de que `functionKeys` es un mapa asociativo de clave-valor, el serializador interno de .NET (`Newtonsoft.Json.Schema`) exige que `functionKeys` y `systemKeys` sean **arreglos de objetos de llave**, donde cada objeto posee obligatoriamente los campos `name`, `value` y `encrypted`.
+
+### 5. Idempotencia y Propagación de Contexto Distribuido
+
+En un sistema bancario basado en eventos:
+- **At-Least-Once Delivery**: La infraestructura de mensajería (Event Grid, Service Bus) garantiza entrega al menos una vez, lo que implica que duplicados de red son inevitables.
+- **Idempotency Guard**: Cada evento recibido utiliza su clave única `event-grid:{event_id}` contra una base de datos local / distribuida. Si el evento ya fue procesado, se registra una auditoría `IDEMPOTENCY_REPLAY`, se incrementa la métrica `event_grid_duplicate_count` y se devuelve HTTP 202 sin re-ejecutar efectos colaterales de negocio.
+- **W3C Trace Context**: El encabezado `traceparent` del CloudEvent se extrae e inyecta en el contexto de OpenTelemetry (`SpanContext` remoto), garantizando que la traza del microservicio emisor se correlacione de extremo a extremo con la ejecución del serverless handler.

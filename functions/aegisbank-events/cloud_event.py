@@ -15,10 +15,22 @@ CLOUD_EVENT_TYPE = "com.aegisbank.service-request.created.v1"
 CLOUD_EVENT_SOURCE = "urn:aegisbank:mock-core-banking"
 CLOUD_EVENT_DATA_SCHEMA = "urn:aegisbank:contracts:service-request-created:v1"
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_DOMAIN_SCHEMA_PATH = _REPO_ROOT / "contracts" / "service-request-created.schema.json"
+
+def _resolve_contracts_dir() -> Path:
+    candidates = [
+        Path(__file__).resolve().parent / "contracts",
+        Path(__file__).resolve().parents[2] / "contracts",
+    ]
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate
+    return Path(__file__).resolve().parents[2] / "contracts"
+
+
+_CONTRACTS_DIR = _resolve_contracts_dir()
+_DOMAIN_SCHEMA_PATH = _CONTRACTS_DIR / "service-request-created.schema.json"
 _CLOUD_EVENT_SCHEMA_PATH = (
-    _REPO_ROOT / "contracts" / "cloudevents" / "service-request-created-v1.schema.json"
+    _CONTRACTS_DIR / "cloudevents" / "service-request-created-v1.schema.json"
 )
 
 
@@ -89,13 +101,44 @@ def map_service_request_created(
 
 def cloud_event_from_sdk(event: Any) -> dict[str, Any]:
     """Flatten an ``azure.functions.CloudEvent`` into its JSON wire representation."""
-    if not hasattr(event, "to_dict"):
+    if hasattr(event, "to_dict"):
+        event_dict = dict(event.to_dict())
+        extensions = event_dict.pop("extension_attrs", {})
+        if isinstance(extensions, Mapping):
+            event_dict.update(extensions)
+        return {key: value for key, value in event_dict.items() if value is not None}
+
+    if not (hasattr(event, "id") and hasattr(event, "specversion")):
         raise CloudEventValidationError(
             "Azure Functions binding did not provide a CloudEvent"
         )
 
-    event_dict = dict(event.to_dict())
-    extensions = event_dict.pop("extension_attrs", {})
+    data = (
+        event.get_json() if hasattr(event, "get_json") else getattr(event, "data", None)
+    )
+
+    time_val = getattr(event, "time", None)
+    if hasattr(time_val, "isoformat"):
+        time_str = time_val.isoformat()
+        if time_str.endswith("+00:00"):
+            time_str = time_str[:-6] + "Z"
+    else:
+        time_str = time_val
+
+    result: dict[str, Any] = {
+        "specversion": event.specversion,
+        "id": event.id,
+        "source": getattr(event, "source", None),
+        "type": getattr(event, "type", None),
+        "subject": getattr(event, "subject", None),
+        "time": time_str,
+        "datacontenttype": getattr(event, "datacontenttype", None),
+        "dataschema": getattr(event, "dataschema", None),
+        "data": data,
+    }
+
+    extensions = getattr(event, "extension_attrs", {})
     if isinstance(extensions, Mapping):
-        event_dict.update(extensions)
-    return {key: value for key, value in event_dict.items() if value is not None}
+        result.update(extensions)
+
+    return {key: value for key, value in result.items() if value is not None}

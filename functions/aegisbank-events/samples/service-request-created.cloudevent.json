@@ -4,7 +4,7 @@
   "source": "urn:aegisbank:mock-core-banking",
   "type": "com.aegisbank.service-request.created.v1",
   "subject": "/service-requests/SR-000123",
-  "time": "2026-09-01T22:56:00-05:00",
+  "time": "2026-09-01T22:56:00Z",
   "datacontenttype": "application/json",
   "dataschema": "urn:aegisbank:contracts:service-request-created:v1",
   "correlationid": "CORR-V013-LOCAL-001",

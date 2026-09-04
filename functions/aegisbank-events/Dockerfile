@@ -31,6 +31,11 @@ COPY ai/agent /build/aegisbank_agent
 RUN python -m pip install --no-cache-dir \
         "azure-functions==2.3.0" \
         "jsonschema==4.26.0" \
+        "opentelemetry-api==1.44.0" \
+        "opentelemetry-sdk==1.44.0" \
+        "pydantic==2.13.4" \
+        "sqlalchemy==2.0.52" \
+        "azure-servicebus==7.14.3" \
     && python -m pip install --no-cache-dir --no-deps \
         /build/mock_core_banking \
         /build/aegisbank_rag \
@@ -38,6 +43,9 @@ RUN python -m pip install --no-cache-dir \
     && rm -rf /root/.cache
 
 WORKDIR /home/site/wwwroot
+
+# Copy contracts so schema validation works inside the container.
+COPY contracts ./contracts
 
 # Copy the Function App entry point.
 COPY functions/aegisbank-events/function_app.py ./function_app.py
@@ -47,10 +55,18 @@ COPY functions/aegisbank-events/host.json ./host.json
 COPY functions/aegisbank-events/local.settings.example.json ./local.settings.json
 COPY functions/aegisbank-events/samples ./samples
 
+# Pre-seed local secrets so the Functions Host can authorize webhooks locally.
+RUN mkdir -p /home/site/secrets \
+    && echo '{"masterKey":{"name":"master","value":"aegisbank-local-master-key","encrypted":false},"functionKeys":[{"name":"default","value":"aegisbank-local-function-key","encrypted":false}],"systemKeys":[{"name":"eventgridextensionconfig_extension","value":"aegisbank-local-eventgrid-key","encrypted":false}]}' > /home/site/secrets/host.json
+
 ENV PYTHONUNBUFFERED=1 \
     AzureWebJobsScriptRoot=/home/site/wwwroot \
     FUNCTIONS_WORKER_RUNTIME=python \
-    AzureWebJobsStorage="UseDevelopmentStorage=false" \
-    AEGISBANK_FUNCTION_IDEMPOTENCY_DATABASE_URL="file:/tmp/aegisbank.db"
+    AZURE_FUNCTIONS_ENVIRONMENT=Development \
+    AzureWebJobsSecretStorageType=Files \
+    FUNCTIONS_SECRETS_PATH=/home/site/secrets \
+    AzureFunctionsWebHost__SecretsPath=/home/site/secrets \
+    AzureWebJobsStorage="" \
+    AEGISBANK_FUNCTION_IDEMPOTENCY_DATABASE_URL="sqlite:///:memory:"
 
 EXPOSE 80
