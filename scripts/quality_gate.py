@@ -236,6 +236,7 @@ def _session_guard_result(repo_root: Path) -> GateResult:
 def run_quality_gates(
     repo_root: Path,
     secrets_only: bool = False,
+    fast: bool = False,
     containers: bool = False,
     kubernetes: bool = False,
     data: bool = False,
@@ -307,25 +308,40 @@ def run_quality_gates(
         ),
         ("AI RAG Tests", [py_exec, "-m", "pytest", "ai/rag/tests"]),
         (
-            "AI Agent Tests, Contracts & E2E",
-            [py_exec, "-m", "pytest", "ai/agent/tests"],
-        ),
-        (
-            "SAST Scan (Bandit)",
+            "AI Agent FAST Gate (unit + integration + contracts)",
             [
                 py_exec,
                 "-m",
-                "bandit",
-                "-ll",
-                "-r",
-                "ai/agent/src",
-                "ai/rag/src",
-                "ml/intent-classifier/src",
-                "services/mock-core-banking/src",
+                "pytest",
+                "-c",
+                "ai/agent/pyproject.toml",
+                "ai/agent/tests/unit",
+                "ai/agent/tests/integration",
+                "ai/agent/tests/contracts",
             ],
         ),
-        ("SCA Audit (pip-audit)", [py_exec, "-m", "pip_audit"]),
     ]
+
+    if not fast:
+        gates.extend(
+            [
+                (
+                    "SAST Scan (Bandit)",
+                    [
+                        py_exec,
+                        "-m",
+                        "bandit",
+                        "-ll",
+                        "-r",
+                        "ai/agent/src",
+                        "ai/rag/src",
+                        "ml/intent-classifier/src",
+                        "services/mock-core-banking/src",
+                    ],
+                ),
+                ("SCA Audit (pip-audit)", [py_exec, "-m", "pip_audit"]),
+            ]
+        )
 
     for name, cmd in gates:
         print(f"[*] Running gate: {name}...")
@@ -378,7 +394,7 @@ def run_quality_gates(
             py_exec,
             "-m",
             "pytest",
-            "ai/agent/tests/kubernetes/test_kubernetes_acceptance.py",
+            "ai/agent/tests/infra/kubernetes/test_kubernetes_acceptance.py",
         ]
         print("[*] Running gate: Kubernetes Integration Acceptance...")
         started = time.time()
@@ -426,7 +442,7 @@ def run_quality_gates(
             py_exec,
             "-m",
             "pytest",
-            "ai/agent/tests/cosmos",
+            "ai/agent/tests/infra/cosmos",
             "ai/agent/tests/contracts/test_cosmos_contracts.py",
         ]
         print("[*] Running gate: Azure Cosmos DB NoSQL Acceptance...")
@@ -478,7 +494,7 @@ def run_quality_gates(
             py_exec,
             "-m",
             "pytest",
-            "ai/agent/tests/serverless",
+            "ai/agent/tests/infra/serverless",
         ]
         print("[*] Running gate: Serverless Azure Functions & Event Grid Acceptance...")
         started = time.time()
@@ -498,12 +514,19 @@ def run_quality_gates(
         if ret:
             all_passed = False
 
+    # New layered gates (v0.13.0-R2): unit + integration + contracts by default.
+    # Tests moved into ai/agent/tests/{unit,integration,contracts}/ per the
+    # Test Pyramid. Pytest markers `unit`, `integration`, `contract`, `e2e`,
+    # `infra` and `--strict-markers` enforce layer discipline.
+
     if intent_robustness:
         intent_cmd = [
             py_exec,
             "-m",
             "pytest",
-            "ai/agent/tests/v013r1",
+            "-c",
+            "ai/agent/pyproject.toml",
+            "ai/agent/tests/unit/routing/test_intent_robustness.py",
         ]
         print(
             "[*] Running gate: Intent Robustness + Conversational Relevance Regression..."
@@ -601,6 +624,11 @@ def main() -> int:
         help="Run only the secret scanning gate",
     )
     parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Run fast PR gate: linters, syntax check, and unit/integration/contract suites (< 30s)",
+    )
+    parser.add_argument(
         "--gate-containers",
         "--include-containers",
         dest="gate_containers",
@@ -658,6 +686,7 @@ def main() -> int:
     exit_code, results = run_quality_gates(
         repo_root,
         secrets_only=args.gate_secrets_only,
+        fast=args.fast,
         containers=args.gate_containers,
         kubernetes=args.gate_kubernetes,
         data=args.gate_data,

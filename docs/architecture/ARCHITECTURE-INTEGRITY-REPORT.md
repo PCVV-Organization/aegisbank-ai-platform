@@ -1,8 +1,8 @@
 # AegisBank — Architecture Integrity & Code Duplication Report
 
-> **Hito:** v0.10.1 — Architecture Integrity + Cross-Session Coordination  
-> **Herramienta Auditora:** Pylint 4.0.8 (Checker: `R0801` / `duplicate-code`)  
-> **Calificación General del Código:** **9.98 / 10**  
+> **Hito:** v0.10.1 — Architecture Integrity + Cross-Session Coordination
+> **Herramienta Auditora:** Pylint 4.0.8 (Checker: `R0801` / `duplicate-code`)
+> **Calificación General del Código:** **9.98 / 10**
 > **Evaluación de Deriva Arquitectónica:** 0 duplicaciones verdaderas de lógica de negocio (*0 TRUE_DUPLICATION*).
 
 ---

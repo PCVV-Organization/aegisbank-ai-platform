@@ -37,7 +37,16 @@ packages = ["src/aegisbank_agent"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = "-p no:cacheprovider"
+addopts = "-p no:cacheprovider --strict-markers"
+markers = [
+    "unit: Fast, isolated unit tests with zero I/O or purely in-memory stubs",
+    "integration: Component integration tests (Core Banking, RAG, Service Bus, Cosmos)",
+    "contract: Schema, contract, and interface stability tests",
+    "e2e: End-to-End Critical User Journeys across full agent lifecycle",
+    "infra: Heavy infrastructure tests (Docker containers, Kubernetes, Azure Functions host)",
+    "slow: Tests with extended runtimes, timeouts, or sleep delays",
+]
+
 
 [tool.ruff]
 line-length = 100

@@ -8,6 +8,9 @@ from pathlib import Path
 import jsonschema
 import pytest
 
+pytestmark = pytest.mark.contract
+
+
 CONTRACTS_DIR = Path(__file__).resolve().parents[4] / "contracts"
 COSMOS_SCHEMA_PATH = CONTRACTS_DIR / "cosmos-event-item.schema.json"
 

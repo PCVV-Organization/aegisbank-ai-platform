@@ -6,12 +6,16 @@ import json
 from pathlib import Path
 
 import jsonschema
+import pytest
+from mock_core_banking.persistence.models import OutboxEvent as DbOutboxEvent
 
 from aegisbank_agent.tools.banking_tools import (
     CreateServiceRequestTool,
     create_default_database,
 )
 from aegisbank_agent.tools.base import AgentContext
+
+pytestmark = pytest.mark.contract
 
 
 def _load_schema(filename: str) -> dict:
@@ -38,8 +42,6 @@ def test_service_request_created_event_matches_contract_schema() -> None:
 
     # Retrieve outbox event directly from database
     with db.session() as session:
-        from mock_core_banking.persistence.models import OutboxEvent as DbOutboxEvent
-
         db_event = (
             session.query(DbOutboxEvent)
             .filter_by(aggregate_id=res.data["service_request_id"])

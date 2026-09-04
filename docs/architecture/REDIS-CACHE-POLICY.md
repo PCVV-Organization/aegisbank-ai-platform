@@ -59,7 +59,7 @@ $$\text{key} = \text{aegisbank}:\langle\text{dominio}\rangle:\text{v}\langle\tex
 
 ## 4. Protección Contra Inundación de Caché (*Cache Stampede / Thundering Herd*)
 
-Cuando expira una clave de alto tráfico o ante un arranque en frío, múltiples peticiones simultáneas podrían obtener un **Cache Miss** y saturar la base de datos relacional. 
+Cuando expira una clave de alto tráfico o ante un arranque en frío, múltiples peticiones simultáneas podrían obtener un **Cache Miss** y saturar la base de datos relacional.
 
 AegisBank implementa el patrón **Single-Flight** mediante un bloqueo distribuido ligero en Redis con token único y TTL de seguridad:
 

@@ -1,6 +1,0 @@
-{
-  "include": ["."],
-  "extraPaths": ["../../../../functions/aegisbank-events"],
-  "pythonVersion": "3.14",
-  "reportMissingImports": "information"
-}

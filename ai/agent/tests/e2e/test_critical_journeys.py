@@ -30,6 +30,8 @@ from aegisbank_agent.tools.banking_tools import (
 from aegisbank_agent.tools.knowledge_tools import SearchKnowledgeTool
 from aegisbank_agent.tools.registry import ToolRegistry
 
+pytestmark = pytest.mark.e2e
+
 
 class _Response:
     def __init__(self, message: object):
@@ -154,7 +156,7 @@ def test_journey_e_write_hitl_reject_zero_side_effects() -> None:
     assert result.approval_requests[0].status == ApprovalStatus.REJECTED
     # Assert zero side-effects in database
     with db.session() as session:
-        from mock_core_banking.persistence.models import ServiceRequest
+        from mock_core_banking.persistence.models import ServiceRequest  # noqa: E402
 
         sr = (
             session.query(ServiceRequest)

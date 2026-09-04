@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
 from aegisbank_agent.tools.registry import ToolRegistry
+
+pytestmark = pytest.mark.contract
 
 
 def test_default_tool_contracts_have_stable_names_and_schemas() -> None:

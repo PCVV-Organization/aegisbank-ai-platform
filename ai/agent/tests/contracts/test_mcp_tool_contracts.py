@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import jsonschema
+import pytest
 
 from aegisbank_agent.agent import WRITE_TOOLS
 from aegisbank_agent.hitl import HITLApprovalManager
@@ -20,6 +21,8 @@ from aegisbank_agent.tools.banking_tools import (
 from aegisbank_agent.tools.base import AgentContext
 from aegisbank_agent.tools.knowledge_tools import SearchKnowledgeTool
 from aegisbank_agent.tools.registry import ToolRegistry
+
+pytestmark = pytest.mark.contract
 
 
 def _load_schema(filename: str) -> dict:

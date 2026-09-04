@@ -1,8 +1,8 @@
-# AegisBank — Notas de Cátedra de Nivel Maestría en Inteligencia Artificial
+    # AegisBank — Notas de Cátedra de Nivel Maestría en Inteligencia Artificial
 
 > **Módulo:** Observabilidad Agéntica, AgentOps, Auditoría Inmutable y Supervisión HOTL
-> **Nivel:** Maestría / Posgrado en Inteligencia Artificial  
-> **Profesor / Lead Architect:** Senior Principal AI Engineer  
+> **Nivel:** Maestría / Posgrado en Inteligencia Artificial
+> **Profesor / Lead Architect:** Senior Principal AI Engineer
 > **Hito del Proyecto:** `v0.9.0 — Observability + AgentOps + Audit + HOTL Foundation`
 
 ---
@@ -817,3 +817,62 @@ Aegis: "Para orientarte adecuadamente, ¿podrías precisarme a qué te refieres?
 - `LOCAL-INTENT-ROBUSTNESS-COVERED` — El bug detectado manualmente es ahora una regresión automatizada.
 - Suite ampliada: `ai/agent/tests/v013r1/` (3 archivos, 44 tests) + suite v013r1 amplía el conteo total a **449 tests** con `--gate-intent-robustness` activo.
 - Mantiene `EVENT_GRID_HANDLER_LOCAL = COVERED` sin regresión.
+
+---
+
+## 20. v0.13.0-R2: Test Suite Rationalization
+
+### 1. Contexto y Motivación
+
+La suite creció por milestone (`v06/`, `v07/`, `v08/`, `v09/`, `v012/`, `v013r1/`) hasta acumular **48 archivos** y **348 tests** con duplicación semántica entre capas. Microsoft Well-Architected y Microsoft Foundry AI-200 recomiendan retirar tests obsoletos y mantener pocos E2E para journeys críticos porque "agregar más tests" no aumenta proporcionalmente la confianza. ([Microsoft Learn](https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/testing)) Pytest permite separar las suites con markers (`unit`, `integration`, `e2e`, `slow`) y ejecutar solamente la capa necesaria.
+
+### 2. Antes vs. Después
+
+| Métrica | BEFORE | AFTER | Reducción |
+|---|---|---|---|
+| Tests (collected) | 348 | 258 | **-26%** ✅ (objetivo ≥25%) |
+| Archivos `test_*.py` | 48 | 37 | -23% |
+| Carpetas ejecutables | 14 (v06/v07/v08/v09/v012/v013r1/root/...) | 5 (unit/integration/contracts/e2e/infra) | -64% |
+| Tiempo FAST gate | ~70 s | ~25 s | -64% |
+
+### 3. Cambios Arquitectónicos
+
+- **Migración por capas:** los tests sobrevivientes se reubicaron en `ai/agent/tests/{unit,integration,contracts,e2e,infra}`. Las carpetas históricas `v06/`, `v07/`, `v08/`, `v09/`, `v012/`, `v013r1/` se eliminaron (Git preserva la historia).
+- **Markers estrictos:** `unit`, `integration`, `contract`, `e2e`, `infra`, `slow` se declaran en `pyproject.toml` con `--strict-markers`. Cada archivo declara `pytestmark = pytest.mark.<capa>` para evitar mezcla.
+- **Quality gate por capas:** el FAST / PR gate por defecto ejecuta `unit/`, `integration/` y `contracts/` solamente. Los E2E y la infra son opt-in.
+- **Parametrización ampliada:** `test_metamorphic_paraphrase_matrix_loan_details` cubre 7 frases parafraseadas en un solo test parametrizado. `test_account_tool_allowlist_with_loan_id_and_installment_question` cubre 4 casos de allowlist con un solo parametrizado.
+
+### 4. Test Pyramid — Distribución Final
+
+```
+            /\
+           /  \  e2e/             (3 archivos,  7 tests)
+          /──────\
+         /contract\ contracts/      (4 archivos, 11 tests)
+        /──────────\
+       /integration\ integration/   (6 archivos, 38 tests)
+      /──────────────\
+     /      unit      \ unit/        (12 archivos, 168 tests)
+    /──────────────────\
+```
+
+### 5. Críticos Preservados
+
+Todos los 16 invariantes críticos enumerados en el Prompt 024 siguen cubiertos sin duplicación:
+
+- Native structured tool calling → `unit/tools/test_native_tool_calling.py`
+- Pseudo-tool-call blocked → `unit/routing/test_intent_robustness.py::test_pseudo_tool_call_text_is_strictly_rejected_when_banking_data_required`
+- Ownership/customer isolation → `unit/tools/test_ownership_enforcement.py` (parametrizado)
+- Loan routing paraphrase regression → `unit/routing/test_intent_robustness.py::test_metamorphic_paraphrase_matrix_loan_details` (7 frases)
+- RAG grounding + abstention + superseded docs → `unit/routing/test_knowledge_routing.py`
+- MCP + HITL APPROVE/REJECT → `integration/mcp/test_mcp_hitl_acceptance.py`
+- WRITE idempotency → `unit/reliability/test_idempotency.py`
+- Retry + Circuit Breaker + Timeout → `unit/reliability/test_retry_timeout.py` + `test_circuit_breaker.py`
+- Transactional Outbox → `unit/messaging/test_outbox.py`
+- Idempotent Consumer + DLQ → `unit/messaging/test_consumer_dlq.py`
+- Audit + OTel + HOTL → `unit/observability/test_audit.py`, `test_otel.py`, `integration/observability/test_hotl_kill_switch.py`
+- Core Banking contracts → `contracts/`
+- Critical READ E2E → `e2e/test_critical_journeys.py`
+- Critical WRITE E2E → `e2e/write_journeys/test_write_e2e.py`
+- Security/secret gates → `quality_gate.py --gate-secrets-only`
+- Docker/Kubernetes/Functions acceptance → `infra/`
