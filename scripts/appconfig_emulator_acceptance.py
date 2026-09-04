@@ -33,7 +33,9 @@ def _run(*args: str) -> subprocess.CompletedProcess[str]:
 
 def ensure_emulator_container() -> bool:
     """Ensure the App Configuration Emulator container is running and healthy."""
-    ps = _run("docker", "ps", "--filter", f"name={CONTAINER_NAME}", "--format", "{{.Names}}")
+    ps = _run(
+        "docker", "ps", "--filter", f"name={CONTAINER_NAME}", "--format", "{{.Names}}"
+    )
     if CONTAINER_NAME not in ps.stdout:
         print(f"[*] Starting {CONTAINER_NAME} container...")
         _run("docker", "rm", "-f", CONTAINER_NAME)
@@ -111,7 +113,9 @@ def run_acceptance_suite() -> dict[str, Any]:
 
     # Step 2: Multi-environment label separation
     local_provider = AppConfigurationEmulatorProvider(endpoint=BASE_URL, label="local")
-    prod_provider = AppConfigurationEmulatorProvider(endpoint=BASE_URL, label="production")
+    prod_provider = AppConfigurationEmulatorProvider(
+        endpoint=BASE_URL, label="production"
+    )
 
     local_provider.set_kv("rag.top_k", "10", label="local")
     prod_provider.set_kv("rag.top_k", "5", label="production")
@@ -144,12 +148,16 @@ def run_acceptance_suite() -> dict[str, Any]:
         "flag_id": ff_obj["id"],
         "enabled": ff_obj["enabled"],
     }
-    print("  [✓] Step 3: Feature Flag stored and verified (.appconfig.featureflag/agent_write_enabled)")
+    print(
+        "  [✓] Step 3: Feature Flag stored and verified (.appconfig.featureflag/agent_write_enabled)"
+    )
 
     # Step 4: Key Vault Reference pattern and resolution
-    secret_store = LocalSyntheticSecretProvider({
-        "db-sa-password": "synthetic-ultra-secure-pass-98765",
-    })
+    secret_store = LocalSyntheticSecretProvider(
+        {
+            "db-sa-password": "synthetic-ultra-secure-pass-98765",
+        }
+    )
     resolver = KeyVaultReferenceResolver(secret_provider=secret_store)
 
     vault_uri = "https://aegisbank-kv.vault.azure.net/secrets/db-sa-password"
@@ -170,7 +178,9 @@ def run_acceptance_suite() -> dict[str, Any]:
         "reference_stored": raw_kv_ref,
         "resolved_successfully": True,
     }
-    print("  [✓] Step 4: Key Vault reference stored and resolved safely without plaintext in config")
+    print(
+        "  [✓] Step 4: Key Vault reference stored and resolved safely without plaintext in config"
+    )
 
     # Step 5: Dynamic config refresh
     reader = AppConfigurationEmulatorProvider(endpoint=BASE_URL, label="local")
@@ -178,14 +188,23 @@ def run_acceptance_suite() -> dict[str, Any]:
 
     admin.set_kv("runtime.maintenance_mode", "false", label="local")
     reader.refresh()
-    assert coerce_bool(reader.get("runtime.maintenance_mode"), "runtime.maintenance_mode") is False
+    assert (
+        coerce_bool(reader.get("runtime.maintenance_mode"), "runtime.maintenance_mode")
+        is False
+    )
 
     admin.set_kv("runtime.maintenance_mode", "true", label="local")
     # Reader cache holds false until refresh
-    assert coerce_bool(reader.get("runtime.maintenance_mode"), "runtime.maintenance_mode") is False
+    assert (
+        coerce_bool(reader.get("runtime.maintenance_mode"), "runtime.maintenance_mode")
+        is False
+    )
 
     reader.refresh()
-    assert coerce_bool(reader.get("runtime.maintenance_mode"), "runtime.maintenance_mode") is True
+    assert (
+        coerce_bool(reader.get("runtime.maintenance_mode"), "runtime.maintenance_mode")
+        is True
+    )
     steps["dynamic_refresh"] = {
         "status": "PASS",
         "key": "runtime.maintenance_mode",
@@ -200,7 +219,10 @@ def run_acceptance_suite() -> dict[str, Any]:
         raise AssertionError("Expected MissingConfigurationKey was not raised")
     except MissingConfigurationKey:
         pass
-    steps["fail_fast"] = {"status": "PASS", "missing_key_behavior": "MissingConfigurationKey"}
+    steps["fail_fast"] = {
+        "status": "PASS",
+        "missing_key_behavior": "MissingConfigurationKey",
+    }
     print("  [✓] Step 6: Fail-fast on missing key verified")
 
     # Step 7: Secret Hygiene Assertion
@@ -210,7 +232,9 @@ def run_acceptance_suite() -> dict[str, Any]:
     for item in all_kv:
         val = item.get("value") or ""
         # Must not contain actual credentials or passwords
-        assert "synthetic-ultra-secure-pass" not in val, f"Secret leaked in config key {item['key']}"
+        assert "synthetic-ultra-secure-pass" not in val, (
+            f"Secret leaked in config key {item['key']}"
+        )
     steps["secret_hygiene"] = {
         "status": "PASS",
         "keys_scanned": len(all_kv),
@@ -236,6 +260,7 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"[!] Acceptance suite failed with exception: {exc}")
         import traceback
+
         traceback.print_exc()
         return 1
 

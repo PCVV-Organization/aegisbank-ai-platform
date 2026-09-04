@@ -115,10 +115,13 @@ def test_agent_max_rounds_enforcement(tool_registry: ToolRegistry, max_rounds: i
 
 def test_agent_default_and_custom_max_rounds() -> None:
     """Agent initializes with default 3 rounds or custom setting."""
-    default_orchestrator = AgentOrchestrator(registry=ToolRegistry())
+    mock_client = MagicMock()
+    default_orchestrator = AgentOrchestrator(registry=ToolRegistry(), client=mock_client)
     assert default_orchestrator._max_rounds == 3
 
-    custom_orchestrator = AgentOrchestrator(registry=ToolRegistry(), max_rounds=5)
+    custom_orchestrator = AgentOrchestrator(
+        registry=ToolRegistry(), max_rounds=5, client=mock_client
+    )
     assert custom_orchestrator._max_rounds == 5
 
 

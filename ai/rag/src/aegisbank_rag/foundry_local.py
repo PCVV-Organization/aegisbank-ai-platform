@@ -46,7 +46,7 @@ def resolve_foundry_base_url(
     override = environment.get(BASE_URL_ENV, "").strip()
     if override:
         return override
-    if shutil.which("foundry") is None:
+    if runner is subprocess.run and shutil.which("foundry") is None:
         raise RuntimeError("CLI 'foundry' no encontrado en PATH")
     try:
         completed = runner(
