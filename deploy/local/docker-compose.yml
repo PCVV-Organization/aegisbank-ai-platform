@@ -130,6 +130,25 @@ services:
       retries: 10
       start_period: 5s
 
+  app-configuration-emulator:
+    profiles: ["config", "all"]
+    image: mcr.microsoft.com/azure-app-configuration/app-configuration-emulator:1.2.0@sha256:f84ca52fcf51aab3bad8a0363198c161e8a79eb41712d27779f6e0eb777c7000
+    container_name: aegisbank-app-configuration-emulator
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8082:8483"
+    environment:
+      Tenant:AnonymousAuthEnabled: "true"
+      Authentication:Anonymous:AnonymousUserRole: "Owner"
+    networks:
+      - aegisbank-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8483/kv || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
 networks:
   aegisbank-net:
     driver: bridge

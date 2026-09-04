@@ -1,4 +1,4 @@
-    # AegisBank — Notas de Cátedra de Nivel Maestría en Inteligencia Artificial
+     # AegisBank — Notas de Cátedra de Nivel Maestría en Inteligencia Artificial
 
 > **Módulo:** Observabilidad Agéntica, AgentOps, Auditoría Inmutable y Supervisión HOTL
 > **Nivel:** Maestría / Posgrado en Inteligencia Artificial
@@ -967,3 +967,225 @@ En un sistema bancario basado en eventos:
 - **At-Least-Once Delivery**: La infraestructura de mensajería (Event Grid, Service Bus) garantiza entrega al menos una vez, lo que implica que duplicados de red son inevitables.
 - **Idempotency Guard**: Cada evento recibido utiliza su clave única `event-grid:{event_id}` contra una base de datos local / distribuida. Si el evento ya fue procesado, se registra una auditoría `IDEMPOTENCY_REPLAY`, se incrementa la métrica `event_grid_duplicate_count` y se devuelve HTTP 202 sin re-ejecutar efectos colaterales de negocio.
 - **W3C Trace Context**: El encabezado `traceparent` del CloudEvent se extrae e inyecta en el contexto de OpenTelemetry (`SpanContext` remoto), garantizando que la traza del microservicio emisor se correlacione de extremo a extremo con la ejecución del serverless handler.
+
+---
+
+## 17. Configuración Desacoplada, Bóveda de Secretos y Workload Identity (v0.14.0)
+
+> **Módulo:** Arquitectura de Seguridad Cloud, Identidad Federada y Gobernanza de Configuración
+> **Nivel:** Maestría / Posgrado en Inteligencia Artificial y Computación en la Nube
+> **Hito del Proyecto:** `v0.14.0 — Configuration, Secrets & Workload Identity Foundation`
+> **Estándar de Certificación:** Microsoft Certified: Azure AI Engineer Associate (AI-200)
+
+```
+       +─────────────────────────────────────────────────────────────+
+       |               ARQUITECTURA DE SEGURIDAD v0.14               |
+       +─────────────────────────────────────────────────────────────+
+                                      │
+                        [ MICROSOFT ENTRA ID ]
+                                      │ (OAuth2 / OIDC Token)
+                                      ▼
+                        ┌───────────────────────────┐
+                        │     Managed Identity      │
+                        │ (System or User-Assigned) │
+                        └─────────────┬─────────────┘
+                                      │ DefaultAzureCredential
+                 ┌────────────────────┴────────────────────┐
+                 ▼                                         ▼
+   ┌───────────────────────────┐             ┌───────────────────────────┐
+   │  Azure App Configuration  │             │      Azure Key Vault      │
+   │      (Plano de Datos)     │             │      (Plano de Datos)     │
+   ├───────────────────────────┤             ├───────────────────────────┤
+   │ - rag.top_k = 5           │             │ - DB Connection Passwords │
+   │ - agent_write_enabled=false│            │ - Private Signing Keys    │
+   │ - Feature Flags (JSON)    │             │ - Third-Party API Secrets │
+   │ - Key Vault References    │             │                           │
+   │   (URI a Key Vault)       │────────────▶│ RBAC: Key Vault Secrets   │
+   │ RBAC: App Config Data Rdr │             │       User                │
+   └───────────────────────────┘             └───────────────────────────┘
+```
+
+---
+
+### 1. Principio Fundamental de Arquitectura Bancaria: $\text{CONFIGURATION} \neq \text{SECRET}$
+
+Uno de los antipatrones más peligrosos en el desarrollo de software distribuido e ingeniería de IA es tratar la configuración operativa y los secretos criptográficos como una misma entidad (típicamente arrojándolos indiscriminadamente en archivos `.env` o variables de entorno del sistema operativo).
+
+En una arquitectura bancaria de grado institucional, la distinción debe ser absoluta:
+
+| Dimensión | Configuración Operativa | Secretos y Credenciales |
+|---|---|---|
+| **Definición** | Parámetros que modulan el comportamiento funcional del sistema (e.g. `rag.top_k`, timeouts, flags). | Material criptográfico de autenticación (passwords, tokens JWT, API keys, certificados X.509). |
+| **Confidencialidad** | Baja a Media (no confidencial; no compromete la identidad del banco si se observa). | Máxima / Crítica (compromiso directo de la seguridad si se expone). |
+| **Repositorio Canónico** | Azure App Configuration / App Configuration Emulator (`8483`). | Azure Key Vault (`CLOUD-PENDING`) / `LocalSyntheticSecretProvider`. |
+| **Observabilidad** | Puede registrarse en auditorías, telemetría y diagnósticos operativos. | **ESTRICTAMENTE PROHIBIDO** en logs, métricas, trazas OTel o snapshots. |
+| **Frecuencia de Cambio** | Alta (ajustes en tiempo real, A/B testing, feature flags dinámicos). | Media/Baja (políticas de rotación periódica cada 30-90 días o ante incidentes). |
+| **Permiso RBAC en Azure** | `App Configuration Data Reader` | `Key Vault Secrets User` |
+
+**Riesgo de Fuga por Snapshot:** Cuando un orquestador (Kubernetes, ACA o Functions) genera un volcado de memoria (*core dump*) o cuando un framework expone endpoints de diagnóstico (como `/actuator/env`), si los secretos residen como variables de entorno planas, quedan expuestos en texto claro. Desacoplar la fuente garantiza que la configuración describe *dónde* está el recurso, mientras que la identidad resuelve *cómo* acceder a él.
+
+---
+
+### 2. Azure App Configuration Emulator OCI en Laboratorio Local
+
+Microsoft proporciona una imagen oficial en OCI del emulador de App Configuration:
+- **Imagen Pinned:** `mcr.microsoft.com/azure-app-configuration/app-configuration-emulator:1.2.0@sha256:f84ca52fcf51aab3bad8a0363198c161e8a79eb41712d27779f6e0eb777c7000`
+- **Puerto de Escucha:** `8483` (en loopback `127.0.0.1:8483`)
+- **Configuración de Autenticación Anónima:**
+  - `Tenant:AnonymousAuthEnabled=true`
+  - `Authentication:Anonymous:AnonymousUserRole=Owner`
+
+#### Superficie REST Oficial
+
+El emulador implementa fielmente los contratos de Azure App Configuration REST API (`api-version=1.0`):
+1. `GET /health` → Devuelve HTTP 200 `Healthy` para comprobaciones de liveness/readiness.
+2. `GET /kv?label={label}&api-version=1.0` → Consulta masiva de parámetros filtrados por etiqueta ambiental.
+3. `PUT /kv/{key}?label={label}&api-version=1.0` → Creación/mutación atómica de pares clave-valor con asignación opcional de `content_type`.
+
+#### Segregación Multientorno mediante Labels
+
+En lugar de crear múltiples almacenes de configuración independientes para cada entorno de desarrollo o despliegue, App Configuration utiliza **Etiquetas (Labels)**:
+- Una clave puede tener múltiples representaciones simultáneas:
+  - `rag.top_k` con label `local` → `"10"`
+  - `rag.top_k` con label `canary` → `"7"`
+  - `rag.top_k` con label `production` → `"5"`
+- El `ConfigurationProvider` resuelve únicamente el conjunto correspondiente a su `current_label()`, garantizando aislamiento determinista sin duplicidad de llaves.
+
+#### Esquema de Feature Flags Oficiales
+
+Los feature flags se almacenan bajo la convención de prefijo `.appconfig.featureflag/{id}` con el encabezado de contenido `Content-Type: application/vnd.microsoft.appconfig.ff+json;charset=utf-8`:
+```json
+{
+  "id": "agent_write_enabled",
+  "description": "Kill-switch maestro para mutaciones del agente",
+  "enabled": false,
+  "conditions": {
+    "client_filters": []
+  }
+}
+```
+
+#### Dynamic Refresh y Aislamiento de Caché
+
+Para evitar latencias de red en cada lectura de configuración, el `AppConfigurationEmulatorProvider` mantiene un caché en memoria. La mutación en el almacén central no afecta a los consumidores hasta que se invoca el ciclo `refresh()`:
+1. `reader.get("runtime.toggle")` lee desde el snapshot local en memoria (ultra rápido, latencia sub-milisegundo).
+2. `admin.set_kv(...)` actualiza el almacén central en el emulador.
+3. El lector permanece aislado hasta que su watcher o evento de sincronización ejecuta `reader.refresh()`, momento en el que el nuevo valor es visible.
+
+---
+
+### 3. El Patrón Key Vault Reference
+
+¿Cómo puede una aplicación centralizar la lectura de configuración sin almacenar contraseñas en el repositorio de configuración?
+Mediante el patrón **Key Vault Reference**:
+
+```
+[ App Configuration ]
+         │
+         │  Key: "database.connection.ref"
+         │  Value: {"uri": "https://aegisbank-kv.vault.azure.net/secrets/db-password"}
+         │  Content-Type: "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8"
+         ▼
+[ KeyVaultReferenceResolver ]
+         │
+         │ 1. Parsea el URI:
+         │    - Vault: "aegisbank-kv.vault.azure.net"
+         │    - Secret: "db-password"
+         │    - Version: None (o hex explícito)
+         │
+         │ 2. Invoca SecretProvider.require("db-password")
+         ▼
+[ SecretProvider (AzureKeyVault / LocalSynthetic) ]
+         │
+         ▼
+[ Valor Plano del Secreto ] (Solo en memoria del consumidor autorizado)
+```
+
+1. **Estructura del Payload:**
+   ```json
+   {
+     "uri": "https://aegisbank-kv.vault.azure.net/secrets/db-sa-password"
+   }
+   ```
+2. **Ventaja Crítica de Seguridad:**
+   - Quien administra App Configuration (e.g. un operador de DevOps o release engineer) solo puede ver el URI del secreto, pero **no** su valor.
+   - Solo la carga de trabajo que posee el rol RBAC en Key Vault puede resolver la referencia.
+   - En nuestro laboratorio local, `KeyVaultReferenceResolver` valida el esquema y delega en `LocalSyntheticSecretProvider`, probando la frontera sin exponer credenciales ni requerir conectividad cloud.
+
+---
+
+### 4. Identidad de Cargas de Trabajo (Workload Identity) y Microsoft Entra ID
+
+En la nube moderna de Microsoft, el concepto de **Workload Identity** reemplaza por completo el almacenamiento de llaves estáticas:
+
+#### De Service Principals con Secreto a Managed Identities
+
+1. **Enfoque Legado (Inseguro):**
+   - Se creaba un App Registration en Microsoft Entra ID (Azure AD).
+   - Se generaba un `client_secret` (contraseña en texto plano).
+   - El desarrollador copiaba el secreto a un archivo de configuración.
+   - *Problema:* Riesgo de filtración en git, rotación manual compleja y vulnerabilidad de credenciales fijas.
+2. **Enfoque Moderno (Managed Identity):**
+   - Azure asigna una identidad criptográfica administrada por el plano de control de Azure a la máquina virtual o contenedor.
+   - El runtime consulta al servicio local **IMDS** (*Instance Metadata Service*) en `http://169.254.169.254/metadata/identity/oauth2/token` con el encabezado `Metadata: true`.
+   - Azure devuelve un token de acceso OAuth 2.0 / OIDC firmado por Microsoft Entra ID con una vida útil corta (e.g. 24 horas), rotado de manera transparente y automática.
+
+#### Variantes de Managed Identity
+
+- **System-Assigned Managed Identity:**
+  - Habilitada directamente sobre un recurso específico (Azure Function App, Container App).
+  - Comparte el ciclo de vida exacto del recurso: si la Function App se elimina, la identidad se borra automáticamente en Entra ID.
+  - Relación 1 a 1.
+- **User-Assigned Managed Identity:**
+  - Creada como un recurso independiente en Azure Resource Manager (`Microsoft.ManagedIdentity/userAssignedIdentities`).
+  - Puede asignarse a múltiples instancias de múltiples servicios homogéneos (e.g. todos los pods de backend que leen de la misma base de datos).
+  - Su ciclo de vida es independiente del cómputo.
+
+#### La Cadena `DefaultAzureCredential`
+
+La clase `DefaultAzureCredential` del SDK de Azure (`azure-identity`) implementa una cadena de autenticación ordenada y adaptable:
+1. `EnvironmentCredential` (variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_CLIENT_SECRET`).
+2. `WorkloadIdentityCredential` (proyección de tokens federados en Kubernetes AKS).
+3. `ManagedIdentityCredential` (IMDS local en entornos de cómputo Azure).
+4. `AzureCliCredential` / `VisualStudioCodeCredential` (para desarrollo local con sesión iniciada del desarrollador).
+
+En AegisBank, clasificamos `DefaultAzureCredential` como `DEFAULT-AZURE-CREDENTIAL-LOCAL-COVERED` en su interfaz y contrato de adapter, mientras que la resolución real de tokens en Azure permanece `MANAGED-IDENTITY-CLOUD-PENDING`.
+
+---
+
+### 5. Control de Acceso Basado en Roles (RBAC) con Mínimo Privilegio
+
+La regla de oro de la seguridad bancaria según AI-200 es:
+> **Jamás asignar roles de plano de control (Control Plane) a identidades que solo requieren interactuar con datos (Data Plane).**
+
+#### Mapeo de Roles de Mínimo Privilegio
+
+```
+┌──────────────────────────────────────┬───────────────────────────────────────────┬─────────────────────────────────────────┐
+│ Recurso Azure                        │ Rol Inseguro (Violación)                  │ Rol de Mínimo Privilegio (Aprobado)     │
+├──────────────────────────────────────┼───────────────────────────────────────────┼─────────────────────────────────────────┤
+│ Azure App Configuration              │ `Owner` / `Contributor`                   │ `App Configuration Data Reader`         │
+│ Azure Key Vault                      │ `Key Vault Administrator`                 │ `Key Vault Secrets User`                │
+│ Azure Cosmos DB                      │ `DocumentDB Account Contributor`          │ `Cosmos DB Built-in Data Reader/Writer` │
+│ Azure Service Bus                    │ `Azure Service Bus Data Owner`            │ `Azure Service Bus Data Receiver/Sender`│
+└──────────────────────────────────────┴───────────────────────────────────────────┴─────────────────────────────────────────┘
+```
+
+- **`App Configuration Data Reader`:** Otorga únicamente permisos de lectura sobre claves y valores (`Microsoft.AppConfiguration/configurationStores/keyValues/read`). No permite modificar parámetros, crear llaves ni alterar configuraciones de red.
+- **`Key Vault Secrets User`:** Otorga únicamente permiso para leer el valor del secreto (`Microsoft.KeyVault/vaults/secrets/getSecret/action`). No permite listar todos los secretos en masa, ni crear nuevos secretos, ni descargar certificados privados ni alterar políticas de acceso.
+
+---
+
+### 6. Rotación Criptográfica y Resiliencia sin Downtime
+
+En una institución financiera, los secretos deben rotarse periódicamente o de inmediato tras una sospecha de compromiso:
+
+1. **Versionado Inmutable en Key Vault:** Cada vez que un secreto se actualiza en Azure Key Vault, el valor anterior no se sobreescribe destructivamente; se genera una nueva versión inmutable identificada por un GUID/hash de 32 caracteres.
+2. **Sentinel Keys en App Configuration:**
+   - Las aplicaciones en ejecución no deben consultar Key Vault en cada petición (lo que saturaría los límites de throttling de Key Vault de 2,000 req/10s).
+   - Se define una llave centinela en App Configuration: `App:Settings:Sentinel`.
+   - Cuando se actualiza un secreto en Key Vault, el pipeline de CI/CD actualiza el timestamp de la llave centinela en App Configuration.
+   - El cliente de App Configuration detecta el cambio en la llave centinela e invalida su caché local de secretos, recuperando la nueva versión de Key Vault de forma coordinada y sin reiniciar los servidores.
+3. **Resiliencia ante Caídas de Configuración:**
+   - Si App Configuration no responde temporalmente en el arranque, el sistema falla de inmediato (`fail-fast`) mediante `MissingConfigurationKey`, impidiendo iniciar en un estado corrupto o indeterminado.
+   - Si App Configuration se vuelve inalcanzable durante la ejecución normal, el `ConfigurationProvider` continúa operando con su último snapshot en memoria válido mientras reintenta en segundo plano, garantizando alta disponibilidad operacional.

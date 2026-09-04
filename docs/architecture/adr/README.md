@@ -63,6 +63,8 @@ Index:
   Platform Decision: Azure Container Apps First vs. AKS Deferred (v0.11).
 - [ADR-028](./ADR-028-azure-functions-event-grid-local-serverless-foundation.md) — Local Serverless
   Event-Driven Foundation with Azure Functions Python v2 and CloudEvents 1.0 (v0.13).
+- [ADR-029](./ADR-029-configuration-secrets-identity-boundary.md) — Configuration,
+  secrets, and workload identity boundary (v0.14).
 
 Scope note: ADR-003 remains an accepted historical decision, but the current
 `v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly
