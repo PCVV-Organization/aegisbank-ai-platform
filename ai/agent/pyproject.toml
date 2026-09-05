@@ -22,6 +22,8 @@ dependencies = [
     "azure-appconfiguration-provider==2.5.0",
     "azure-identity==1.25.3",
     "azure-keyvault-secrets==4.11.2",
+    "mlflow-skinny>=3.16.0",
+    "alembic>=1.19.0",
 ]
 
 [project.optional-dependencies]

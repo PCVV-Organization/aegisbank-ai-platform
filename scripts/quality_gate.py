@@ -320,6 +320,10 @@ def run_quality_gates(
                 "ai/agent/tests/contracts",
             ],
         ),
+        (
+            "AI Evaluation and MLOps Promotion Gate",
+            [py_exec, "scripts/evaluation_gate.py"],
+        ),
     ]
 
     if not fast:

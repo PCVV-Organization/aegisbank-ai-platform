@@ -1,0 +1,74 @@
+"""Evaluation package for AegisBank AI Platform.
+
+Exposes Foundry-aligned evaluators, taxonomy, metric results, and A/B statistical testing.
+"""
+
+from aegisbank_agent.evaluation.ab_testing import (
+    ABExperimentHarness,
+    ContingencyTable,
+    bootstrap_paired_confidence_interval,
+    mcnemar_test,
+)
+from aegisbank_agent.evaluation.evaluators import (
+    AgentEvaluationCase,
+    EvalCase,
+    MetricResult,
+    MetricType,
+    compute_aggregate,
+    evaluate_abstention,
+    evaluate_agent,
+    evaluate_case,
+    evaluate_groundedness,
+    evaluate_intent_resolution,
+    evaluate_no_write_compliance,
+    evaluate_ownership_enforcement,
+    evaluate_relevance,
+    evaluate_task_completion,
+    evaluate_task_completion_proxy,
+    evaluate_tool_call_success,
+    evaluate_tool_input,
+    evaluate_tool_output_utilization,
+    evaluate_tool_selection,
+    load_agent_cases,
+    load_eval_cases,
+    load_v015_eval_cases,
+    write_evaluation_reports,
+)
+from aegisbank_agent.evaluation.taxonomy import (
+    ConfusionMatrix,
+    ErrorType,
+    EvaluationFailure,
+)
+
+__all__ = [
+    "ABExperimentHarness",
+    "AgentEvaluationCase",
+    "ConfusionMatrix",
+    "ContingencyTable",
+    "ErrorType",
+    "EvalCase",
+    "EvaluationFailure",
+    "MetricResult",
+    "MetricType",
+    "bootstrap_paired_confidence_interval",
+    "compute_aggregate",
+    "evaluate_abstention",
+    "evaluate_agent",
+    "evaluate_case",
+    "evaluate_groundedness",
+    "evaluate_intent_resolution",
+    "evaluate_no_write_compliance",
+    "evaluate_ownership_enforcement",
+    "evaluate_relevance",
+    "evaluate_task_completion",
+    "evaluate_task_completion_proxy",
+    "evaluate_tool_call_success",
+    "evaluate_tool_input",
+    "evaluate_tool_output_utilization",
+    "evaluate_tool_selection",
+    "load_agent_cases",
+    "load_eval_cases",
+    "load_v015_eval_cases",
+    "mcnemar_test",
+    "write_evaluation_reports",
+]

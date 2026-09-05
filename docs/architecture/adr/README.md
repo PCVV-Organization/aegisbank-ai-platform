@@ -65,6 +65,8 @@ Index:
   Event-Driven Foundation with Azure Functions Python v2 and CloudEvents 1.0 (v0.13).
 - [ADR-029](./ADR-029-configuration-secrets-identity-boundary.md) — Configuration,
   secrets, and workload identity boundary (v0.14).
+- [ADR-030](./ADR-030-local-ai-evaluation-and-mlops-foundation.md) — Local AI
+  evaluation, experimentation, calibration, and drift foundation (v0.15).
 
 Scope note: ADR-003 remains an accepted historical decision, but the current
 `v0.5 - Grounded Generation & LLM Evaluation` authorization explicitly

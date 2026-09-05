@@ -1187,5 +1187,26 @@ En una institución financiera, los secretos deben rotarse periódicamente o de 
    - Cuando se actualiza un secreto en Key Vault, el pipeline de CI/CD actualiza el timestamp de la llave centinela en App Configuration.
    - El cliente de App Configuration detecta el cambio en la llave centinela e invalida su caché local de secretos, recuperando la nueva versión de Key Vault de forma coordinada y sin reiniciar los servidores.
 3. **Resiliencia ante Caídas de Configuración:**
-   - Si App Configuration no responde temporalmente en el arranque, el sistema falla de inmediato (`fail-fast`) mediante `MissingConfigurationKey`, impidiendo iniciar en un estado corrupto o indeterminado.
-   - Si App Configuration se vuelve inalcanzable durante la ejecución normal, el `ConfigurationProvider` continúa operando con su último snapshot en memoria válido mientras reintenta en segundo plano, garantizando alta disponibilidad operacional.
+    - Si App Configuration no responde temporalmente en el arranque, el sistema falla de inmediato (`fail-fast`) mediante `MissingConfigurationKey`, impidiendo iniciar en un estado corrupto o indeterminado.
+    - Si App Configuration se vuelve inalcanzable durante la ejecución normal, el `ConfigurationProvider` continúa operando con su último snapshot en memoria válido mientras reintenta en segundo plano, garantizando alta disponibilidad operacional.
+
+## 21. v0.15.0: Evaluación Científica y MLOps Local
+
+Construir un agente no demuestra que una modificación lo haya mejorado. El
+paquete `ml/evaluation` separa el protocolo de evaluación de los datos
+históricos congelados y mide trazas explícitas en dimensiones deterministas:
+intent, selección e inputs de tools, utilización de output, éxito, task
+completion, relevancia, groundedness, abstención, ownership y no-write safety.
+
+Un experimento A/B compara baseline y candidate bajo el mismo dataset. El
+intervalo de confianza describe incertidumbre; el p-value contrasta la
+hipótesis nula de igualdad; el effect size describe magnitud práctica. Una
+mejora observada no es automáticamente significativa: en la evidencia v0.15,
+`+6.25 pp` tuvo `p=0.3096`, por lo que no se sobrevende como conclusión.
+
+La calibración comprueba si la confianza predicha coincide con aciertos usando
+Brier/ECE y la reliability analysis. El drift se divide en
+`DATA_DRIFT`, `PREDICTION_DRIFT` y `MODEL_PERFORMANCE_DRIFT`, porque una
+cambio en inputs no prueba por sí mismo una degradación del modelo. MLflow
+registra runs, parámetros, métricas y artifacts localmente; Azure ML, Foundry
+evaluators y alertas cloud siguen `CLOUD-PENDING`.
