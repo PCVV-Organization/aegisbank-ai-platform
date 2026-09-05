@@ -37,10 +37,21 @@ from __future__ import annotations
 import json
 import logging
 import os
+import urllib.error
+import urllib.parse
+import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Mapping, Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
+
+
+def _validated_urlopen(target: str | urllib.request.Request, timeout: float):
+    """Open only HTTP(S) App Configuration endpoints."""
+    target_url = target if isinstance(target, str) else target.full_url
+    if urllib.parse.urlparse(target_url).scheme not in {"http", "https"}:
+        raise ValueError("App Configuration endpoint must use http or https")
+    return urllib.request.urlopen(target, timeout=timeout)  # nosec B310 - scheme validated above
 
 
 class ConfigurationError(RuntimeError):
@@ -232,11 +243,10 @@ class AppConfigurationEmulatorProvider:
         return f"{self.endpoint}/kv/{quote(key, safe='')}{label_param}{sep}api-version=1.0"
 
     def refresh(self) -> None:
-        import urllib.request
         from datetime import datetime, timezone
 
         url = self._build_url(None)
-        with urllib.request.urlopen(url, timeout=self.timeout_seconds) as resp:
+        with _validated_urlopen(url, timeout=self.timeout_seconds) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
         new_cache: dict[str, str] = {}
         for item in payload.get("items", []):
@@ -252,8 +262,6 @@ class AppConfigurationEmulatorProvider:
         content_type: str | None = None,
     ) -> dict[str, Any]:
         """Store a configuration key-value in the emulator via REST PUT."""
-        import urllib.request
-
         url = self._build_url(key, label=label)
         body_dict: dict[str, Any] = {"value": value}
         if content_type is not None:
@@ -265,7 +273,7 @@ class AppConfigurationEmulatorProvider:
             headers={"Content-Type": "application/json"},
             method="PUT",
         )
-        with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+        with _validated_urlopen(req, timeout=self.timeout_seconds) as resp:
             content = resp.read().decode("utf-8")
             result = json.loads(content) if content else {}
         target_label = label if label is not None else self._label
@@ -275,22 +283,17 @@ class AppConfigurationEmulatorProvider:
 
     def get_kv_raw(self, key: str, label: str | None = None) -> dict[str, Any]:
         """Fetch raw metadata for a key from the emulator."""
-        import urllib.request
-
         url = self._build_url(key, label=label)
-        with urllib.request.urlopen(url, timeout=self.timeout_seconds) as resp:
+        with _validated_urlopen(url, timeout=self.timeout_seconds) as resp:
             content = resp.read().decode("utf-8")
             return json.loads(content) if content else {}
 
     def delete_kv(self, key: str, label: str | None = None) -> bool:
         """Delete a key-value from the emulator via REST DELETE."""
-        import urllib.error
-        import urllib.request
-
         url = self._build_url(key, label=label)
         req = urllib.request.Request(url, method="DELETE")
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+            with _validated_urlopen(req, timeout=self.timeout_seconds) as resp:
                 self._cache.pop(key, None)
                 return resp.status in (200, 204)
         except urllib.error.HTTPError as exc:
