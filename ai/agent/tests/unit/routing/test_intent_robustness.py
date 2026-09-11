@@ -246,3 +246,16 @@ def test_unknown_loan_id_returns_clean_ownership_error(in_memory_db: Database) -
     assert result.success is False
     answer_lower = (result.answer or "").lower()
     assert "no pertenece" in answer_lower or "no encontrado" in answer_lower
+
+
+def test_first_person_highest_balance_query_enforces_account_data() -> None:
+    """Complex first-person comparative query triggers account data pre-fetching."""
+    from aegisbank_agent.knowledge_routing import account_tool_allowlist, requires_account_data
+
+    query = (
+        "¿dime cual es el prestamo con más saldo pendiente que tengo y que fechas de pago tengo??"
+    )
+    assert requires_account_data(query) is True
+    allowlist = account_tool_allowlist(query)
+    assert "get_my_loans" in allowlist
+    assert "get_next_installment" in allowlist

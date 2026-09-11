@@ -28,6 +28,15 @@ _ACCOUNT_PATTERNS = (
     r"\bcuanto\s+debo\b",
     r"\bproxima\s+cuota\b",
     r"\bdetalle\s+de\s+mi\s+prestamo\b",
+    r"\bque\s+(?:tengo|poseo)\b",
+    r"\bprestamos?\s+(?:que\s+)?tengo\b",
+    r"\bcu[aá]l\s+es\s+el\s+pr[eé]stamo\b",
+    r"\bpr[eé]stamo\s+con\s+m[aá]s\s+saldo\b",
+    r"\bm[aá]s\s+saldo\s+pendiente\b",
+    r"\bsaldo\s+pendiente\s+que\s+tengo\b",
+    r"\bfechas?\s+de\s+pago\b",
+    r"\bdeudas?\s+(?:que\s+)?tengo\b",
+    r"\bqu[eé]\s+(?:pr[eé]stamos?|cuotas?|deudas?)\s+tengo\b",
 )
 _LAST_LOAN_PATTERNS = (
     r"\b(?:ultimo|ultima)\s+prestamo\b",
@@ -212,12 +221,30 @@ def account_tool_allowlist(query: str) -> list[str]:
             tools.append("get_next_installment")
         return tools or ["get_loan_details"]
 
-    needs_loan_list = "mis prestamos" in normalized or "mi prestamo" in normalized
+    needs_loan_list = (
+        "mis prestamos" in normalized
+        or "mi prestamo" in normalized
+        or "prestamo" in normalized
+        or "prestamos" in normalized
+        or "que tengo" in normalized
+        or "saldo pendiente" in normalized
+        or "tengo" in normalized
+    )
     if needs_loan_list:
         tools.append("get_my_loans")
-    if "proxima cuota" in normalized or "cuanto debo" in normalized or "mis cuotas" in normalized:
+    if (
+        "proxima cuota" in normalized
+        or "cuanto debo" in normalized
+        or "mis cuotas" in normalized
+        or "fechas de pago" in normalized
+        or "fecha de pago" in normalized
+        or "fechas" in normalized
+        or "cuotas" in normalized
+    ):
+        if "get_my_loans" not in tools:
+            tools.append("get_my_loans")
         tools.append("get_next_installment")
-    if "detalle" in normalized:
+    if "detalle" in normalized or "saldo" in normalized:
         if "get_my_loans" not in tools:
             tools.append("get_my_loans")
         tools.append("get_loan_details")
