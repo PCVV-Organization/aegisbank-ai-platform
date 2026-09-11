@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from collections.abc import Callable
@@ -21,6 +22,7 @@ from .knowledge_routing import (
     extract_loan_id,
     has_sufficient_evidence,
     is_greeting,
+    is_last_loan_reference,
     requires_account_data,
     requires_authorized_knowledge,
 )
@@ -31,6 +33,7 @@ from .observability.hotl import HOTLSupervisor, get_hotl_supervisor
 from .observability.logging import StructuredLogger, get_logger
 from .observability.metrics import OperationalMetrics, get_metrics
 from .observability.tracer import trace_span
+from .session_store import OwnershipViolationError, SQLiteSessionStore
 from .tools.base import AgentContext, ToolResult
 from .tools.registry import ToolRegistry
 
@@ -109,6 +112,7 @@ class AgentOrchestrator:
         metrics: OperationalMetrics | None = None,
         structured_logger: StructuredLogger | None = None,
         audit_logger: AuditLogger | None = None,
+        session_store: SQLiteSessionStore | None = None,
     ) -> None:
         self._model = model
         self._registry = registry or ToolRegistry(include_write_tools=True)
@@ -122,13 +126,21 @@ class AgentOrchestrator:
         self._metrics = metrics or get_metrics()
         self._logger = structured_logger or get_logger()
         self._audit = audit_logger or get_audit_logger()
+        self._session_store = session_store or SQLiteSessionStore()
 
         if client is not None:
             self._client = client
             self._base_url = base_url or "custom"
         else:
             self._base_url = base_url or resolve_foundry_base_url()
-            self._client = OpenAI(base_url=self._base_url, api_key=_PLACEHOLDER_API_KEY)
+            timeout = float(os.getenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", "10"))
+            retries = int(os.getenv("AEGISBANK_FOUNDRY_MAX_RETRIES", "2"))
+            self._client = OpenAI(
+                base_url=self._base_url,
+                api_key=_PLACEHOLDER_API_KEY,
+                timeout=timeout,
+                max_retries=retries,
+            )
 
     @property
     def model_name(self) -> str:
@@ -220,6 +232,7 @@ class AgentOrchestrator:
         user_message: str,
         *,
         customer_id: str,
+        session_id: str | None = None,
         correlation_id: str | None = None,
         approval_callback: Callable[[ApprovalRequest], bool] | None = None,
     ) -> AgentExecutionResult:
@@ -228,6 +241,24 @@ class AgentOrchestrator:
         obs_ctx = ObservabilityContext(customer_id=customer_id)
         if correlation_id:
             obs_ctx.correlation_id = correlation_id
+        effective_session_id = session_id or f"session-{customer_id}"
+        try:
+            session = self._session_store.get_or_create(effective_session_id, customer_id)
+        except OwnershipViolationError:
+            self._audit.record(
+                event_type=AuditEventType.TOOL_DENIED,
+                correlation_id=obs_ctx.correlation_id,
+                customer_id=customer_id,
+                actor="SESSION_GUARD",
+                payload={"reason": "SESSION_OWNERSHIP_VIOLATION"},
+            )
+            return AgentExecutionResult(
+                answer="No tienes acceso a esta sesión de conversación.",
+                customer_id=customer_id,
+                success=False,
+                error="Session ownership violation",
+                correlation_id=obs_ctx.correlation_id,
+            )
 
         self._metrics.increment("request_count")
         self._audit.record(
@@ -378,6 +409,19 @@ class AgentOrchestrator:
             # mention only a loan id, which is exactly what produced the
             # pseudo-tool-call bug discovered during manual E2E review.
             forced_loan_id = extract_loan_id(user_message)
+            if forced_loan_id is None and is_last_loan_reference(user_message):
+                forced_loan_id = session.last_loan_id
+                if forced_loan_id is None:
+                    return AgentExecutionResult(
+                        answer=(
+                            "No tengo un préstamo previo registrado en esta sesión. "
+                            "Indícame el ID del préstamo que deseas consultar."
+                        ),
+                        customer_id=customer_id,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
             if (
                 account_required
                 and forced_loan_id is not None
@@ -427,6 +471,9 @@ class AgentOrchestrator:
                     self._format_installment_answer(forced_result.data)
                     if forced_tool == "get_next_installment"
                     else self._format_loan_details_answer(forced_result.data)
+                )
+                self._session_store.record_loan_access(
+                    effective_session_id, customer_id, forced_loan_id
                 )
                 return AgentExecutionResult(
                     answer=answer,
@@ -570,7 +617,11 @@ class AgentOrchestrator:
                         extra={"error": str(exc)},
                     )
                     return AgentExecutionResult(
-                        answer="Error al comunicar con el modelo de lenguaje local.",
+                        answer=(
+                            "Error al comunicar con el modelo de lenguaje local (Foundry Local). "
+                            "Puedes continuar realizando consultas bancarias estructuradas "
+                            "indicando el identificador del préstamo (ej. LOAN-0001)."
+                        ),
                         customer_id=customer_id,
                         tool_calls=executed_records,
                         rounds=current_round,
@@ -881,6 +932,12 @@ class AgentOrchestrator:
                             result=tool_result,
                         )
                     )
+                    if fn_name == "get_loan_details" and tool_result.success:
+                        loan_id = str(parsed_args.get("loan_id", ""))
+                        if loan_id:
+                            self._session_store.record_loan_access(
+                                effective_session_id, customer_id, loan_id
+                            )
 
                     messages.append(
                         {

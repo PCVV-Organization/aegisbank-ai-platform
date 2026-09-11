@@ -18,6 +18,14 @@ BASE_URL_ENV: str = "AEGISBANK_FOUNDRY_LOCAL_BASE_URL"
 _PLACEHOLDER_API_KEY: str = "none"
 
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
+
 class ChatCompletionsAPI(Protocol):
     def create(self, *, model: str, messages: list[dict[str, str]]) -> Any: ...
 
@@ -33,7 +41,19 @@ class ChatAPI(Protocol):
 class OpenAIClient(Protocol):
     chat: ChatAPI
     models: ModelsAPI
-    models: ModelsAPI
+
+
+def check_foundry_health(base_url: str, timeout: float = 1.0) -> bool:
+    """Check if the local Foundry / OpenAI endpoint is actively responding."""
+    import urllib.request
+
+    url = f"{base_url.rstrip('/')}/models"
+    try:
+        req = urllib.request.Request(url, headers={"Authorization": "Bearer none"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
 
 
 def resolve_foundry_base_url(

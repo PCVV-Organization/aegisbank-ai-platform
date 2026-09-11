@@ -29,6 +29,19 @@ _ACCOUNT_PATTERNS = (
     r"\bproxima\s+cuota\b",
     r"\bdetalle\s+de\s+mi\s+prestamo\b",
 )
+_LAST_LOAN_PATTERNS = (
+    r"\b(?:ultimo|ultima)\s+prestamo\b",
+    r"\bprestamo\s+(?:anterior|ultimo|previo)\b",
+    r"\bel\s+anterior\b",
+    r"\bde\s+ese\s+prestamo\b",
+    r"\bde\s+este\s+prestamo\b",
+    r"\bde\s+ese\b",
+    r"\bpor\s+el\s+que\s+(?:te\s+)?(?:consulte|pregunte)\b",
+    r"\bporque\s+el\s+que\s+(?:te\s+)?(?:consulte|pregunte)\b",
+    r"\bque\s+(?:te\s+)?(?:consulte|pregunte)\s+(?:antes|recien)\b",
+    r"\bque\s+prestamo\s+(?:te\s+)?(?:consulte|pregunte)\b",
+    r"\bque\s+prestamo\s+(?:fue|era)\b",
+)
 
 _LOAN_ID_REGEX = re.compile(r"\bLOAN-[0-9]{4}\b", re.IGNORECASE)
 _GREETING_TERMS = ("hola", "buenos dias", "buenas tardes", "buenas noches", "saludos", "que tal")
@@ -49,6 +62,12 @@ def extract_loan_id(query: str) -> str | None:
     if match is None:
         return None
     return match.group(0).upper()
+
+
+def is_last_loan_reference(query: str) -> bool:
+    """Identify a safe, structured reference to the last consulted loan."""
+    normalized = _normalize(query)
+    return any(re.search(pattern, normalized) for pattern in _LAST_LOAN_PATTERNS)
 
 
 def detect_loan_details_request(query: str) -> dict[str, Any]:
@@ -120,6 +139,8 @@ def requires_account_data(query: str) -> bool:
     """Identify questions requiring authenticated Core Banking data."""
     if extract_loan_id(query) is not None:
         return True
+    if is_last_loan_reference(query):
+        return True
     normalized = _normalize(query)
     return any(re.search(pattern, normalized) for pattern in _ACCOUNT_PATTERNS)
 
@@ -128,6 +149,8 @@ def account_tool_allowlist(query: str) -> list[str]:
     """Return the smallest READ tool set for an authenticated account query."""
     normalized = _normalize(query)
     loan_id = extract_loan_id(query)
+    if is_last_loan_reference(query):
+        return ["get_loan_details"]
     tools: list[str] = []
 
     if loan_id is not None:

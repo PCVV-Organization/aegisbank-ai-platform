@@ -49,6 +49,29 @@ result = orchestrator.run("¿Cuáles son mis préstamos activos?", customer_id="
 print(result.answer)
 ```
 
+### Durable conversational state
+
+The CLI persists only structured, synthetic session state in SQLite. The
+default session is isolated by customer (`session-CUST-0001`); provide an
+explicit session ID when a caller owns multiple conversations:
+
+```powershell
+python -m aegisbank_agent.cli run "Dame detalle de LOAN-0001" --customer-id CUST-0001 --session-id SESSION-A
+python -m aegisbank_agent.cli run "¿Cuál fue el último préstamo que consulté?" --customer-id CUST-0001 --session-id SESSION-A
+```
+
+Set `AEGISBANK_SESSION_DB_PATH` to relocate the SQLite file. A session cannot
+be opened by a different customer. Explicit loan reads and structured session
+references do not require the LLM.
+
+### Foundry Local configuration
+
+Copy `.env.example` to `.env` for local use, or export the same variables in
+the process environment. `AEGISBANK_FOUNDRY_LOCAL_BASE_URL` takes precedence;
+when empty, the adapter discovers the current endpoint with `foundry server
+status -o json`. LLM calls use a bounded timeout and retry count from the
+environment and never retry indefinitely.
+
 ## Evaluation
 
 Six proxy metrics computed by the local deterministic harness:

@@ -53,6 +53,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Synthetic customer ID for session context (default: CUST-0001)",
     )
     run_parser.add_argument(
+        "--session-id",
+        type=str,
+        default=None,
+        help="Durable conversation session ID (default: one session per customer)",
+    )
+    run_parser.add_argument(
         "--model",
         type=str,
         default=DEFAULT_MODEL_ALIAS,
@@ -124,7 +130,11 @@ def main(argv: list[str] | None = None) -> int:
             approval_cb = cli_approval_callback
 
         orchestrator = AgentOrchestrator(model=args.model, approval_callback=approval_cb)
-        result = orchestrator.run(args.query, customer_id=args.customer_id)
+        result = orchestrator.run(
+            args.query,
+            customer_id=args.customer_id,
+            session_id=args.session_id,
+        )
 
         print(f"\n[Customer ID]: {result.customer_id}")
         print(f"[Rounds]: {result.rounds}")
