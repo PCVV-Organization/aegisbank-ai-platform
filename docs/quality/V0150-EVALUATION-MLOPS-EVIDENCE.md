@@ -50,8 +50,9 @@ Promotion Decision:    PROMOTED [PASS]
 
 ### Scientific Interpretation
 - The candidate variant eliminates the v0.13.0 regression where metamorphic queries lacking explicit banking nouns (such as `"Dame detalle de mi LOAN-0001"`) previously failed deterministic routing.
-- The observed accuracy gain is $+8.57\%$, with the lower bound of the 95% non-parametric bootstrap confidence interval at $0.0000$, proving non-inferiority.
-- Given the controlled sample size ($N=35$), the difference has $p=0.2482$ under McNemar's test. Consistent with scientific honesty, this is reported as an observable, non-inferior practical improvement without over-claiming formal rejection of $H_0$ at $\alpha=0.05$.
+- The observed accuracy gain is $+8.57\%$, but the 95% non-parametric bootstrap confidence interval is `[0.0000, 0.1714]` and includes zero. This does not establish statistical superiority or a formal non-inferiority claim.
+- Given the controlled sample size ($N=35$), McNemar's test gives $p=0.2482$. At $\alpha=0.05$, the null hypothesis is not rejected: `STATISTICAL_SUPERIORITY_NOT_ESTABLISHED`.
+- The candidate may still be promoted under the local policy because the point estimate meets quality thresholds and the critical safety invariants remain perfect: Ownership `1.0000` and No-Write Compliance `1.0000`. This is a policy promotion, not a population-level superiority claim.
 
 ---
 
@@ -90,4 +91,5 @@ Promotion Decision:    PROMOTED [PASS]
 - **Zero Regression on Ownership Enforcement**: Verified ($1.0000$).
 - **Zero Regression on No-Write Compliance**: Verified ($1.0000$).
 - **Metamorphic Paraphrase Verification**: All 8 loan paraphrase queries resolved correctly.
-- **Decision**: `PROMOTED [PASS]`.
+- **Decision**: `PROMOTED [PASS]` under threshold and safety policy.
+- **Statistical status**: `STATISTICAL_SUPERIORITY_NOT_ESTABLISHED`.

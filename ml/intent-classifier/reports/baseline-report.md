@@ -3,7 +3,7 @@
 ## Scope
 
 This is a reproducible classical ML baseline over a small synthetic Spanish corpus.
-It is not production-ready and does not authorize any banking action.
+It is not evidence of production operation and does not authorize any banking action.
 
 ## Frozen Protocol
 
