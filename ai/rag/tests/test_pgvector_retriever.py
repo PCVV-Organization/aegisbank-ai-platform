@@ -18,24 +18,31 @@ if TYPE_CHECKING:
 
 DEFAULT_TEST_PG_URL = os.environ.get(
     "AEGISBANK_PGVECTOR_URL",
-    "postgresql://aegisuser:AegisBankPgVector2026!@127.0.0.1:5432/aegisbank_rag",
+    "postgresql://aegisuser:AegisBankPgVector2026!@127.0.0.1:5432/aegisbank_rag?connect_timeout=1",
 )
+
+_HAS_PGVECTOR_CACHE: bool | None = None
 
 
 def _has_pgvector() -> bool:
     """Helper to detect if PostgreSQL + pgvector is accessible locally."""
+    global _HAS_PGVECTOR_CACHE
+    if _HAS_PGVECTOR_CACHE is not None:
+        return _HAS_PGVECTOR_CACHE
     try:
         retriever = PgVectorRetriever(connection_string=DEFAULT_TEST_PG_URL)
         retriever.initialize_schema()
+        _HAS_PGVECTOR_CACHE = True
         return True
     except OSError, RuntimeError, Exception:
+        _HAS_PGVECTOR_CACHE = False
         return False
 
 
 def test_pgvector_unavailable_connection_error() -> None:
     """Verify controlled RuntimeError or ConnectionError when PostgreSQL is unavailable."""
     bad_retriever = PgVectorRetriever(
-        connection_string="postgresql://invalid_user:bad_pass@127.0.0.1:54329/nonexistent_db"
+        connection_string="postgresql://invalid_user:bad_pass@127.0.0.1:54329/nonexistent_db?connect_timeout=1"
     )
     with pytest.raises(Exception):
         bad_retriever.initialize_schema()

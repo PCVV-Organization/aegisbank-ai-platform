@@ -1210,3 +1210,32 @@ Brier/ECE y la reliability analysis. El drift se divide en
 cambio en inputs no prueba por sí mismo una degradación del modelo. MLflow
 registra runs, parámetros, métricas y artifacts localmente; Azure ML, Foundry
 evaluators y alertas cloud siguen `CLOUD-PENDING`.
+
+---
+
+## 22. v1.0.0: End-to-End Hardening, Operational Resilience & Portfolio Release
+
+### 1. De Componentes Aislados a Sistema Confiable y Defendible
+
+Un portfolio de IA empresarial de nivel senior no se demuestra acumulando tecnologías o coleccionando servicios sin propósito. Se demuestra comprobando que las fronteras de confianza, las políticas de seguridad deterministas, la consistencia transaccional y la observabilidad operan de manera armónica ante fallas reales y que cada decisión técnica puede defenderse con rigor en una entrevista de arquitectura:
+
+* **El LLM propone, el código determinista decide:** El modelo interpreta lenguaje natural y extrae intenciones, pero el orquestador valida la pertenencia de cliente (`customer_id`), aplica allowlists mínimas de herramientas y exige aprobación humana explícita (HITL) para cualquier mutación de estado.
+* **Consistencia Transaccional (Transactional Outbox):** No se confía en publicaciones directas al bus de mensajes que sufran el riesgo de *Dual-Write*. La entidad de negocio y el evento de dominio se persisten atómicamente en SQL, garantizando entrega *at-least-once* sin pérdida de eventos.
+* **Separación de Configuración y Secretos:** Configuración operativa (Azure App Configuration) y secretos criptográficos (Azure Key Vault) se desacoplan mediante el patrón *Key Vault Reference*, evitando fugas por core dumps o endpoints de diagnóstico.
+
+### 2. Vocabulario de Rendimiento y Resiliencia en Producción
+
+* **Latencia y Percentiles:** En sistemas distribuidos, la media es un indicador engañoso que oculta la latencia de cola (*tail latency*). El percentil `p95` refleja la experiencia del 95% de los usuarios bajo condiciones operativas habituales, mientras que `p99` expone pausas de recolección de basura o contención de sockets.
+* **SLI / SLO vs SLA:**
+  * **SLI (Service-Level Indicator):** Métrica observada (e.g., latencia p95 de `/api/v1/loans/LOAN-0001` = 3.00 ms).
+  * **SLO (Service-Level Objective):** Objetivo interno de laboratorio (e.g., latencia p95 $\le$ 250 ms con 0% de errores).
+  * **SLA (Service-Level Agreement):** Compromiso contractual vinculante con clientes externos. AegisBank no formula afirmaciones de SLA productivo.
+* **Contención de Fallas (Fault Injection & Circuit Breaker):** Las llamadas a dependencias externas se protegen mediante timeouts acotados, reintentos exponenciales con jitter y cortacircuitos (*circuit breaker*) de 3 estados (`CLOSED`, `OPEN`, `HALF_OPEN`) que evitan avalanchas de reintentos (*thundering herds*). Mensajes venenosos se aíslan en colas de mensajes no entregados (*Dead-Letter Queues - DLQ*).
+
+### 3. Límites Honestos de Madurez y Gobernanza
+
+En ingeniería ética y rigurosa, documentar lo que un sistema **no** hace es tan crucial como documentar lo que hace:
+* `TESTED-LOCAL`: Componentes ejecutados y validados con suites reproducibles en el entorno de desarrollo.
+* `BLOCKED`: Bloqueos de plataforma identificados con causa raíz (e.g., limitación `MAX_PATH` de `cygrpc` en Windows nativo superada en contenedor Linux).
+* `CLOUD-PENDING`: Arquitecturas diseñadas y validadas con emuladores locales sin asumir costos ni credenciales de nube.
+* `PROD-UNPROVEN`: Concurrencia masiva (>10k TPS), certificaciones regulatorias (PCI-DSS, SOC2) y SLAs de alta disponibilidad fuera del alcance de un laboratorio educativo.
