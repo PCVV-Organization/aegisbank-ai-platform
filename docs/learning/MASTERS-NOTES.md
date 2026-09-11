@@ -1230,12 +1230,22 @@ Un portfolio de IA empresarial de nivel senior no se demuestra acumulando tecnol
   * **SLI (Service-Level Indicator):** Métrica observada (e.g., latencia p95 de `/api/v1/loans/LOAN-0001` = 3.00 ms).
   * **SLO (Service-Level Objective):** Objetivo interno de laboratorio (e.g., latencia p95 $\le$ 250 ms con 0% de errores).
   * **SLA (Service-Level Agreement):** Compromiso contractual vinculante con clientes externos. AegisBank no formula afirmaciones de SLA productivo.
+  * **Límites de la Muestra (25 iteraciones):** Clasificado estrictamente como `LOCAL-LAB-PERFORMANCE-BASELINE`. Es útil para instrumentar percentiles (`p50`, `p95`, `p99`) y detectar regresiones gruesas entre builds, pero no establece capacidad de concurrencia (>10k TPS), comportamiento ante estrés prolongado ni un SLO productivo real. Pruebas de carga, estrés, spike y soak/endurance permanecen `PROD-UNPROVEN`.
 * **Contención de Fallas (Fault Injection & Circuit Breaker):** Las llamadas a dependencias externas se protegen mediante timeouts acotados, reintentos exponenciales con jitter y cortacircuitos (*circuit breaker*) de 3 estados (`CLOSED`, `OPEN`, `HALF_OPEN`) que evitan avalanchas de reintentos (*thundering herds*). Mensajes venenosos se aíslan en colas de mensajes no entregados (*Dead-Letter Queues - DLQ*).
 
 ### 3. Límites Honestos de Madurez y Gobernanza
 
 En ingeniería ética y rigurosa, documentar lo que un sistema **no** hace es tan crucial como documentar lo que hace:
 * `TESTED-LOCAL`: Componentes ejecutados y validados con suites reproducibles en el entorno de desarrollo.
+* `LOCAL-LAB-PERFORMANCE-BASELINE`: Mediciones locales acotadas de desarrollo; pruebas de carga masiva permanecen `PROD-UNPROVEN`.
 * `BLOCKED`: Bloqueos de plataforma identificados con causa raíz (e.g., limitación `MAX_PATH` de `cygrpc` en Windows nativo superada en contenedor Linux).
 * `CLOUD-PENDING`: Arquitecturas diseñadas y validadas con emuladores locales sin asumir costos ni credenciales de nube.
 * `PROD-UNPROVEN`: Concurrencia masiva (>10k TPS), certificaciones regulatorias (PCI-DSS, SOC2) y SLAs de alta disponibilidad fuera del alcance de un laboratorio educativo.
+
+### 4. Evaluación Científica: Estimador Muestral vs. Superioridad Poblacional
+
+En la evaluación de agentes de IA para banca, un incremento puntual de exactitud (e.g., candidate `0.9714` vs baseline `0.8857`, $+8.57\text{ pp}$) no debe confundirse con una demostración formal de superioridad estadística:
+* **Prueba de McNemar Pareada:** Arroja $p = 0.248213 > 0.05$. Al no superar el umbral de significancia estándar ($\alpha = 0.05$), la hipótesis nula de distribuciones marginales equivalentes no puede ser rechazada.
+* **Intervalo de Confianza Bootstrap al 95%:** El intervalo `[0.0000, 0.1714]` toca el cero, confirmando la ausencia de evidencia estadística para afirmar superioridad o no-inferioridad formal en la población.
+* **Estado de Evidencia:** `STATISTICAL_SUPERIORITY_NOT_ESTABLISHED`.
+* **Criterio de Promoción por Política:** La promoción (`PROMOTED [PASS]`) se otorga estrictamente bajo la política de release del laboratorio: el estimador muestral supera el umbral operativo ($> 90\%$) y los invariantes críticos de seguridad (`Ownership Enforcement = 1.0000`, `No-Write Compliance = 1.0000`) se mantienen en un $100\%$ sin regresión. Separar la decisión operativa de la inferencia estadística es la marca de rigor de un Lead AI Engineer.

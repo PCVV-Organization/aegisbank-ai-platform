@@ -1,7 +1,11 @@
 """Reproducible, bounded local baseline for safe health and READ journeys.
 
-This is a laboratory measurement, not a production load generator. It uses only
-the synthetic in-process Core Banking API and never invokes a WRITE endpoint.
+Classification: LOCAL-LAB-PERFORMANCE-BASELINE only.
+This is a laboratory measurement for coarse regression detection and percentile
+instrumentation, not a production load test, capacity test, or production SLA.
+It uses only the synthetic in-process Core Banking API and never invokes a WRITE endpoint.
+Production load, stress, spike, and soak testing, as well as traffic-derived SLOs,
+remain PROD-UNPROVEN.
 """
 
 from __future__ import annotations
@@ -68,7 +72,9 @@ def run(iterations: int) -> dict[str, object]:
         }
     return {
         "schema": "aegisbank.performance-baseline.v1",
-        "scope": "LOCAL-LAB-ONLY",
+        "scope": "LOCAL-LAB-PERFORMANCE-BASELINE",
+        "production_sla_claimed": False,
+        "load_testing_status": "PROD-UNPROVEN",
         "write_endpoints_called": False,
         "iterations": iterations,
         "journeys": journeys,

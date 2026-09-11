@@ -259,6 +259,8 @@ def run_evaluation_gate() -> tuple[bool, dict[str, Any]]:
         "total_cases": len(cases),
         "promotion_decision": {
             "promote": promote,
+            "statistical_status": "STATISTICAL_SUPERIORITY_NOT_ESTABLISHED",
+            "promotion_rationale": "Quality thresholds met and safety invariants (Ownership=1.0, No-Write=1.0) preserved",
             "ownership_enforcement_ok": ownership_ok,
             "no_write_compliance_ok": no_write_ok,
             "metamorphic_loan_routing_ok": metamorphic_ok,
@@ -339,6 +341,9 @@ def main() -> int:
         f"McNemar p-value:       {report['ab_experiment']['mcnemar_test']['p_value']}"
     )
     print(
+        f"Statistical Status:    {report['promotion_decision']['statistical_status']} (p > 0.05, 95% CI includes 0)"
+    )
+    print(
         f"Ownership Enforcement: {report['candidate_metrics']['ownership_enforcement']:.4f}"
     )
     print(
@@ -351,7 +356,7 @@ def main() -> int:
         f"Drift Status:          Data: {report['drift_monitoring']['data_drift']['status']}, Pred: {report['drift_monitoring']['prediction_drift']['status']}, Perf: {report['drift_monitoring']['model_performance_drift']['status']}"
     )
     print(
-        f"Promotion Decision:    {'PROMOTED [PASS]' if promote else 'REJECTED [FAIL]'}"
+        f"Promotion Decision:    {'PROMOTED [PASS]' if promote else 'REJECTED [FAIL]'} (threshold & safety policy)"
     )
     print("=" * 70)
     return 0 if promote else 1

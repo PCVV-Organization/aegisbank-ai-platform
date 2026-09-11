@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary & Problem Space
 
-AegisBank AI Platform is a secure, educational banking AI laboratory designed to demonstrate production-grade software engineering and AI systems architecture. In banking, naive LLM implementations—such as connecting LangChain or LlamaIndex directly to internal databases or APIs—fail dramatically due to:
+AegisBank AI Platform is a secure, educational banking AI laboratory designed to demonstrate enterprise-grade software engineering patterns and AI systems architecture in a local, synthetic environment. In banking, naive LLM implementations—such as connecting LangChain or LlamaIndex directly to internal databases or APIs—fail dramatically due to:
 
 1. **Non-deterministic execution:** LLMs hallucinate tool arguments, invent transaction IDs, and skip validation steps.
 2. **Security vulnerabilities:** Prompt injection, cross-customer data leakage, and unauthorized state mutation.
@@ -126,16 +126,41 @@ Moving beyond subjective qualitative evaluation ("it looks good to me"), AegisBa
 
 MLflow (`mlflow==3.16.0`) tracks evaluation runs against local SQLite storage, persisting metrics, parameters, and confusion matrices as verifiable artifacts without external SaaS dependencies.
 
+### Candidate Promotion vs. Statistical Significance
+* **Observed Metrics on Held-out Suite ($N=35$):**
+  - Baseline Accuracy: `0.8857` (88.57%)
+  - Candidate Accuracy: `0.9714` (97.14%)
+  - Observed Delta: `+0.0857` (+8.57 pp)
+  - 95% Bootstrap Paired Confidence Interval: `[0.0000, 0.1714]`
+  - McNemar Paired Test: $p = 0.248213$
+* **Rigorous Scientific Interpretation:**
+  - Because $p = 0.248213 > 0.05$ and the 95% CI includes zero, the null hypothesis ($H_0$: identical marginal distributions) cannot be rejected.
+  - Status: **`STATISTICAL_SUPERIORITY_NOT_ESTABLISHED`**.
+  - **Promotion Rationale:** The candidate is awarded `PROMOTED [PASS]` under our engineering release policy because:
+    1. The observed point estimate exceeds the required quality threshold ($> 90\%$).
+    2. Critical safety invariants remain 100% verified with zero regression: `Ownership Enforcement = 1.0000`, `No-Write Compliance = 1.0000`.
+    3. Metamorphic loan routing is 100% resolved across all 8 linguistic paraphrases.
+  - We explicitly distinguish between **better observed sample result** and **statistically established population superiority**.
+
 ---
 
-## 5. Laboratory SLI/SLO vs. Production SLA Benchmarks
+## 5. Local Laboratory Performance Baseline vs. Production SLA
 
-AegisBank distinguishes between **laboratory measurements** and **production SLAs**:
+AegisBank strictly bounds its performance claims:
 
-* **Observed Laboratory Performance (`scripts/performance_baseline.py`, 25 iterations):**
-  - `/health/live`: Mean: `1.23 ms`, p50: `1.20 ms`, p95: `1.92 ms`, p99: `4.17 ms`, Error Rate: `0.0%`.
-  - `/api/v1/loans/LOAN-0001`: Mean: `2.32 ms`, p50: `2.15 ms`, p95: `3.00 ms`, p99: `7.55 ms`, Error Rate: `0.0%`.
-* **Explicit Boundary:** These numbers reflect in-process synthetic execution. They do **not** constitute a production capacity SLA, high-concurrency stress test (>10,000 req/sec), or WAN latency guarantee.
+* **Classification:** **`LOCAL-LAB-PERFORMANCE-BASELINE`** (not an SLA or production SLO).
+* **Observed Local Measurements (`scripts/performance_baseline.py`, 25 iterations):**
+  - `/health/live`: Mean: `2.37 ms`, p50: `2.47 ms`, p95: `3.45 ms`, p99: `6.12 ms`, Error Rate: `0.0%`.
+  - `/api/v1/loans/LOAN-0001`: Mean: `3.79 ms`, p50: `2.87 ms`, p95: `5.79 ms`, p99: `13.00 ms`, Error Rate: `0.0%`.
+* **Purpose of the 25-Iteration Baseline:**
+  - ✅ Detect coarse performance regressions between local builds.
+  - ✅ Demonstrate percentile instrumentation (`p50`, `p95`, `p99`) beyond deceptive averages.
+  - ✅ Verify that read-only endpoints execute with zero state mutations or side-effects.
+* **Explicit Production Boundaries:**
+  - ❌ Does **not** establish a production SLA or contractual commitment.
+  - ❌ Does **not** measure high-concurrency throughput (>10,000 TPS) or connection pool saturation.
+  - ❌ Does **not** capture tail latency under sustained network stress or multi-region routing.
+  - ❌ Full production load testing (load, stress, spike, and soak/endurance testing) and traffic-derived SLOs remain explicitly **`PROD-UNPROVEN`**.
 
 ---
 
@@ -151,6 +176,8 @@ AegisBank distinguishes between **laboratory measurements** and **production SLA
 | **Data Stores** | PostgreSQL + pgvector, Redis OSS 8 | `TESTED-LOCAL` | Docker Compose, HNSW index tests |
 | **Serverless** | Functions Host on Linux Container | `TESTED-LOCAL` | `test_functions_runtime_e2e.py` (v0.13.1) |
 | **Serverless** | Functions Host on Windows Native | `BLOCKED` | Diagnosed Win32 `cygrpc` path limit (`ERROR_FILENAME_EXCED_RANGE`) |
+| **Evaluation** | Local MLflow & Holdout Harness | `TESTED-LOCAL` | Candidate promoted by policy; `STATISTICAL_SUPERIORITY_NOT_ESTABLISHED` |
+| **Performance** | Local 25-iteration Read Baseline | `LOCAL-LAB-PERFORMANCE-BASELINE` | `scripts/performance_baseline.py`; load/stress/soak `PROD-UNPROVEN` |
 | **Cloud Infra** | Azure Key Vault, Entra ID Managed Identity | `CLOUD-PENDING` | Local synthetic mocks verified; no cloud billing |
 | **Production** | Multi-region HA, High TPS, Certifications | `PROD-UNPROVEN` | Intentionally excluded from educational lab |
 
@@ -170,3 +197,13 @@ AegisBank distinguishes between **laboratory measurements** and **production SLA
 ### Q: "How do you know whether an agent prompt or model change is ready for deployment?"
 > *"We do not rely on subjective inspection or manual chat testing. We maintain a frozen holdout evaluation suite (`v015_eval_suite.jsonl`) spanning grounded questions, knowledge gaps, and adversarial probes.  
 > Our automated evaluation gate runs candidate traces against baseline traces across 10 deterministic dimensions. We compute Wilson confidence intervals, Brier calibration scores, and two-sample proportion tests. If a candidate claims a +5% accuracy increase but the p-value is 0.31, we reject the claim as statistically insignificant random variation. Only models passing zero-regression safety invariant gates are approved."*
+
+### Q: "In your v0.15 evaluation gate, the candidate accuracy was 97.14% vs. 88.57% baseline (+8.57 pp). Can you claim the candidate is statistically superior?"
+> *"No, and claiming statistical superiority would be methodologically false.
+> Our paired McNemar test on the $N=35$ holdout suite yielded $p = 0.248213$, which is well above the $\alpha = 0.05$ threshold. Furthermore, the 95% bootstrap confidence interval `[0.0000, 0.1714]` touches zero.
+> Therefore, our official evaluation status is `STATISTICAL_SUPERIORITY_NOT_ESTABLISHED`.
+> However, the candidate was approved for promotion under our operational policy because:
+> 1. The observed point estimate satisfies our minimum quality bar ($> 90\%$).
+> 2. Zero regressions occurred on critical safety invariants (`Ownership Enforcement = 100%`, `No-Write Compliance = 100%`).
+> 3. It deterministically fixed the metamorphic routing defect on `LOAN-0001`.
+> In banking AI engineering, conflating an improved point estimate with proven population superiority is a major risk. We separate policy-based promotion from formal statistical validation."*
