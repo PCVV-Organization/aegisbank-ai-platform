@@ -63,3 +63,43 @@ def test_session_store_rejects_cross_customer_resume() -> None:
 
     with pytest.raises(OwnershipViolationError):
         store.get_or_create("SESSION-A", "CUST-0002")
+
+
+def test_cross_customer_inquiry_deterministically_denied(tool_registry) -> None:
+    client = MagicMock()
+    orchestrator = AgentOrchestrator(
+        client=client,
+        registry=tool_registry,
+        session_store=SQLiteSessionStore(":memory:"),
+    )
+
+    result = orchestrator.run(
+        "¿que prestamos tiene el usuario CUST-0002?",
+        customer_id="CUST-0001",
+    )
+
+    assert not result.success
+    assert result.rounds == 0
+    assert len(result.tool_calls) == 0
+    assert "No puedo consultar información bancaria de otro cliente" in result.answer
+    client.chat.completions.create.assert_not_called()
+
+
+def test_loan_ownership_inquiry_explicitly_answered(tool_registry) -> None:
+    client = MagicMock()
+    orchestrator = AgentOrchestrator(
+        client=client,
+        registry=tool_registry,
+        session_store=SQLiteSessionStore(":memory:"),
+    )
+
+    result = orchestrator.run(
+        "LOAN-0002, ¿es mío o de otro usuario?",
+        customer_id="CUST-0001",
+    )
+
+    assert result.success
+    assert result.rounds == 0
+    assert "pertenece a tu cuenta autorizada" in result.answer
+    assert "LOAN-0002" in result.answer
+    client.chat.completions.create.assert_not_called()

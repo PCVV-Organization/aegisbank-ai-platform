@@ -44,7 +44,19 @@ _LAST_LOAN_PATTERNS = (
 )
 
 _LOAN_ID_REGEX = re.compile(r"\bLOAN-[0-9]{4}\b", re.IGNORECASE)
+_CUSTOMER_ID_REGEX = re.compile(r"\bCUST-[0-9]{4}\b", re.IGNORECASE)
 _GREETING_TERMS = ("hola", "buenos dias", "buenas tardes", "buenas noches", "saludos", "que tal")
+_OWNERSHIP_PATTERNS = (
+    r"\bes\s+m[ií]o\b",
+    r"\bes\s+de\s+otro\b",
+    r"\bde\s+qui[eé]n\s+es\b",
+    r"\ba\s+qui[eé]n\s+pertenece\b",
+    r"\bme\s+pertenece\b",
+    r"\bes\s+mi\s+pr[eé]stamo\b",
+    r"\bes\s+de\s+otro\s+usuario\b",
+    r"\bes\s+de\s+otro\s+cliente\b",
+    r"\bpertenece\s+a\s+m[ií]\b",
+)
 
 
 def _normalize(value: str) -> str:
@@ -62,6 +74,26 @@ def extract_loan_id(query: str) -> str | None:
     if match is None:
         return None
     return match.group(0).upper()
+
+
+def extract_customer_ids(query: str) -> list[str]:
+    """Return all canonical ``CUST-XXXX`` customer identifiers found in query."""
+    return [match.upper() for match in _CUSTOMER_ID_REGEX.findall(query)]
+
+
+def is_cross_customer_attempt(query: str, session_customer_id: str) -> bool:
+    """Return True if query explicitly claims or requests access to another customer ID."""
+    mentioned = extract_customer_ids(query)
+    if not mentioned:
+        return False
+    normalized_session = session_customer_id.strip().upper()
+    return any(cid != normalized_session for cid in mentioned)
+
+
+def asks_loan_ownership(query: str) -> bool:
+    """Detect if user asks whether a loan belongs to them or someone else."""
+    normalized = _normalize(query)
+    return any(re.search(pat, normalized) for pat in _OWNERSHIP_PATTERNS)
 
 
 def is_last_loan_reference(query: str) -> bool:

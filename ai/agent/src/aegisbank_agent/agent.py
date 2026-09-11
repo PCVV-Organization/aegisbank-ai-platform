@@ -18,9 +18,12 @@ from .constants import DEFAULT_MAX_TOOL_ROUNDS, SYSTEM_PROMPT_PATH
 from .hitl import ApprovalRequest, HITLApprovalManager
 from .knowledge_routing import (
     account_tool_allowlist,
+    asks_loan_ownership,
     classify_service_inquiry,
+    extract_customer_ids,
     extract_loan_id,
     has_sufficient_evidence,
+    is_cross_customer_attempt,
     is_greeting,
     is_last_loan_reference,
     requires_account_data,
@@ -133,7 +136,7 @@ class AgentOrchestrator:
             self._base_url = base_url or "custom"
         else:
             self._base_url = base_url or resolve_foundry_base_url()
-            timeout = float(os.getenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", "10"))
+            timeout = float(os.getenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", "30"))
             retries = int(os.getenv("AEGISBANK_FOUNDRY_MAX_RETRIES", "2"))
             self._client = OpenAI(
                 base_url=self._base_url,
@@ -196,18 +199,26 @@ class AgentOrchestrator:
         raise AttributeError("LLM client does not provide a create completion interface")
 
     @staticmethod
-    def _format_loan_details_answer(data: dict[str, Any]) -> str:
+    def _format_loan_details_answer(data: dict[str, Any], query: str = "") -> str:
         """Render a user-facing summary from a ``get_loan_details`` payload."""
         if not isinstance(data, dict):
             return "Tengo los datos del préstamo solicitados."
         loan_id = data.get("loan_id", "")
+        customer_id = data.get("customer_id", "")
         product = data.get("product_code", "")
         currency = data.get("currency", "")
         outstanding = data.get("outstanding_balance", "")
         principal = data.get("principal_amount", "")
         status = data.get("status", "")
+
+        prefix = ""
+        if query and asks_loan_ownership(query):
+            prefix = (
+                f"Sí, el préstamo {loan_id} pertenece a tu cuenta autorizada ({customer_id}).\n\n"
+            )
+
         return (
-            f"Préstamo {loan_id} ({product}, {currency}): "
+            f"{prefix}Préstamo {loan_id} ({product}, {currency}): "
             f"saldo pendiente {outstanding} de {principal}. Estado: {status}."
         )
 
@@ -257,6 +268,40 @@ class AgentOrchestrator:
                 customer_id=customer_id,
                 success=False,
                 error="Session ownership violation",
+                correlation_id=obs_ctx.correlation_id,
+            )
+
+        # Deterministic Cross-Customer Inquiry Guard
+        if is_cross_customer_attempt(user_message, customer_id):
+            mentioned = extract_customer_ids(user_message)
+            self._logger.warning(
+                "Cross-customer banking query deterministically denied",
+                context=obs_ctx,
+                extra={
+                    "session_customer_id": customer_id,
+                    "mentioned_customers": mentioned,
+                },
+            )
+            self._audit.record(
+                event_type=AuditEventType.TOOL_DENIED,
+                correlation_id=obs_ctx.correlation_id,
+                customer_id=customer_id,
+                actor="SECURITY_GUARD",
+                payload={
+                    "reason": "CROSS_CUSTOMER_ATTEMPT",
+                    "session_customer_id": customer_id,
+                    "mentioned_customers": mentioned,
+                },
+            )
+            total_dur_ms = (time.perf_counter() - start_time) * 1000.0
+            self._metrics.record_latency("agent_run_latencies_ms", total_dur_ms)
+            return AgentExecutionResult(
+                answer="No puedo consultar información bancaria de otro cliente desde esta sesión.",
+                customer_id=customer_id,
+                rounds=0,
+                tool_calls=[],
+                success=False,
+                error="Cross-customer access denied",
                 correlation_id=obs_ctx.correlation_id,
             )
 
@@ -470,7 +515,7 @@ class AgentOrchestrator:
                 answer = (
                     self._format_installment_answer(forced_result.data)
                     if forced_tool == "get_next_installment"
-                    else self._format_loan_details_answer(forced_result.data)
+                    else self._format_loan_details_answer(forced_result.data, user_message)
                 )
                 self._session_store.record_loan_access(
                     effective_session_id, customer_id, forced_loan_id
