@@ -259,3 +259,158 @@ def test_first_person_highest_balance_query_enforces_account_data() -> None:
     allowlist = account_tool_allowlist(query)
     assert "get_my_loans" in allowlist
     assert "get_next_installment" in allowlist
+
+
+def test_comparative_loan_query_plan_picks_highest_balance_without_llm() -> None:
+    """Comparative query finds highest balance loan deterministically with 0 rounds."""
+    db = create_default_database()
+    registry = ToolRegistry([GetMyLoansTool(db), GetLoanDetailsTool(db)])
+    mock_client = MagicMock()
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+
+    result = orchestrator.run(
+        "¿cuál de mis préstamos tiene más saldo pendiente?",
+        customer_id="CUST-0001",
+    )
+
+    assert result.success is True
+    assert result.rounds == 0
+    assert len(result.tool_calls) == 1
+    assert result.tool_calls[0].tool_name == "get_my_loans"
+    assert "LOAN-0001" in result.answer
+    assert "2800" in result.answer
+    assert mock_client.chat.completions.create.call_count == 0
+
+
+def test_comparative_query_with_installment_dates_executes_deterministically() -> None:
+    """Compound comparative query executes get_my_loans and get_next_installment with 0 rounds."""
+    db = create_default_database()
+    registry = ToolRegistry(
+        [
+            GetMyLoansTool(db),
+            GetLoanDetailsTool(db),
+            GetNextInstallmentTool(db),
+        ]
+    )
+    mock_client = MagicMock()
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+
+    result = orchestrator.run(
+        "¿dime cual es el prestamo con más saldo pendiente que tengo y que fechas de pago tengo??",
+        customer_id="CUST-0001",
+    )
+
+    assert result.success is True
+    assert result.rounds == 0
+    assert len(result.tool_calls) == 2
+    executed_names = [tc.tool_name for tc in result.tool_calls]
+    assert executed_names == ["get_my_loans", "get_next_installment"]
+    assert "LOAN-0001" in result.answer
+    assert "2800" in result.answer
+    assert "Próxima cuota" in result.answer
+    assert "vence" in result.answer
+    assert mock_client.chat.completions.create.call_count == 0
+
+
+def test_subsequent_anaphora_resolves_loan_after_comparative_query() -> None:
+    """After a comparative loan query, subsequent turn resolves 'el último préstamo' to winner."""
+    db = create_default_database()
+    registry = ToolRegistry(
+        [
+            GetMyLoansTool(db),
+            GetLoanDetailsTool(db),
+            GetNextInstallmentTool(db),
+        ]
+    )
+    mock_client = MagicMock()
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+
+    # Turn 1: Comparative query
+    result1 = orchestrator.run(
+        "¿cuál es el préstamo con mayor saldo pendiente?",
+        customer_id="CUST-0001",
+        session_id="session-test-anaphora",
+    )
+    assert result1.success is True
+    assert "LOAN-0001" in result1.answer
+
+    # Turn 2: Anaphora resolution
+    result2 = orchestrator.run(
+        "¿cuál fue el último préstamo porque el que te consulté?",
+        customer_id="CUST-0001",
+        session_id="session-test-anaphora",
+    )
+    assert result2.success is True
+    assert result2.rounds == 0
+    assert len(result2.tool_calls) == 1
+    assert result2.tool_calls[0].tool_name == "get_loan_details"
+    assert result2.tool_calls[0].arguments == {"loan_id": "LOAN-0001"}
+    assert "LOAN-0001" in result2.answer
+
+
+def test_placeholder_leak_in_llm_answer_is_intercepted() -> None:
+    """When LLM leaks placeholders, orchestrator intercepts it with safe banking refusal."""
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = _Response(
+        _Message(
+            content=(
+                "El préstamo con el mayor saldo pendiente es [Nombre del Préstamo]. "
+                "Las fechas de pago son [Fecha de Pago 1], [Fecha de Pago 2]."
+            )
+        )
+    )
+    orchestrator = AgentOrchestrator(client=mock_client)
+    result = orchestrator.run("Consulta general", customer_id="CUST-0001")
+
+    assert result.success is False
+    assert "PLACEHOLDER_LEAK" in (result.error or "")
+    assert "No pude consultar la información verificada" in result.answer
+    assert "[Nombre" not in result.answer
+
+
+def test_fake_waiting_process_hallucination_is_intercepted() -> None:
+    """When LLM outputs process hallucination / fake waiting, orchestrator intercepts it."""
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = _Response(
+        _Message(
+            content=(
+                "Dame un momento... [Breve pausa mientras el asistente realiza la consulta]. "
+                "Tu saldo está disponible."
+            )
+        )
+    )
+    orchestrator = AgentOrchestrator(client=mock_client)
+    result = orchestrator.run("Consulta general", customer_id="CUST-0001")
+
+    assert result.success is False
+    assert "PROCESS_HALLUCINATION" in (result.error or "")
+    assert "No pude consultar la información verificada" in result.answer
+    assert "Breve pausa" not in result.answer
+
+
+def test_fake_tool_claim_without_tools_is_intercepted() -> None:
+    """When LLM claims to retrieve data without tool execution, orchestrator rejects."""
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = _Response(
+        _Message(content="He encontrado los detalles de tus préstamos. Todo está en orden.")
+    )
+    orchestrator = AgentOrchestrator(client=mock_client, registry=ToolRegistry([]))
+    result = orchestrator.run("Consulta sobre mi situación bancaria", customer_id="CUST-0001")
+
+    assert result.success is False
+    assert "FALSE_TOOL_EXECUTION_CLAIM" in (result.error or "")
+    assert "No pude consultar la información verificada" in result.answer
+
+
+def test_foundry_timeout_returns_safe_error_without_hallucination() -> None:
+    """LLM timeout returns structured safe error and never hallucinates account data."""
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.side_effect = Exception("Request timed out.")
+    orchestrator = AgentOrchestrator(client=mock_client)
+
+    result = orchestrator.run("Explícame las opciones de financiamiento", customer_id="CUST-0001")
+
+    assert result.success is False
+    assert "Request timed out." in (result.error or "")
+    assert "Error al comunicar con el modelo de lenguaje local" in result.answer
+    assert "[" not in result.answer

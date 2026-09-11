@@ -68,6 +68,48 @@ _OWNERSHIP_PATTERNS = (
 )
 
 
+_COMPARATIVE_LOAN_PATTERNS = (
+    r"\bmas\s+saldo\b",
+    r"\bmayor\s+saldo\b",
+    r"\bmas\s+saldo\s+pendiente\b",
+    r"\bmayor\s+saldo\s+pendiente\b",
+    r"\bmas\s+deuda\b",
+    r"\bmayor\s+deuda\b",
+    r"\bprestamo\s+con\s+mas\s+saldo\b",
+    r"\bprestamo\s+con\s+mayor\s+saldo\b",
+    r"\btiene\s+mas\s+saldo\b",
+    r"\btiene\s+mayor\s+saldo\b",
+)
+_PAYMENT_DATE_PATTERNS = (
+    r"\bfechas?\s+de\s+pago\b",
+    r"\bfecha\s+de\s+vencimiento\b",
+    r"\bfechas?\s+de\s+vencimiento\b",
+    r"\bcuando\s+pago\b",
+    r"\bcuando\s+vence\b",
+    r"\bproxima\s+cuota\b",
+    r"\bcuotas?\b",
+    r"\bvencimientos?\b",
+)
+_PLACEHOLDER_REGEX = re.compile(
+    r"\[(?:Nombre|Fecha|Monto|Breve\s+pausa|Pide\s+a|Detalle|Cliente|Pr[eé]stamo|ID|Tasa|Banco|Usuario|Cuota|Saldo|Numero|Número)[^\]]*\]|"
+    r"\[[A-Za-zÁÉÍÓÚáéíóúñÑ0-9\s_\-]{3,60}\]",
+    re.IGNORECASE,
+)
+_FAKE_TOOL_CLAIM_PATTERNS = (
+    r"\bhe\s+encontrado\s+(?:los\s+detalles|la\s+informacion|tus\s+prestamos|tus\s+datos)\b",
+    r"\bhe\s+consultado\s+(?:tus\s+prestamos|tus\s+cuentas|el\s+sistema|tus\s+datos)\b",
+    r"\bacabo\s+de\s+(?:revisar|verificar|consultar)\b",
+    r"\brevisando\s+tus\s+datos\b",
+    r"\bsegun\s+he\s+consultado\b",
+)
+_PROCESS_HALLUCINATION_PATTERNS = (
+    r"\[(?:breve\s+)?pausa[^\]]*\]",
+    r"\b(?:un\s+momento|dame\s+un\s+momento|espera\s+un\s+momento)\s+mientras\s+(?:realizo|consulto|verifico)\b",
+    r"\b(?:realizando|verificando)\s+la\s+consulta\b",
+    r"\bbreve\s+pausa\s+mientras\b",
+)
+
+
 def _normalize(value: str) -> str:
     folded = unicodedata.normalize("NFKD", value.casefold())
     return "".join(char for char in folded if not unicodedata.combining(char))
@@ -170,6 +212,35 @@ def is_capability_query(query: str) -> bool:
     return any(trigger in normalized for trigger in triggers)
 
 
+def is_comparative_loan_query(query: str) -> bool:
+    """Return True when user asks to compare loans (e.g. highest balance, most debt)."""
+    normalized = _normalize(query)
+    return any(re.search(pat, normalized) for pat in _COMPARATIVE_LOAN_PATTERNS)
+
+
+def asks_for_payment_dates(query: str) -> bool:
+    """Return True when user asks for payment dates or installment details."""
+    normalized = _normalize(query)
+    return any(re.search(pat, normalized) for pat in _PAYMENT_DATE_PATTERNS)
+
+
+def has_placeholder_leak(text: str) -> bool:
+    """Detect template placeholders like [Nombre del Préstamo] or [Fecha de Pago]."""
+    return bool(_PLACEHOLDER_REGEX.search(text))
+
+
+def has_fake_tool_claim(text: str) -> bool:
+    """Detect claims of having retrieved information without underlying tool execution."""
+    normalized = _normalize(text)
+    return any(re.search(pat, normalized) for pat in _FAKE_TOOL_CLAIM_PATTERNS)
+
+
+def has_process_hallucination(text: str) -> bool:
+    """Detect simulated internal process or fake waiting language."""
+    normalized = _normalize(text)
+    return any(re.search(pat, normalized) for pat in _PROCESS_HALLUCINATION_PATTERNS)
+
+
 def requires_authorized_knowledge(query: str) -> bool:
     """Return true only for factual banking policy/product questions."""
     normalized = _normalize(query)
@@ -182,6 +253,8 @@ def requires_account_data(query: str) -> bool:
         return True
     if is_last_loan_reference(query):
         return True
+    if is_comparative_loan_query(query):
+        return True
     normalized = _normalize(query)
     return any(re.search(pattern, normalized) for pattern in _ACCOUNT_PATTERNS)
 
@@ -192,6 +265,11 @@ def account_tool_allowlist(query: str) -> list[str]:
     loan_id = extract_loan_id(query)
     if is_last_loan_reference(query):
         return ["get_loan_details"]
+    if is_comparative_loan_query(query):
+        comp_tools = ["get_my_loans"]
+        if asks_for_payment_dates(query):
+            comp_tools.append("get_next_installment")
+        return comp_tools
     tools: list[str] = []
 
     if loan_id is not None:

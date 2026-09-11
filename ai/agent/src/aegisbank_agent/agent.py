@@ -18,11 +18,16 @@ from .constants import DEFAULT_MAX_TOOL_ROUNDS, SYSTEM_PROMPT_PATH
 from .hitl import ApprovalRequest, HITLApprovalManager
 from .knowledge_routing import (
     account_tool_allowlist,
+    asks_for_payment_dates,
     asks_loan_ownership,
     classify_service_inquiry,
     extract_customer_ids,
     extract_loan_id,
+    has_fake_tool_claim,
+    has_placeholder_leak,
+    has_process_hallucination,
     has_sufficient_evidence,
+    is_comparative_loan_query,
     is_cross_customer_attempt,
     is_greeting,
     is_last_loan_reference,
@@ -427,6 +432,120 @@ class AgentOrchestrator:
                 ]
 
                 loans = (account_result.data or {}).get("loans", [])
+                if is_comparative_loan_query(user_message):
+                    if not loans:
+                        return AgentExecutionResult(
+                            answer="No tienes préstamos registrados en este momento.",
+                            customer_id=customer_id,
+                            tool_calls=executed_records,
+                            rounds=0,
+                            success=True,
+                            correlation_id=obs_ctx.correlation_id,
+                        )
+                    highest_loan = max(
+                        loans,
+                        key=lambda item: float(item.get("outstanding_balance", 0.0)),
+                    )
+                    winner_loan_id = str(highest_loan.get("loan_id", ""))
+                    if winner_loan_id:
+                        self._session_store.record_loan_access(
+                            effective_session_id, customer_id, winner_loan_id
+                        )
+
+                    installment_clause = ""
+                    if asks_for_payment_dates(user_message):
+                        inst_start = time.perf_counter()
+                        with trace_span(
+                            "tool.get_next_installment",
+                            attributes={
+                                "tool.name": "get_next_installment",
+                                "customer.id": customer_id,
+                                "routing.mode": "COMPARATIVE_PLAN_FORCED",
+                                "aegisbank.loan_id": winner_loan_id,
+                            },
+                        ):
+                            inst_result = self._registry.execute(
+                                "get_next_installment",
+                                {"loan_id": winner_loan_id},
+                                context,
+                            )
+                        self._metrics.increment("banking_tool_invoked_count")
+                        self._metrics.record_latency(
+                            "tool_latencies_ms", (time.perf_counter() - inst_start) * 1000.0
+                        )
+                        executed_records.append(
+                            ToolCallRecord(
+                                tool_name="get_next_installment",
+                                arguments={"loan_id": winner_loan_id},
+                                result=inst_result,
+                            )
+                        )
+                        if inst_result.success and inst_result.data:
+                            inst_data = inst_result.data
+                            if inst_data.get("has_next_installment"):
+                                installment_clause = (
+                                    f"\nPróxima cuota {inst_data.get('installment_id')} "
+                                    f"(vence {inst_data.get('due_date')}): total a pagar "
+                                    f"{inst_data.get('total_due')}. "
+                                    "(Nota: el sistema expone la próxima cuota a vencer; "
+                                    "no dispone de un calendario completo de cuotas futuras)."
+                                )
+                            else:
+                                installment_clause = (
+                                    "\nNo hay cuotas pendientes ni vencidas para este préstamo."
+                                )
+                        else:
+                            installment_clause = (
+                                "\nNo se pudo consultar la próxima cuota del préstamo."
+                            )
+
+                    prod = highest_loan.get("product_code", "")
+                    curr = highest_loan.get("currency", "")
+                    try:
+                        out_bal = float(highest_loan.get("outstanding_balance", 0.0))
+                    except ValueError, TypeError:
+                        out_bal = 0.0
+                    try:
+                        prin_bal = float(highest_loan.get("principal_amount", 0.0))
+                    except ValueError, TypeError:
+                        prin_bal = 0.0
+                    st = highest_loan.get("status", "")
+
+                    comparative_answer = (
+                        f"El préstamo con mayor saldo pendiente es {winner_loan_id} "
+                        f"({prod}, {curr}): saldo pendiente {out_bal:.2f} de {prin_bal:.2f}. "
+                        f"Estado: {st}.{installment_clause}"
+                    )
+                    total_dur_ms = (time.perf_counter() - start_time) * 1000.0
+                    self._metrics.record_latency("agent_run_latencies_ms", total_dur_ms)
+                    self._audit.record(
+                        event_type=AuditEventType.AGENT_RUN_COMPLETED,
+                        correlation_id=obs_ctx.correlation_id,
+                        customer_id=customer_id,
+                        actor="COMPARATIVE_PLANNER",
+                        payload={
+                            "plan": "COMPARATIVE_LOAN_QUERY",
+                            "winner_loan_id": winner_loan_id,
+                            "loans_compared": len(loans),
+                            "rounds": 0,
+                            "status": "SUCCESS",
+                        },
+                    )
+                    self._logger.info(
+                        "comparative_loan_query_completed",
+                        context=obs_ctx,
+                        execution_status="SUCCESS",
+                        latency_ms=total_dur_ms,
+                    )
+                    return AgentExecutionResult(
+                        answer=comparative_answer,
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
+
                 if (
                     len(loans) > 1
                     and extract_loan_id(user_message) is None
@@ -743,6 +862,66 @@ class AgentOrchestrator:
                         )
                     # Model provided direct final text answer
                     answer = msg.content or ""
+
+                    # Invariant: NO ACCOUNT FACTS WITHOUT AUTHORIZED TOOL EVIDENCE
+                    # Guard against: PLACEHOLDER_LEAK, PROCESS_HALLUCINATION,
+                    # FALSE_TOOL_EXECUTION_CLAIM, UNGROUNDED_ACCOUNT_RESPONSE
+                    has_placeholder = has_placeholder_leak(answer)
+                    has_proc_hallucination = has_process_hallucination(answer)
+                    has_fake_claim = has_fake_tool_claim(answer) and not any(
+                        r.result.success for r in executed_records
+                    )
+                    has_ungrounded_account = account_required and not any(
+                        r.result.success for r in executed_records
+                    )
+
+                    if (
+                        has_proc_hallucination
+                        or has_placeholder
+                        or has_fake_claim
+                        or has_ungrounded_account
+                    ):
+                        violation_reason = (
+                            "PROCESS_HALLUCINATION"
+                            if has_proc_hallucination
+                            else "PLACEHOLDER_LEAK"
+                            if has_placeholder
+                            else "FALSE_TOOL_EXECUTION_CLAIM"
+                            if has_fake_claim
+                            else "UNGROUNDED_ACCOUNT_RESPONSE"
+                        )
+                        self._metrics.increment("banking_tool_missed_count")
+                        self._audit.record(
+                            event_type=AuditEventType.TOOL_DENIED,
+                            correlation_id=obs_ctx.correlation_id,
+                            customer_id=customer_id,
+                            actor="ROUTING_POLICY",
+                            payload={
+                                "reason": violation_reason,
+                                "raw_answer_length": len(answer),
+                            },
+                        )
+                        self._logger.warning(
+                            "ungrounded_or_placeholder_response_intercepted",
+                            context=obs_ctx,
+                            error_code=violation_reason,
+                        )
+                        total_dur_ms = (time.perf_counter() - start_time) * 1000.0
+                        self._metrics.record_latency("agent_run_latencies_ms", total_dur_ms)
+                        return AgentExecutionResult(
+                            answer=(
+                                "No pude consultar la información verificada de tus cuentas "
+                                "en este momento. Por seguridad bancaria, no proporciono "
+                                "estimaciones ni datos no confirmados."
+                            ),
+                            customer_id=customer_id,
+                            tool_calls=executed_records,
+                            rounds=current_round,
+                            success=False,
+                            error=f"Ungrounded account response rejected ({violation_reason})",
+                            correlation_id=obs_ctx.correlation_id,
+                        )
+
                     total_dur_ms = (time.perf_counter() - start_time) * 1000.0
                     self._metrics.record_latency("agent_run_latencies_ms", total_dur_ms)
                     self._audit.record(
