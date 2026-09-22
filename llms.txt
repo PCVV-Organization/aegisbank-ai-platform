@@ -1,0 +1,43 @@
+# AegisBank AI Platform
+
+> Synthetic banking AI laboratory. The LLM proposes; deterministic rules authorize.
+
+Generated local navigation aid; see README.LLM.md for scope and authority.
+Paths are relative to the application repository root.
+
+## Start here
+
+- [First reading and safe local onboarding](docs/START-HERE.md)
+- [Directory-by-directory ownership and files](docs/DIRECTORY-MAP.md)
+- [Documentation evolution and conventions](docs/engineering/DOCUMENTATION-SYSTEM.md)
+- [Development instructions](AGENTS.md)
+- [Purpose and checkout baseline](README.md)
+- [LLM reading order and evidence boundaries](README.LLM.md)
+- [Documentation portal](docs/README.md)
+- [Canonical implementations](docs/architecture/CANONICAL-COMPONENTS.md)
+- [Execution and trust boundaries](docs/architecture/E2E-FINAL-ARCHITECTURE.md)
+- [Component responsibilities](docs/engineering/OWNERSHIP-MAP.md)
+- [Evaluation taxonomy](docs/evaluation/README.md)
+- [Evaluation protocols and evidence](docs/evaluation/EVALUATION-CATALOG.md)
+- [Threat model](docs/security/V1.0-THREAT-MODEL.md)
+- [Validation strategy](docs/quality/TEST-STRATEGY.md)
+- [Historical release evidence](docs/releases/V1.0-EVIDENCE.md)
+- [Index maintenance](docs/engineering/DOCUMENTATION-MAINTENANCE.md)
+
+## Components
+
+- [Synthetic banking API and persistence](services/mock-core-banking/)
+- [Offline intent-classification experiment](ml/intent-classifier/)
+- [Knowledge retrieval and grounded generation](ai/rag/)
+- [Single application agent and controlled tools](ai/agent/)
+- [Event processing](functions/aegisbank-events/)
+- [Machine-readable integration contracts](contracts/)
+- [Local and deployment configuration, not execution evidence](deploy/)
+- [Quality, evaluation and maintenance commands](scripts/)
+- [CI configuration, not runner evidence](.github/workflows/)
+
+## Full path inventory
+
+- [JSON index](project-index.json)
+- [Directory map](docs/DIRECTORY-MAP.md)
+- [Selected expanded context](llms-full.txt)

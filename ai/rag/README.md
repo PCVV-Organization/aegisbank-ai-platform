@@ -1,5 +1,18 @@
 # AegisBank RAG
 
+## Current scope and historical baselines
+
+The platform now integrates this component with the agent and includes pgvector
+and Redis retrieval adapters. See the [platform README](../../README.md),
+[canonical components](../../docs/architecture/CANONICAL-COMPONENTS.md), and
+[evaluation catalog](../../docs/evaluation/EVALUATION-CATALOG.md).
+
+The sections below describe the **v0.4/v0.5 baseline**. Their integration
+exclusions and measured results apply to that experiment, not the current
+platform as a whole. Setup and CLI examples are run from the application root.
+
+## Historical v0.4/v0.5 baseline
+
 Local retrieval baseline plus the provider-neutral candidate implementation
 for `v0.5.0 - Grounded Generation & LLM Evaluation`.
 
@@ -32,11 +45,12 @@ consumers.
 
 - It does not use real banking knowledge.
 - It does not embed text with Azure OpenAI embeddings.
-- It does not contain or call a live LLM adapter.
+- The retrieval-only baseline does not require an LLM. The current package includes
+  the optional Foundry Local adapter for grounded generation.
 - It does not authorize actions, run an agent, or talk to MCP.
 - It does not claim production relevance.
 
-## v0.5 Candidate Implementation
+## Historical v0.5 Candidate Implementation
 
 Status: `MEASURED - FOUNDRY LOCAL BASELINE`.
 

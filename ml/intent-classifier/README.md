@@ -51,7 +51,7 @@ post-holdout tuning is permitted in `v0.3`.
 Use the repository's existing Python 3.14 virtual environment:
 
 ```powershell
-Set-Location 'C:\aegisbank-ai-platform'
+# Run from the application Git root (contains ai/, ml/, services/, scripts/).
 .venv\Scripts\python.exe -m pip install -e "ml/intent-classifier[dev]"
 ```
 

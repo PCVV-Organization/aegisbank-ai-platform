@@ -1,12 +1,29 @@
 # AegisBank AI Platform — Documentation Index & Information Architecture
 
-> **Repository Governance:** `v1.0.2 — Documentation Information Architecture & Evaluation Taxonomy`  
-> **Philosophy:** *The LLM interprets and proposes; deterministic identity, policy, authorization, validation, and business rules decide.*  
+> **Documentation structure:** introduced in v1.0.2; technical baseline and checkout status live in [the project README](../README.md).
+> **Philosophy:** *The LLM interprets and proposes; deterministic identity, policy, authorization, validation, and business rules decide.*
 > **Documentation Framework:** Inspired by **Diátaxis** (Tutorials, How-To Guides, Reference, Explanations) and enterprise banking system governance (OCC SR 11-7 / EBA guidelines).
 
 ---
 
 ## 1. How to Navigate This Repository
+
+For a first reading, use [START-HERE](START-HERE.md). The generated
+[directory map](DIRECTORY-MAP.md) covers folder ownership and file locations.
+[Documentation evolution](engineering/DOCUMENTATION-SYSTEM.md) explains what
+must change when code, contracts, configuration or evidence evolve.
+
+Current local audit: [baseline closure, evidence and commit plan](quality/LOCAL-BASELINE-CLOSURE-20260921.md)
+(2026-09-21). Release blocked; historical live runs are labeled separately.
+
+This Git contains the application. Development tooling has its own repository;
+see [repository boundaries](engineering/REPOSITORY-BOUNDARIES.md).
+
+For machine and LLM reading, start with [README.LLM.md](../README.LLM.md),
+[llms.txt](../llms.txt), and [project-index.json](../project-index.json).
+The index covers non-ignored Markdown paths, including historical documents and
+local drafts; it does not certify their claims. See the
+[maintenance guide](engineering/DOCUMENTATION-MAINTENANCE.md) for regeneration.
 
 This documentation suite serves three distinct audiences: hiring managers/recruiters reviewing the portfolio, lead architects conducting deep-dive technical evaluations, and engineers auditing the historical construction trail.
 

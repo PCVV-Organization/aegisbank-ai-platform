@@ -1,0 +1,850 @@
+{
+  "schema_version": "1.0",
+  "path_base": "application_repository_root",
+  "entrypoints": [
+    {
+      "path": "docs/START-HERE.md",
+      "purpose": "First reading and safe local onboarding"
+    },
+    {
+      "path": "docs/DIRECTORY-MAP.md",
+      "purpose": "Directory-by-directory ownership and files"
+    },
+    {
+      "path": "docs/engineering/DOCUMENTATION-SYSTEM.md",
+      "purpose": "Documentation evolution and conventions"
+    },
+    {
+      "path": "AGENTS.md",
+      "purpose": "Development instructions"
+    },
+    {
+      "path": "README.md",
+      "purpose": "Purpose and checkout baseline"
+    },
+    {
+      "path": "README.LLM.md",
+      "purpose": "LLM reading order and evidence boundaries"
+    },
+    {
+      "path": "docs/README.md",
+      "purpose": "Documentation portal"
+    },
+    {
+      "path": "docs/architecture/CANONICAL-COMPONENTS.md",
+      "purpose": "Canonical implementations"
+    },
+    {
+      "path": "docs/architecture/E2E-FINAL-ARCHITECTURE.md",
+      "purpose": "Execution and trust boundaries"
+    },
+    {
+      "path": "docs/engineering/OWNERSHIP-MAP.md",
+      "purpose": "Component responsibilities"
+    },
+    {
+      "path": "docs/evaluation/README.md",
+      "purpose": "Evaluation taxonomy"
+    },
+    {
+      "path": "docs/evaluation/EVALUATION-CATALOG.md",
+      "purpose": "Evaluation protocols and evidence"
+    },
+    {
+      "path": "docs/security/V1.0-THREAT-MODEL.md",
+      "purpose": "Threat model"
+    },
+    {
+      "path": "docs/quality/TEST-STRATEGY.md",
+      "purpose": "Validation strategy"
+    },
+    {
+      "path": "docs/releases/V1.0-EVIDENCE.md",
+      "purpose": "Historical release evidence"
+    },
+    {
+      "path": "docs/engineering/DOCUMENTATION-MAINTENANCE.md",
+      "purpose": "Index maintenance"
+    }
+  ],
+  "components": [
+    {
+      "path": "services/mock-core-banking",
+      "purpose": "Synthetic banking API and persistence"
+    },
+    {
+      "path": "ml/intent-classifier",
+      "purpose": "Offline intent-classification experiment"
+    },
+    {
+      "path": "ai/rag",
+      "purpose": "Knowledge retrieval and grounded generation"
+    },
+    {
+      "path": "ai/agent",
+      "purpose": "Single application agent and controlled tools"
+    },
+    {
+      "path": "functions/aegisbank-events",
+      "purpose": "Event processing"
+    },
+    {
+      "path": "contracts",
+      "purpose": "Machine-readable integration contracts"
+    },
+    {
+      "path": "deploy",
+      "purpose": "Local and deployment configuration, not execution evidence"
+    },
+    {
+      "path": "scripts",
+      "purpose": "Quality, evaluation and maintenance commands"
+    },
+    {
+      "path": ".github/workflows",
+      "purpose": "CI configuration, not runner evidence"
+    }
+  ],
+  "documents": [
+    {
+      "path": ".github/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "AGENTS.md",
+      "category": "entrypoint"
+    },
+    {
+      "path": "README.LLM.md",
+      "category": "entrypoint"
+    },
+    {
+      "path": "README.md",
+      "category": "entrypoint"
+    },
+    {
+      "path": "ai/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/configuration/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/evaluation/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/mcp/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/mlops/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/observability/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/prompts/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/reliability/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/src/aegisbank_agent/tools/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/agent/tests/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/rag/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ai/rag/src/aegisbank_rag/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "contracts/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "deploy/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "deploy/kubernetes/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "deploy/local/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "docs/DIRECTORY-MAP.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "docs/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "docs/START-HERE.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "docs/architecture/ARCHITECTURE-INTEGRITY-REPORT.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/CANONICAL-COMPONENTS.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/CONTAINER-PLATFORM-DECISION.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/CONVERSATIONAL-RELEVANCE.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/COSMOS-PARTITION-DESIGN.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/E2E-FINAL-ARCHITECTURE.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/EVENT-GRID-CLOUD-DESIGN.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/EVENT-GRID-VS-SERVICE-BUS.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/README.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/REDIS-CACHE-POLICY.md",
+      "category": "architecture-reference"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-001-modular-monolith-first.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-002-local-sqlite-before-postgresql.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-003-agent-sdk-pydantic-ai.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-004-vector-store-chromadb-in-process.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-005-deferred-tooling-evaluation.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-006-classical-ml-intent-baseline.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-007-group-aware-synthetic-evaluation.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-008-local-retrieval-before-azure-ai-search.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-009-hybrid-retrieval-with-rrf.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-010-provider-agnostic-llm-boundary.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-011-grounded-generation-citation-validation.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-012-single-agent-orchestrator-read-only-tools.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-013-deterministic-tool-authorization-boundary.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-014-local-mcp-boundary-stdio.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-015-mandatory-hitl-for-banking-writes.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-016-idempotent-banking-writes-before-retries.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-017-transactional-outbox-and-messaging-abstraction.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-018-circuit-breaker-policy-for-external-dependencies.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-019-opentelemetry-vendor-neutral-observability.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-020-structured-audit-event-model.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-021-hotl-supervisory-kill-switch-for-writes.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-022-layered-test-strategy-and-quality-gates.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-023-contract-first-compatibility-and-schema-protection.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-023-contract-first-compatibility-protection.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-024-ci-cd-pipeline-and-devsecops-shift-left-gates.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-024-ci-security-gates-before-deployment.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-025-local-containers-and-service-bus-adapter.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-026-azure-service-bus-emulator-messaging-adapter.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-027-container-platform-decision-container-apps-vs-aks.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-028-azure-functions-event-grid-local-serverless-foundation.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-029-configuration-secrets-identity-boundary.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-030-local-ai-evaluation-and-mlops-foundation.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/architecture/adr/README.md",
+      "category": "historical-architecture-decision"
+    },
+    {
+      "path": "docs/briefings/AEGISBANK-AI-PLATFORM-CHATGPT-BRIEFING.md",
+      "category": "context-snapshot-verify-against-checkout"
+    },
+    {
+      "path": "docs/briefings/README.md",
+      "category": "context-snapshot-verify-against-checkout"
+    },
+    {
+      "path": "docs/career/README.md",
+      "category": "portfolio-context"
+    },
+    {
+      "path": "docs/career/role-profile-images-and-gap-analysis.md",
+      "category": "portfolio-context"
+    },
+    {
+      "path": "docs/charter/01-vision.md",
+      "category": "historical-charter"
+    },
+    {
+      "path": "docs/charter/02-scope.md",
+      "category": "historical-charter"
+    },
+    {
+      "path": "docs/charter/03-use-cases.md",
+      "category": "historical-charter"
+    },
+    {
+      "path": "docs/charter/04-non-goals.md",
+      "category": "historical-charter"
+    },
+    {
+      "path": "docs/charter/05-success-criteria.md",
+      "category": "historical-charter"
+    },
+    {
+      "path": "docs/charter/README.md",
+      "category": "historical-charter"
+    },
+    {
+      "path": "docs/chatgpt-prompts/000_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/001_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/002_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/003_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/004_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/005_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/006_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/007_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/008_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/009_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/010_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/011_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/012_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/013_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/014_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/015_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/016_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/017_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/018_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/019_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/020A_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/020_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/021_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/022A_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/023_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/024_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/025_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/026_PROMPT.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/chatgpt-prompts/README.md",
+      "category": "historical-prompt-not-instructions"
+    },
+    {
+      "path": "docs/engineering/DOCUMENTATION-MAINTENANCE.md",
+      "category": "engineering-reference"
+    },
+    {
+      "path": "docs/engineering/DOCUMENTATION-SYSTEM.md",
+      "category": "engineering-reference"
+    },
+    {
+      "path": "docs/engineering/OWNERSHIP-MAP.md",
+      "category": "engineering-reference"
+    },
+    {
+      "path": "docs/engineering/README.md",
+      "category": "engineering-reference"
+    },
+    {
+      "path": "docs/engineering/REPOSITORY-BOUNDARIES.md",
+      "category": "engineering-reference"
+    },
+    {
+      "path": "docs/evaluation/EVALUATION-CATALOG.md",
+      "category": "evaluation-protocol-or-historical-evidence"
+    },
+    {
+      "path": "docs/evaluation/README.md",
+      "category": "evaluation-protocol-or-historical-evidence"
+    },
+    {
+      "path": "docs/evaluation/v015-ai-evaluation-mlops.md",
+      "category": "evaluation-protocol-or-historical-evidence"
+    },
+    {
+      "path": "docs/experiments/README.md",
+      "category": "historical-experiment"
+    },
+    {
+      "path": "docs/experiments/v0.3-intent-classification-baseline.md",
+      "category": "historical-experiment"
+    },
+    {
+      "path": "docs/experiments/v0.4-rag-retrieval-foundation.md",
+      "category": "historical-experiment"
+    },
+    {
+      "path": "docs/experiments/v0.5-foundry-local-recovery-plan.md",
+      "category": "historical-experiment"
+    },
+    {
+      "path": "docs/experiments/v0.5-grounded-generation-evaluation.md",
+      "category": "historical-experiment"
+    },
+    {
+      "path": "docs/experiments/v0.6.1-native-tool-calling.md",
+      "category": "historical-experiment"
+    },
+    {
+      "path": "docs/experiments/v0.7.0-mcp-hitl.md",
+      "category": "historical-experiment"
+    },
+    {
+      "path": "docs/learning/AZURE-FUNCTIONS-TRIGGERS-BINDINGS.md",
+      "category": "learning-reference"
+    },
+    {
+      "path": "docs/learning/CONTAINERS-SERVICE-BUS.md",
+      "category": "learning-reference"
+    },
+    {
+      "path": "docs/learning/GLOSSARY.md",
+      "category": "learning-reference"
+    },
+    {
+      "path": "docs/learning/MASTERS-NOTES.md",
+      "category": "learning-reference"
+    },
+    {
+      "path": "docs/learning/PGVECTOR.md",
+      "category": "learning-reference"
+    },
+    {
+      "path": "docs/learning/README.md",
+      "category": "learning-reference"
+    },
+    {
+      "path": "docs/learning/TEACHING-CONTRACT.md",
+      "category": "learning-reference"
+    },
+    {
+      "path": "docs/learning/V1.0-MASTERS-NOTES.md",
+      "category": "learning-reference"
+    },
+    {
+      "path": "docs/operations/KUBERNETES-TROUBLESHOOTING.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/README.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/runbooks/README.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/runbooks/dependency-outage.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/runbooks/dlq-and-kill-switch.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/runbooks/incident-response.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/runbooks/rollback.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/quality/DOCUMENTATION-REORGANIZATION-20260915.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/E2E-MATRIX.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/LOCAL-BASELINE-CLOSURE-20260921.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/NAVIGATION-20260922.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/README.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/TEST-STRATEGY.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/TEST-SUITE-RATIONALIZATION.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/V0131-RUNTIME-EVIDENCE.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/V0140-APPCONFIG-IDENTITY-EVIDENCE.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/V0150-EVALUATION-MLOPS-EVIDENCE.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/V1.0-PERFORMANCE-EVIDENCE.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/V1.0-SLI-SLO-LAB-REPORT.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/releases/PORTFOLIO-INTERVIEW-EVIDENCE.md",
+      "category": "historical-release-evidence"
+    },
+    {
+      "path": "docs/releases/README.md",
+      "category": "historical-release-evidence"
+    },
+    {
+      "path": "docs/releases/V1.0-EVIDENCE.md",
+      "category": "historical-release-evidence"
+    },
+    {
+      "path": "docs/requirements/COVERAGE-MATRIX.md",
+      "category": "requirements-reference"
+    },
+    {
+      "path": "docs/requirements/MIBANCO-JOB-PROFILE-2026.md",
+      "category": "requirements-reference"
+    },
+    {
+      "path": "docs/requirements/README.md",
+      "category": "requirements-reference"
+    },
+    {
+      "path": "docs/requirements/V1.0-MATURITY-MATRIX.md",
+      "category": "requirements-reference"
+    },
+    {
+      "path": "docs/research/README.md",
+      "category": "historical-research"
+    },
+    {
+      "path": "docs/research/mcp-python-sdk-hitl-patterns.md",
+      "category": "historical-research"
+    },
+    {
+      "path": "docs/research/pydantic-ai-mcp-integration.md",
+      "category": "historical-research"
+    },
+    {
+      "path": "docs/security/CONTAINER-SECURITY.md",
+      "category": "security-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/security/DATA-LAYER-SECURITY.md",
+      "category": "security-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/security/DEVSECOPS-GATES.md",
+      "category": "security-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md",
+      "category": "security-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/security/README.md",
+      "category": "security-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/security/SERVERLESS-SECURITY.md",
+      "category": "security-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/security/V1.0-THREAT-MODEL.md",
+      "category": "security-reference-or-dated-evidence"
+    },
+    {
+      "path": "functions/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "functions/aegisbank-events/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ml/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ml/intent-classifier/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "ml/intent-classifier/src/aegisbank_intent_classifier/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "scripts/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "services/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "services/mock-core-banking/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "services/mock-core-banking/src/mock_core_banking/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "services/mock-core-banking/src/mock_core_banking/api/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "services/mock-core-banking/src/mock_core_banking/domain/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "services/mock-core-banking/src/mock_core_banking/persistence/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "services/mock-core-banking/src/mock_core_banking/schemas/README.md",
+      "category": "component-guide"
+    }
+  ],
+  "excluded_context": [
+    ".coordination",
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".smoke",
+    ".venv",
+    ".venv-functions",
+    "__pycache__",
+    "artifacts",
+    "build",
+    "data",
+    "dist",
+    "local databases",
+    "logs",
+    "mlruns",
+    "node_modules",
+    "reports",
+    "secrets",
+    "venv"
+  ],
+  "directory_map": "docs/DIRECTORY-MAP.md",
+  "curation_manifest": "docs/navigation.json",
+  "expanded_context": "llms-full.txt"
+}

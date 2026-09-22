@@ -1,7 +1,9 @@
 # AegisBank Mock Core Banking
 
-Local, deterministic backend for the `v0.2.0 - Core Banking Mock` milestone of
-AegisBank AI Platform.
+Local, deterministic backend, introduced in `v0.2.0 - Core Banking Mock`.
+The current platform also consumes its persistence and transactional outbox.
+See the [platform README](../../README.md) for the technical baseline and
+[canonical components](../../docs/architecture/CANONICAL-COMPONENTS.md) for integrations.
 
 > This is a local educational mock. It is not a real core banking system.
 
@@ -37,7 +39,7 @@ and next-installment rules rather than persistence objects.
 ## Requirements
 
 - Python `3.14.x`
-- Project-local virtual environment at `C:\aegisbank-ai-platform\.venv`
+- Project-local virtual environment at `.venv` under the application Git root
 
 Runtime and development versions are pinned in [`pyproject.toml`](pyproject.toml).
 The current FastAPI/Starlette `TestClient` uses `httpx2`, as recommended by the

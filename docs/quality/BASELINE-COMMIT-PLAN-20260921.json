@@ -1,0 +1,82 @@
+{
+  "status": "PROPOSED_NOT_STAGED_NOT_COMMITTED",
+  "repository": "application",
+  "baseline_head": "477ac3b4ddf07931b6c4f50650bf1a6d98944e62",
+  "commits": [
+    {
+      "order": 1,
+      "title": "fix(agent): enforce query tool policy and correct disclosure evaluation",
+      "body": "Purpose\nClose an evidenced gap where a model proposal could invoke a registered tool\noutside the active query allowlist. Consolidate the existing uncommitted Phase-2\nsecurity work without adding a banking capability or architectural component.\n\nChanges\nEnforce query policy before registry dispatch, cached reads and HITL requests.\nRecognize explicit Spanish claim imperatives while retaining human approval.\nReuse the canonical customer detector in the disclosure oracle; include regression\ncases beyond the numerically next customer. Preserve the existing untrusted-context\nlabels, least-agency routing, Phase-2 harness and invariant consistency tests.\nReconcile R1 narrative labels with the historical R2 JSON and document telemetry limits.\n\nValidation\nFocused evaluation/routing suite: 81 passed in 2.67s. E2E: 11 passed in 1.99s.\nCanonical scripts/quality_gate.py --fast: 13 PASS, 0 gate SKIP; underlying suites\n466 passed and 11 Redis-dependent tests skipped. New dispatch and disclosure\nregressions failed before the fixes and passed afterwards.\n\nLimitations\nNo live Foundry rerun. R2 remains partial: model-only proposal capture and semantic\noutput-guard false positives are not established. Pyright still reports 75 errors\nacross 97 source files analyzed. This commit does not declare a release.",
+      "paths": [
+        "ai/agent/src/aegisbank_agent/agent.py",
+        "ai/agent/src/aegisbank_agent/evaluation/__init__.py",
+        "ai/agent/src/aegisbank_agent/evaluation/red_team.py",
+        "ai/agent/src/aegisbank_agent/knowledge_routing.py",
+        "ai/agent/tests/unit/evaluation/test_invariant_registry_consistency.py",
+        "ai/agent/tests/unit/evaluation/test_least_agency.py",
+        "ai/agent/tests/unit/evaluation/test_output_guard.py",
+        "ai/agent/tests/unit/evaluation/test_phase2_red_team.py",
+        "ai/agent/tests/unit/routing/test_adversarial_red_team.py",
+        "ai/agent/tests/unit/routing/test_agent_lifecycle.py",
+        "docs/briefings/AEGISBANK-AI-PLATFORM-CHATGPT-BRIEFING.md",
+        "docs/evaluation/EVALUATION-CATALOG.md",
+        "docs/security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md",
+        "docs/security/V1.0-THREAT-MODEL.md",
+        "scripts/run_local_red_team.py",
+        "scripts/run_phase22_live.py"
+      ],
+      "depends_on": []
+    },
+    {
+      "order": 2,
+      "title": "docs(application): define repository boundaries and machine navigation",
+      "body": "Purpose\nMake the independent application understandable to developers and LLMs without\nconfusing it with the outer development environment or historical milestone claims.\n\nChanges\nUpdate component entrypoints, repository boundaries, application instructions and\ndocumentation ownership. Add deterministic JSON/llms navigation generation and its\ntests. Require reviewed commit titles and detailed purpose/change/validation/limits\nbodies. Preserve the historical Git messages and uncommitted-work distinction.\n\nValidation\nscripts/test_documentation_index.py: 7 passed. Regenerate project-index.json and\nllms.txt, then run scripts/documentation_index.py --check and git diff --check.\nThe final closure report records observed checks and exact file selection.\n\nLimitations\nNavigation indexes do not certify runtime behavior. Absolute workspace paths are\nlocal setup information; application and ai-env remain independent Git repositories.\nThis commit depends on the security/evaluation files referenced by the documentation.",
+      "paths": [
+        "AGENTS.md",
+        "README.LLM.md",
+        "README.md",
+        "ai/agent/README.md",
+        "ai/rag/README.md",
+        "deploy/local/README.md",
+        "docs/README.md",
+        "docs/architecture/CANONICAL-COMPONENTS.md",
+        "docs/engineering/DOCUMENTATION-MAINTENANCE.md",
+        "docs/engineering/REPOSITORY-BOUNDARIES.md",
+        "docs/quality/DOCUMENTATION-REORGANIZATION-20260915.md",
+        "llms.txt",
+        "ml/intent-classifier/README.md",
+        "project-index.json",
+        "scripts/documentation_index.py",
+        "scripts/test_documentation_index.py",
+        "services/mock-core-banking/README.md"
+      ],
+      "depends_on": [
+        1
+      ]
+    },
+    {
+      "order": 3,
+      "title": "docs(quality): record baseline evidence and blocked release readiness",
+      "body": "Purpose\nRecord the current local state after 477ac3b with reproducible evidence provenance\nand an explicit commit plan before another application milestone is selected.\n\nChanges\nAdd the 20-section closure report, machine-readable evidence and exact per-commit\nfile lists. Preserve historical report payloads, dates and SHA-256 digests. Record\nthe failed first lint/format gate and successful final gate separately. Update the\nmaturity matrix for current Docker availability without claiming reproducibility.\n\nValidation\nFinal FAST: 13/13 gates passed; 466 tests passed and 11 skipped inside these suites.\nCritical E2E: 11 passed. Nine contract schemas and five canonical imports passed.\nTracked-plus-untracked secret-pattern scan passed; no staged files or remotes.\nPyright: 75 errors, 0 warnings, 97 files analyzed; release remains blocked.\n\nLimitations\nNo semantic version, tag, remote CI run, cloud deployment or new live evaluation.\nR2 remains partial. Isolated Docker reproduction and type remediation remain open.\nThis evidence commit depends on both preceding commits and is not release approval.",
+      "paths": [
+        "docs/quality/BASELINE-COMMIT-PLAN-20260921.json",
+        "docs/quality/LOCAL-BASELINE-CLOSURE-20260921.md",
+        "docs/quality/LOCAL-BASELINE-EVIDENCE-20260921.json",
+        "docs/requirements/V1.0-MATURITY-MATRIX.md"
+      ],
+      "depends_on": [
+        1,
+        2
+      ]
+    }
+  ],
+  "excluded": [
+    "reports/",
+    ".coordination/",
+    ".venv/",
+    "mlruns/",
+    "artifacts/",
+    ".env and local credentials"
+  ],
+  "requires_user_authorization_after_review": true
+}

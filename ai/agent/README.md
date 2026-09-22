@@ -1,53 +1,45 @@
-# AegisBank Agent v0.6
+# AegisBank Agent
 
-Single-agent orchestrator with read-only function tools for AegisBank AI Platform.
+Single application agent with controlled banking tools, retrieval, durable session
+state, MCP and human-approved service-request operations. See the
+[platform README](../../README.md) for the checkout baseline; the package version
+in pyproject.toml is component metadata, not the platform release number.
 
-## Overview
+## Responsibilities
 
-v0.6 implements a deterministic single-agent that responds to customer queries
-using only read-only tools. The agent:
+- Route banking reads through deterministic identity and ownership policies.
+- Use registered tools and validate their inputs and outputs.
+- Retrieve knowledge and abstain when supporting evidence is missing.
+- Bind writes to explicit human approval and enforce supervision and idempotency.
+- Preserve trace context, structured logs, audit events and synthetic session state.
+- Evaluate safety and behavior separately from infrastructure acceptance.
 
-- Uses `customer_id` from session context to enforce data ownership
-- Selects from 4 read-only tools via OpenAI function-calling
-- Enforces strict schema validation on all tool inputs
-- Rejects unknown/invalid tools and write operations
-- Bounded to 3 tool-call rounds per session
-- Uses `tool_choice=auto` for model-driven tool selection
+The original v0.6 read-only scope has been extended. Historical measurements
+remain in the [experiment record](../../docs/experiments/v0.6.1-native-tool-calling.md).
+Current components are mapped in the
+[canonical catalog](../../docs/architecture/CANONICAL-COMPONENTS.md).
 
-## Tool Allowlist
+## Navigation
 
-| Tool | Purpose |
-|------|---------|
-| `search_knowledge(query)` | RAG search over synthetic banking corpus |
-| `get_my_loans()` | List loans for session customer |
-| `get_loan_details(loan_id)` | Loan detail with ownership check |
-| `get_next_installment(loan_id)` | Next installment with ownership check |
+| Path | Responsibility |
+| --- | --- |
+| [agent.py](src/aegisbank_agent/agent.py) | Main orchestration and execution controls. |
+| [knowledge_routing.py](src/aegisbank_agent/knowledge_routing.py) | Deterministic routing policies. |
+| [tools](src/aegisbank_agent/tools/) | Tool contracts, registry and implementations. |
+| [hitl.py](src/aegisbank_agent/hitl.py) | Approval lifecycle. |
+| [mcp_boundary.py](src/aegisbank_agent/mcp_boundary.py) | MCP tool boundary. |
+| [reliability](src/aegisbank_agent/reliability/) | Idempotency, retry, timeout, outbox and messaging. |
+| [observability](src/aegisbank_agent/observability/) | Traces, logs, metrics, audit and supervision. |
+| [configuration](src/aegisbank_agent/configuration/) | Configuration and secret boundaries. |
+| [evaluation](src/aegisbank_agent/evaluation/) and [mlops](src/aegisbank_agent/mlops/) | Evaluation and experiment tooling. |
+| [tests](tests/) | Unit, integration, contracts, E2E and infrastructure suites. |
 
-## Architecture
+## Local usage
 
-```
-AgentOrchestrator
-├── ToolRegistry (allowlist of 4 FunctionTool)
-│   ├── SearchKnowledgeTool (reuses ai/rag retrieval)
-│   ├── GetMyLoansTool (mock-core-banking)
-│   ├── GetLoanDetailsTool (mock-core-banking + ownership)
-│   └── GetNextInstallmentTool (mock-core-banking + ownership)
-├── AgentContext (session_customer_id)
-└── AgentExecutionResult (answer, tool_calls, rounds, success)
-```
-
-## Usage
-
-```python
-from aegisbank_agent.agent import AgentOrchestrator
-from aegisbank_agent.tools.registry import ToolRegistry
-
-registry = ToolRegistry()
-orchestrator = AgentOrchestrator(registry=registry)
-
-result = orchestrator.run("¿Cuáles son mis préstamos activos?", customer_id="CUST-0001")
-print(result.answer)
-```
+Run from the application Git root. Use its Python 3.14 environment and the local
+packages declared in [pyproject.toml](pyproject.toml); see the
+[Core Banking setup](../../services/mock-core-banking/README.md) and
+[RAG setup](../rag/README.md) for those dependencies.
 
 ### Durable conversational state
 
@@ -72,63 +64,13 @@ when empty, the adapter discovers the current endpoint with `foundry server
 status -o json`. LLM calls use a bounded timeout and retry count from the
 environment and never retry indefinitely.
 
-## Evaluation
+## Validation and evidence
 
-Six proxy metrics computed by the local deterministic harness:
+Use the [test strategy](../../docs/quality/TEST-STRATEGY.md) and
+[evaluation catalog](../../docs/evaluation/EVALUATION-CATALOG.md) to select checks.
+The old tests/v06 layout no longer represents the current tree.
+Infrastructure and live-model tests have additional runtime requirements.
 
-| Metric | Description |
-|--------|-------------|
-| `tool_selection_accuracy` | Correct tool selected |
-| `tool_input_accuracy` | Correct arguments provided |
-| `tool_call_success` | Tool succeeded/failed as expected |
-| `no_write_compliance` | Write intents rejected |
-| `ownership_enforcement` | Cross-customer access denied |
-| `task_completion_proxy` | Has answer + reasonable tool usage |
-
-Run evaluation:
-
-```bash
-cd ai/agent
-pytest tests/v06/ -v
-```
-
-## Files
-
-```
-ai/agent/
-├── src/aegisbank_agent/
-│   ├── agent.py          # AgentOrchestrator
-│   ├── constants.py      # Path constants
-│   ├── evaluation.py     # Deterministic evaluation harness
-│   ├── prompts/
-│   │   └── agent-system-v001.json
-│   └── tools/
-│       ├── base.py           # FunctionTool, AgentContext, ToolResult
-│       ├── banking_tools.py  # Banking tools
-│       ├── knowledge_tools.py # RAG search tool
-│       └── registry.py       # ToolRegistry
-├── data/
-│   ├── agent-eval.jsonl  # Legacy eval cases
-│   └── eval-cases.jsonl   # v0.6 synthetic dataset
-├── tests/v06/
-│   ├── test_registry.py
-│   ├── test_schemas.py
-│   ├── test_security.py
-│   ├── test_ownership.py
-│   ├── test_round_limit.py
-│   ├── test_rag.py
-│   ├── test_core_banking.py
-│   ├── test_evaluation.py
-│   └── test_reproducibility.py
-└── pyproject.toml
-```
-
-## Constraints
-
-- No Docker, Azure, az, MCP, HITL, worktrees, or write tools
-- Uses existing `FoundryLocalProvider` and Chat Completions
-- Reuses `ai/rag` without modifying corpus/retrieval/rag-answer-v001
-- Mock Core Banking via in-memory SQLite with deterministic seed
-- One live local evaluation over 15 synthetic cases is recorded in
-  `reports/agent-live-metrics.json`; no cloud model or production threshold is
-  implied.
+The working tree can contain uncommitted red-team changes. Inspect Git before
+attributing them to a release. Documentation does not prove that a live model,
+Docker, or a cloud service has been exercised in the current session.

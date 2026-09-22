@@ -1,121 +1,120 @@
 # AegisBank AI Platform
 
-> Educational and portfolio laboratory designed to demonstrate secure agentic
-> banking AI with Python, Microsoft Foundry, RAG, MCP, human oversight, resilient
-> cloud architecture, MLOps, and Azure.
+Laboratorio educativo y de portafolio para construir IA bancaria segura con
+Python y datos sintéticos. **Aegis** consulta documentación y datos bancarios
+simulados, y propone solicitudes de servicio sujetas a aprobación humana.
+El LLM interpreta y propone; las reglas de identidad, autorización y negocio
+deciden qué se ejecuta.
 
----
+## Estado del proyecto
 
-## 1. What It Is
+**Cierre local 2026-09-21:** gate FAST 13/13, 466 pruebas aprobadas y 11 omitidas;
+11 E2E aprobadas. Release bloqueada por 75 errores Pyright; R2 sigue parcial.
+Consultar el [informe y plan de commits](docs/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Los resultados live anteriores son históricos; no se creó una nueva release.
 
-AegisBank AI Platform is an educational and portfolio laboratory for designing,
-building, evaluating, securing, and operating a fictitious banking AI platform.
-Its assistant, **Aegis**, answers questions from authorized knowledge,
-reads synthetic customer information through controlled tools, and proposes
-low-risk write actions requiring explicit human approval.
+Referencia revisada el **2026-09-15**: commit `477ac3b`, identificado como
+**v1.0.6** en el historial Git. La organización documental v1.0.2 es un hito
+anterior, no la versión técnica actual. Hay cambios locales de seguridad y
+evaluación posteriores a esa base; no constituyen por sí solos una nueva release.
 
-The project demonstrates grounded generation, deterministic authorization,
-human oversight, reliability, auditability, testing, and observability without
-pretending to reproduce a complete bank.
+Consulta `git status --short` y `git log -1 --oneline` para conocer tu checkout.
+Los resultados en [evidencia de release](docs/releases/V1.0-EVIDENCE.md) son
+históricos. Esta actualización documental no vuelve a ejecutar ni certifica
+las pruebas bancarias, los modelos, los contenedores o la nube.
 
-### What It Is Not
-- It is not a bank, a core banking product, or production financial software.
-- It is not affiliated with Mibanco, Microsoft, the SBS, or any financial institution.
-- It does not use real customers, identifiers, accounts, cards, credentials, or transactions.
-- It does not make real credit decisions or execute transfers, payments, or disbursements.
-- It does not claim legal, regulatory, security, or NIST certification or compliance.
+## Entradas de lectura
 
-All project data is strictly synthetic and reproducible.
+Esta aplicación tiene su propio Git. El entorno de desarrollo `ai-env` es otro
+repositorio: consulta [los límites](docs/engineering/REPOSITORY-BOUNDARIES.md).
 
----
+| Necesidad | Punto de entrada |
+| --- | --- |
+| Contexto para LLMs y agentes de desarrollo | [README.LLM.md](README.LLM.md) y [AGENTS.md](AGENTS.md) |
+| Navegación compacta | [llms.txt](llms.txt) |
+| Inventario para herramientas | [project-index.json](project-index.json) |
+| Documentación completa | [Portal documental](docs/README.md) |
+| Arquitectura y responsabilidades | [Componentes canónicos](docs/architecture/CANONICAL-COMPONENTS.md) y [flujo E2E](docs/architecture/E2E-FINAL-ARCHITECTURE.md) |
+| Demostración para entrevistas | [Evidencia de portafolio](docs/releases/PORTFOLIO-INTERVIEW-EVIDENCE.md) |
+| Calidad y límites de evidencia | [Estrategia de pruebas](docs/quality/TEST-STRATEGY.md) y [evaluaciones](docs/evaluation/README.md) |
 
-## 2. Current Status & Release Target
+## Componentes
 
-**Current Release:** `v1.0.2 — Documentation Information Architecture & Evaluation Taxonomy`
-**Base Technical Development:** Frozen at `v1.0.1` (`668c0b2`, evidence integrity corrective).
-**Philosophy:** *The LLM interprets and proposes; deterministic identity, policy, authorization, validation, and business rules decide.*
+| Carpeta | Función |
+| --- | --- |
+| [services/mock-core-banking](services/mock-core-banking/README.md) | API FastAPI, datos sintéticos, préstamos, cuotas, solicitudes y persistencia. |
+| [ml/intent-classifier](ml/intent-classifier/README.md) | Experimento independiente de clasificación de intenciones con ML clásico. |
+| [ai/rag](ai/rag/README.md) | Recuperación documental y generación sustentada; adaptadores pgvector y Redis. |
+| [ai/agent](ai/agent/README.md) | Un agente de aplicación, herramientas, sesiones, MCP, aprobación humana y controles de seguridad. |
+| [functions/aegisbank-events](functions/aegisbank-events/) | Procesamiento de eventos mediante Azure Functions. |
+| [contracts](contracts/) | Contratos JSON Schema de las fronteras de integración. |
+| [deploy](deploy/) | Configuración local de contenedores y manifiestos Kubernetes; su existencia no prueba despliegue. |
+| [scripts](scripts/) | Validación, evaluaciones, control de sesión y mantenimiento documental. |
 
----
+RAG significa *Retrieval-Augmented Generation*: recuperar evidencia antes de
+generar. MCP (*Model Context Protocol*) conecta herramientas con el agente.
+HITL (*Human-in-the-Loop*) exige aprobación humana para cambios de estado.
+Más conceptos en el [glosario](docs/learning/GLOSSARY.md).
 
-## 3. Portfolio & Technical Architecture Portal
-
-All platform documentation is governed and organized under the master documentation portal:
-
-👉 **[Master Documentation Portal & Information Architecture (docs/README.md)](docs/README.md)**
-
-### Tier 1: Core Portfolio Assets (Start Here)
-
-For hiring managers, lead architects, and technical interviewers, these 6 core documents demonstrate system design rigor, security modeling, and operational maturity:
-
-| Area | Primary Document | Core Competency Demonstrated |
-|---|---|---|
-| **Architectural Defense** | **[Portfolio Interview Evidence](docs/releases/PORTFOLIO-INTERVIEW-EVIDENCE.md)** | System design trade-offs (Modular Monolith, Outbox, Key Vault reference boundary), root cause analyses (`cygrpc` Win32 MAX_PATH, *pseudo-tool-call* vulnerability), and behavioral answers. |
-| **System Architecture** | **[Canonical Components](docs/architecture/CANONICAL-COMPONENTS.md)** & **[E2E Final Architecture](docs/architecture/E2E-FINAL-ARCHITECTURE.md)** | Trust boundaries, single-agent orchestrator, MCP `stdio` sandboxing, deterministic customer-id ownership filtering, and transactional outbox. |
-| **Banking AI Security** | **[STRIDE Threat Model](docs/security/V1.0-THREAT-MODEL.md)** | Formal STRIDE threat analysis covering indirect prompt injection, IDOR cross-customer attacks, replay attacks, and PII sanitization. |
-| **Operations & Resilience** | **[Operational Runbooks](docs/operations/runbooks/)** | 4 actionable disaster-recovery runbooks: [Incident Response](docs/operations/runbooks/incident-response.md), [Rollback](docs/operations/runbooks/rollback.md), [Dependency Outage](docs/operations/runbooks/dependency-outage.md), and [DLQ & Kill-Switch](docs/operations/runbooks/dlq-and-kill-switch.md). |
-| **Enterprise Requirements** | **[Capability Maturity Matrix](docs/requirements/V1.0-MATURITY-MATRIX.md)** | Traceability across 4 enterprise maturity tiers: Foundation, Enterprise Architecture, AI Safety & MLOps, and Operational Hardening. |
-| **Scientific AI Evaluation** | **[AI Evaluation Taxonomy](docs/evaluation/README.md)** & **[Evaluation Catalog](docs/evaluation/EVALUATION-CATALOG.md)** | Capability-centric evaluation across Intent, Retrieval, Generation, Agent, Safety, System E2E, and Performance with frozen holdouts and provenance reconciliation. |
-
----
-
-## 4. Key Permanent Principles
-
-1. **Deterministic Authority:** The LLM may interpret and propose; deterministic identity, policy, authorization, validation, and business rules decide.
-2. **Mandatory HITL:** Every state-changing write operation requires explicit Human-in-the-Loop approval before persistence.
-3. **Fail-Safe Abstention:** Unsupported answers must abstain rather than fabricate evidence.
-4. **Outbox Before Retries:** Writes must be transactional and idempotent before any message retry policy is enabled.
-5. **Context Propagation:** W3C `traceparent` correlation identifiers are propagated across every execution boundary.
-6. **No Fake Production Claims:** Local demonstrations remain honestly designated as `TESTED-LOCAL`, `LOCAL-LAB-PERFORMANCE-BASELINE`, `CLOUD-PENDING`, or `PROD-UNPROVEN` (see [Teaching Contract](docs/learning/TEACHING-CONTRACT.md)).
-
----
-
-## 5. Repository Structure
+## Flujo principal
 
 ```text
-aegisbank-ai-platform/
-├── README.md                           # Platform landing page (this document)
-├── .gitignore
-├── ai/
-│   ├── agent/                          # Agent orchestrator, MCP stdio server & HITL state machine
-│   └── rag/                            # Retrieval (TF-IDF, SVD, pgvector HNSW) & Grounded Generation
-├── contracts/                          # JSON Schemas (OpenAPI, CloudEvents, Outbox domain events)
-├── docs/                               # Master documentation suite (see docs/README.md)
-│   ├── architecture/                   # Canonical components, E2E architecture & 30 append-only ADRs
-│   ├── evaluation/                     # Capability-based AI evaluation taxonomy & master catalog
-│   ├── operations/                     # Production operational runbooks & Kubernetes troubleshooting
-│   ├── quality/                        # Test strategy, E2E journey matrix & performance evidence
-│   ├── releases/                       # Portfolio interview evidence & release verification
-│   ├── requirements/                   # Enterprise capability maturity matrix
-│   ├── security/                       # STRIDE threat model, DevSecOps gates, SBOM & security policies
-│   ├── learning/                       # Master's notes, didactic guides & Teaching Contract
-│   ├── experiments/                    # Early milestone exploration history (v0.3 - v0.7)
-│   └── chatgpt-prompts/                # Chronological construction prompt audit log (000 - 026)
-├── functions/
-│   └── aegisbank-events/               # Azure Functions Python v2 worker (Event Grid / CloudEvents)
-├── ml/
-│   └── intent-classifier/              # Classical ML intent baseline (TF-IDF + Logistic Regression)
-├── services/
-│   └── mock-core-banking/              # FastAPI core banking mock (Accounts, Loans, Cards, Outbox)
-└── scripts/                            # Unified quality gate, session guard, performance & evaluation CLI
+Consulta -> identidad y política deterministas -> conocimiento o herramientas
+         -> respuesta sustentada o abstención -> trazas y auditoría
+
+Propuesta de escritura -> aprobación humana -> controles de seguridad
+                      -> operación idempotente + transacción + outbox
+                      -> procesamiento del evento o cola de errores
 ```
 
----
+La base confirmada incorpora defensas de acceso entre clientes, estado de
+sesión persistente y reglas para impedir afirmaciones de cuenta sin herramientas.
+Los documentos de diseño y los ensayos locales tienen alcances distintos:
+consulta la [matriz de madurez](docs/requirements/V1.0-MATURITY-MATRIX.md).
 
-## 6. Quick Start & Verification
+## Trabajo local
 
-### Local Environment Setup
+Ejecuta los comandos desde **esta carpeta**, que contiene `ai/`, `services/`
+y `scripts/`. Si abriste el workspace exterior, entra primero a
+`aegisbank-ai-platform/`.
+
+1. Revisa las [instrucciones](AGENTS.md) y el estado Git.
+2. Sigue la instalación del componente correspondiente en la tabla anterior.
+   Las dependencias están declaradas en sus `pyproject.toml`.
+3. Para comprobar solo la navegación, con Python disponible:
+
 ```powershell
-# Activate Python 3.14 virtual environment
-.\.venv\Scripts\Activate.ps1
-
-# Run FAST Quality Gate (all 13 automated checks)
-python scripts/quality_gate.py --fast
+python -B scripts/documentation_index.py --check
+python -B -m unittest discover -s scripts -p test_documentation_index.py
+git diff --check
 ```
 
-### Run an Agent Inquiry via CLI
-```powershell
-# Read-only loan balance inquiry
-python -m aegisbank_agent.cli run "Dame detalle de mi prestamo LOAN-0001" --customer-id CUST-0001
-```
+Para cambios de aplicación, consulta la estrategia de pruebas y
+`python scripts/quality_gate.py --help`. Las ejecuciones requieren las
+dependencias del entorno y pueden producir informes; no confundas estos
+comandos documentados con evidencia de ejecución.
 
-For full setup, architecture deep-dives, and interview presentation notes, see [docs/README.md](docs/README.md).
+## Límites permanentes
+
+- Solo datos sintéticos y reproducibles.
+- Un agente de aplicación y monolito modular.
+- Aprobación humana y autorización determinista para escrituras.
+- Sin pagos, transferencias ni decisiones crediticias reales.
+- Azure y recursos de pago requieren autorización explícita.
+- Sin afirmaciones de certificación, cumplimiento o preparación productiva.
+
+## Mantener la documentación
+
+Consulta [DOCUMENTATION-MAINTENANCE.md](docs/engineering/DOCUMENTATION-MAINTENANCE.md)
+para regenerar los índices y distinguir referencias vigentes de historia.
+La [revisión documental](docs/quality/DOCUMENTATION-REORGANIZATION-20260915.md)
+describe el alcance y la validación de esta reorganización.
+
+## Navegación para empezar y mantener el orden
+
+- [Empieza aquí](docs/START-HERE.md): explicación paso a paso y tareas frecuentes.
+- [Mapa de carpetas](docs/DIRECTORY-MAP.md): responsabilidad y archivos por ubicación.
+- [Contexto LLM ampliado](llms-full.txt): guías seleccionadas, con sus fuentes.
+
+Los índices se regeneran; no es necesario copiar todos los archivos en un prompt.
+Cambios de carpetas, interfaces o evidencia requieren actualizar la guía propietaria.

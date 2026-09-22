@@ -5,7 +5,7 @@
 
 ---
 
-## Inventario Canónico de las 20 Responsabilidades
+## Inventario Canónico de Responsabilidades
 
 | Responsabilidad | Componente Canónico | Ruta Canónica | Interfaz Pública Principal | Consumidores | Punto de Extensión | Directiva DO NOT DUPLICATE |
 |---|---|---|---|---|---|---|
@@ -39,7 +39,7 @@
 ## Regla de Oro: DISCOVER BEFORE CREATE
 
 Antes de crear un nuevo archivo o clase:
-1. **Buscar:** Ejecutar `grep_search` / `rg` sobre los nombres de clases y responsabilidades.
+1. **Buscar:** Preferir el grafo de código para símbolos y dependencias; usar `rg` para texto, configuración o si el grafo no está disponible o resulta insuficiente.
 2. **Consultar:** Revisar este documento para identificar si la responsabilidad ya tiene un componente canónico.
 3. **Decidir y justificar en el PR/Commit:**
    - **`REUSE`**: Usar el componente canónico directamente.
