@@ -33,6 +33,7 @@ from .knowledge_routing import (
     is_last_loan_reference,
     requires_account_data,
     requires_authorized_knowledge,
+    requires_write_action,
     resolve_minimal_tool_allowlist,
 )
 from .observability import Observability, create_observability
@@ -107,6 +108,34 @@ def load_system_prompt(path: Path = SYSTEM_PROMPT_PATH) -> str:
     return str(payload.get("system_instruction", "")).strip()
 
 
+def format_currency(amount: str | float | None, currency: str | None = None) -> str:
+    """Format monetary values according to currency standards.
+
+    For Peruvian Soles ('PEN'): uses 'S/ {amount}', never '$'.
+    For US Dollars ('USD'): uses '${amount}'.
+    For Euros ('EUR'): uses '€{amount}'.
+    For other or empty: uses '{amount} {currency}'.
+    """
+    if amount is None or amount == "":
+        return ""
+    try:
+        amt_float = float(amount)
+        amt_str = f"{amt_float:.2f}"
+    except ValueError, TypeError:
+        amt_str = str(amount)
+
+    curr = (currency or "").strip().upper()
+    if curr == "PEN":
+        return f"S/ {amt_str}"
+    if curr == "USD":
+        return f"${amt_str}"
+    if curr == "EUR":
+        return f"€{amt_str}"
+    if curr:
+        return f"{amt_str} {curr}"
+    return amt_str
+
+
 class AgentOrchestrator:
     """Orchestrates agent interactions with tracing, HOTL, and audit logging."""
 
@@ -131,7 +160,12 @@ class AgentOrchestrator:
     ) -> None:
         self._model = model
         self._registry = registry or ToolRegistry(include_write_tools=True)
-        self._system_prompt = load_system_prompt(system_prompt_path)
+        currency_rule = (
+            "\n\nRegla de formato de moneda: Para montos en PEN (Soles peruanos), "
+            "utiliza estrictamente el prefijo 'S/' (por ejemplo: S/ 1750.00), "
+            "NUNCA utilices el símbolo de dólar '$'. Para USD utiliza '$'."
+        )
+        self._system_prompt = load_system_prompt(system_prompt_path) + currency_rule
         self._max_rounds = max_rounds
         self._hitl_manager = hitl_manager or HITLApprovalManager()
         self._approval_callback = approval_callback
@@ -231,9 +265,11 @@ class AgentOrchestrator:
                 f"Sí, el préstamo {loan_id} pertenece a tu cuenta autorizada ({customer_id}).\n\n"
             )
 
+        fmt_outstanding = format_currency(outstanding, currency)
+        fmt_principal = format_currency(principal, currency)
         return (
             f"{prefix}Préstamo {loan_id} ({product}, {currency}): "
-            f"saldo pendiente {outstanding} de {principal}. Estado: {status}."
+            f"saldo pendiente {fmt_outstanding} de {fmt_principal}. Estado: {status}."
         )
 
     @staticmethod
@@ -244,12 +280,31 @@ class AgentOrchestrator:
         if not data.get("has_next_installment"):
             return "No hay cuotas pendientes ni vencidas para este préstamo."
         installment_id = data.get("installment_id", "")
-        due_date = data.get("due_date", "")
+        due_date_str = str(data.get("due_date", ""))
         total_due = data.get("total_due", "")
-        status = data.get("status", "")
+        status = str(data.get("status", ""))
+        currency = str(data.get("currency", "PEN"))
+        formatted_due = format_currency(total_due, currency)
+
+        is_overdue = status.upper() == "OVERDUE"
+        if not is_overdue and due_date_str:
+            try:
+                from datetime import date
+
+                due_val = date.fromisoformat(due_date_str)
+                if due_val < date.today():
+                    is_overdue = True
+            except ValueError, TypeError:
+                pass
+
+        if is_overdue:
+            return (
+                f"Cuota vencida {installment_id} (venció el {due_date_str}): "
+                f"total a pagar {formatted_due}. Estado: {status}."
+            )
         return (
-            f"Próxima cuota {installment_id} (vence {due_date}): "
-            f"total a pagar {total_due}. Estado: {status}."
+            f"Próxima cuota {installment_id} (vence {due_date_str}): "
+            f"total a pagar {formatted_due}. Estado: {status}."
         )
 
     def run(
@@ -274,7 +329,7 @@ class AgentOrchestrator:
                 event_type=AuditEventType.TOOL_DENIED,
                 correlation_id=obs_ctx.correlation_id,
                 customer_id=customer_id,
-                actor="SESSION_GUARD",
+                actor="SESSION_OWNERSHIP",
                 payload={"reason": "SESSION_OWNERSHIP_VIOLATION"},
             )
             return AgentExecutionResult(
@@ -372,6 +427,7 @@ class AgentOrchestrator:
             all_tools = self._registry.export_openai_tools()
             available_tool_names = self._registry.allowed_tool_names
             account_required = requires_account_data(user_message)
+            write_required = requires_write_action(user_message)
             account_allowlist = account_tool_allowlist(user_message) if account_required else []
 
             # Least-Agency Tool Policy: resolve minimal tool set required by intent
@@ -492,16 +548,13 @@ class AgentOrchestrator:
                                 round_index=0,
                             )
                         )
-                        if inst_result.success and inst_result.data:
+                        if inst_result.success and isinstance(inst_result.data, dict):
                             inst_data = inst_result.data
                             if inst_data.get("has_next_installment"):
-                                installment_clause = (
-                                    f"\nPróxima cuota {inst_data.get('installment_id')} "
-                                    f"(vence {inst_data.get('due_date')}): total a pagar "
-                                    f"{inst_data.get('total_due')}. "
-                                    "(Nota: el sistema expone la próxima cuota a vencer; "
-                                    "no dispone de un calendario completo de cuotas futuras)."
+                                formatted_inst = AgentOrchestrator._format_installment_answer(
+                                    inst_data
                                 )
+                                installment_clause = f"\n{formatted_inst}"
                             else:
                                 installment_clause = (
                                     "\nNo hay cuotas pendientes ni vencidas para este préstamo."
@@ -523,9 +576,11 @@ class AgentOrchestrator:
                         prin_bal = 0.0
                     st = highest_loan.get("status", "")
 
+                    fmt_out_bal = format_currency(out_bal, curr)
+                    fmt_prin_bal = format_currency(prin_bal, curr)
                     comparative_answer = (
                         f"El préstamo con mayor saldo pendiente es {winner_loan_id} "
-                        f"({prod}, {curr}): saldo pendiente {out_bal:.2f} de {prin_bal:.2f}. "
+                        f"({prod}, {curr}): saldo pendiente {fmt_out_bal} de {fmt_prin_bal}. "
                         f"Estado: {st}.{installment_clause}"
                     )
                     total_dur_ms = (time.perf_counter() - start_time) * 1000.0
@@ -602,9 +657,9 @@ class AgentOrchestrator:
                 account_required
                 and forced_loan_id is not None
                 and "get_my_loans" not in account_allowlist
-                and account_allowlist == ["get_loan_details"]
+                and account_allowlist in (["get_loan_details"], ["get_next_installment"])
             ):
-                forced_tool = "get_loan_details"
+                forced_tool = account_allowlist[0]
                 with trace_span(
                     f"tool.{forced_tool}",
                     attributes={
@@ -665,7 +720,7 @@ class AgentOrchestrator:
             selected_tool = tools[0]["function"]["name"] if len(tools) == 1 else None
             effective_tool_choice: Any = (
                 {"type": "function", "function": {"name": selected_tool}}
-                if account_required and selected_tool
+                if (account_required or write_required) and selected_tool
                 else "auto"
             )
 
@@ -847,7 +902,11 @@ class AgentOrchestrator:
                         "tools_provided": len(tools),
                         "tool_choice": "auto",
                         "routing_mode": (
-                            "POLICY_ENFORCED_ROUTING" if account_required else "AUTO_ROUTING"
+                            "POLICY_ENFORCED_ROUTING"
+                            if account_required
+                            else "WRITE_ENFORCED_ROUTING"
+                            if write_required
+                            else "AUTO_ROUTING"
                         ),
                         "effective_tool_choice": effective_tool_choice,
                         "finish_reason": finish_reason,

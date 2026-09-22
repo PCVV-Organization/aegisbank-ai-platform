@@ -307,8 +307,8 @@ def test_comparative_query_with_installment_dates_executes_deterministically() -
     assert executed_names == ["get_my_loans", "get_next_installment"]
     assert "LOAN-0001" in result.answer
     assert "2800" in result.answer
-    assert "Próxima cuota" in result.answer
-    assert "vence" in result.answer
+    assert "Cuota vencida" in result.answer or "Próxima cuota" in result.answer
+    assert "venció" in result.answer or "vence" in result.answer
     assert mock_client.chat.completions.create.call_count == 0
 
 

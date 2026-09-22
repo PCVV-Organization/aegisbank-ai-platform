@@ -241,8 +241,44 @@ def has_process_hallucination(text: str) -> bool:
     return any(re.search(pat, normalized) for pat in _PROCESS_HALLUCINATION_PATTERNS)
 
 
+_WRITE_ACTION_PATTERNS = (
+    r"\b(?:crea|registra|presenta|abre|genera)\s+(?:un\s+|una\s+)?"
+    r"(?:reclamo|solicitud|queja|ticket|caso|impugnacion|reprogramacion)\b",
+    r"\b(?:registrar|crear|ingresar|presentar|generar|iniciar|abrir|hacer|formular|meter|solicitar|poner)\s+"
+    r"(?:un\s+|una\s+)?(?:reclamo|solicitud|queja|ticket|caso|impugnacion|reprogramacion)\b",
+    r"\b(?:reclamo|solicitud|queja|impugnacion)\s+(?:nuevo|nueva|urgente)\b",
+    r"\bquiero\s+(?:reclamar|quejarme|solicitar|impugnar|hacer\s+un\s+reclamo|presentar\s+un\s+reclamo|poner\s+un\s+reclamo)\b",
+    r"\bdeseo\s+(?:reclamar|impugnar|presentar\s+un\s+reclamo|registrar\s+un\s+reclamo|poner\s+un\s+reclamo)\b",
+    r"\b(?:registrar|crear|ingresar|solicitar)\s+(?:reclamo|solicitud|reprogramacion)\b",
+    r"\btengo\s+(?:un\s+|una\s+)?(?:reclamo|queja|inconformidad)\b",
+    r"\bcreate_service_request\b",
+)
+
+
+def requires_write_action(query: str) -> bool:
+    """Return True if user explicitly requests to create or register a service request/claim."""
+    normalized = _normalize(query)
+    if any(
+        term in normalized
+        for term in (
+            "procedimiento",
+            "requisito",
+            "requisitos",
+            "normativa",
+            "como presentar",
+            "como registrar",
+            "como crear",
+            "como formular",
+        )
+    ):
+        return False
+    return any(re.search(pattern, normalized) for pattern in _WRITE_ACTION_PATTERNS)
+
+
 def requires_authorized_knowledge(query: str) -> bool:
     """Return true only for factual banking policy/product questions."""
+    if requires_write_action(query):
+        return False
     normalized = _normalize(query)
     return any(term in normalized for term in _POLICY_TERMS)
 
@@ -275,7 +311,16 @@ def account_tool_allowlist(query: str) -> list[str]:
     if loan_id is not None:
         asks_installment = any(
             t in normalized
-            for t in ("cuota", "vencimiento", "proxima cuota", "cuanto debo", "mis cuotas")
+            for t in (
+                "cuota",
+                "vencimiento",
+                "proxima cuota",
+                "cuanto debo",
+                "mis cuotas",
+                "cuando vence",
+                "fecha de pago",
+                "fechas de pago",
+            )
         )
         asks_details = (
             any(
@@ -287,8 +332,6 @@ def account_tool_allowlist(query: str) -> list[str]:
                     "estado",
                     "muestrame",
                     "consultar",
-                    "prestamo",
-                    "credito",
                 )
             )
             or not asks_installment
@@ -413,25 +456,6 @@ class KnowledgeRoutingDecision:
     required: bool
     sufficient: bool
     result: Any = None
-
-
-_WRITE_ACTION_PATTERNS = (
-    r"\b(?:crea|registra|presenta|abre|genera)\s+(?:un\s+|una\s+)?"
-    r"(?:reclamo|solicitud|queja|ticket|caso|impugnacion|reprogramacion)\b",
-    r"\b(?:registrar|crear|ingresar|presentar|generar|iniciar|abrir|hacer|formular|meter|solicitar)\s+"
-    r"(?:un\s+|una\s+)?(?:reclamo|solicitud|queja|ticket|caso|impugnacion|reprogramacion)\b",
-    r"\b(?:reclamo|solicitud|queja|impugnacion)\s+(?:nuevo|nueva|urgente)\b",
-    r"\bquiero\s+(?:reclamar|quejarme|solicitar|impugnar|hacer\s+un\s+reclamo|presentar\s+un\s+reclamo)\b",
-    r"\bdeseo\s+(?:reclamar|impugnar|presentar\s+un\s+reclamo|registrar\s+un\s+reclamo)\b",
-    r"\b(?:registrar|crear|ingresar|solicitar)\s+(?:reclamo|solicitud|reprogramacion)\b",
-    r"\bcreate_service_request\b",
-)
-
-
-def requires_write_action(query: str) -> bool:
-    """Return True if user explicitly requests to create or register a service request/claim."""
-    normalized = _normalize(query)
-    return any(re.search(pattern, normalized) for pattern in _WRITE_ACTION_PATTERNS)
 
 
 def resolve_minimal_tool_allowlist(query: str, available_tools: list[str]) -> list[str]:

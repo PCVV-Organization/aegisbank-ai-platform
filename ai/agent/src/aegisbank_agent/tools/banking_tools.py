@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import json
+import os
 import re
+import urllib.error
+import urllib.request
 from typing import Any
 
 from mock_core_banking.domain.enums import ServiceRequestCategory
@@ -23,7 +27,13 @@ LOAN_ID_PATTERN: re.Pattern[str] = re.compile(r"^LOAN-[0-9]{4}$")
 
 
 def create_default_database() -> Database:
-    """Create and seed an in-memory database with synthetic banking data."""
+    """Create and seed an in-memory or configured database with synthetic banking data."""
+    db_url = os.getenv("AEGISBANK_DATABASE_URL")
+    if db_url:
+        db = Database(db_url)
+        db.create_schema()
+        seed_database(db)
+        return db
     db = Database("sqlite:///:memory:")
     db.create_schema()
     seed_database(db)
@@ -246,6 +256,7 @@ class GetNextInstallmentTool(FunctionTool):
                 success=True,
                 data={
                     "loan_id": loan_id,
+                    "currency": loan.currency.value,
                     "has_next_installment": True,
                     "installment_id": installment.installment_id,
                     "installment_number": installment.installment_number,
@@ -362,7 +373,47 @@ class CreateServiceRequestTool(FunctionTool):
             else None
         )
 
+        core_banking_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
+
         def _do_create() -> dict[str, Any]:
+            if core_banking_url:
+                target_url = f"{core_banking_url.rstrip('/')}/api/v1/service-requests"
+                payload_dict = {
+                    "customer_id": context.session_customer_id,
+                    "category": category_enum.value,
+                    "description": description.strip(),
+                }
+                req_data = json.dumps(payload_dict).encode("utf-8")
+                req = urllib.request.Request(
+                    target_url,
+                    data=req_data,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    },
+                    method="POST",
+                )
+                try:
+                    with urllib.request.urlopen(req, timeout=10.0) as resp:
+                        resp_body = resp.read().decode("utf-8")
+                        return json.loads(resp_body)
+                except urllib.error.HTTPError as http_err:
+                    err_body = http_err.read().decode("utf-8")
+                    try:
+                        err_json = json.loads(err_body)
+                        msg = (
+                            err_json.get("error", {}).get("message")
+                            or err_json.get("detail")
+                            or str(http_err)
+                        )
+                    except Exception:
+                        msg = str(http_err)
+                    raise ValueError(
+                        f"Core Banking HTTP error ({http_err.code}): {msg}"
+                    ) from http_err
+                except Exception as exc:
+                    raise ValueError(f"Core Banking HTTP connection failure: {exc}") from exc
+
             with self._db.session() as session:
                 cust_repo = CustomerRepository(session)
                 try:

@@ -39,7 +39,9 @@ def cli_approval_callback(request: ApprovalRequest) -> bool:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="aegisbank-agent",
-        description="Single-agent tool orchestration for AegisBank v0.7 with MCP and HITL",
+        description=(
+            "Single-agent tool orchestration for AegisBank AI Platform (v1.0.7) with MCP and HITL"
+        ),
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
