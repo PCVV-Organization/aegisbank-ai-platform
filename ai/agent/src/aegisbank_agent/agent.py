@@ -58,6 +58,8 @@ class ToolCallRecord:
     tool_name: str
     arguments: dict[str, Any]
     result: ToolResult
+    source: str = "MODEL_PROPOSAL"
+    round_index: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +75,7 @@ class AgentExecutionResult:
     approval_requests: list[ApprovalRequest] = field(default_factory=list)
     correlation_id: str = ""
     citations: list[dict[str, Any]] = field(default_factory=list)
+    rounds_evidence: list[dict[str, Any]] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -83,6 +86,8 @@ class AgentExecutionResult:
                     "tool_name": tc.tool_name,
                     "arguments": tc.arguments,
                     "result": tc.result.as_dict(),
+                    "source": getattr(tc, "source", "MODEL_PROPOSAL"),
+                    "round_index": getattr(tc, "round_index", 0),
                 }
                 for tc in self.tool_calls
             ],
@@ -92,6 +97,7 @@ class AgentExecutionResult:
             "approval_requests": [req.as_dict() for req in self.approval_requests],
             "correlation_id": self.correlation_id,
             "citations": self.citations,
+            "rounds_evidence": self.rounds_evidence,
         }
 
 
@@ -383,6 +389,7 @@ class AgentOrchestrator:
 
             executed_records: list[ToolCallRecord] = []
             created_approvals: list[ApprovalRequest] = []
+            rounds_evidence: list[dict[str, Any]] = []
             current_round = 0
             account_result: ToolResult | None = None
             account_model_calls = 0
@@ -399,7 +406,15 @@ class AgentOrchestrator:
                 ):
                     account_result = self._registry.execute("get_my_loans", {}, context)
                 self._metrics.increment("banking_tool_invoked_count")
-                executed_records.append(ToolCallRecord("get_my_loans", {}, account_result))
+                executed_records.append(
+                    ToolCallRecord(
+                        tool_name="get_my_loans",
+                        arguments={},
+                        result=account_result,
+                        source="APPLICATION_PREFETCH",
+                        round_index=0,
+                    )
+                )
                 messages.append(
                     {
                         "role": "system",
@@ -473,6 +488,8 @@ class AgentOrchestrator:
                                 tool_name="get_next_installment",
                                 arguments={"loan_id": winner_loan_id},
                                 result=inst_result,
+                                source="APPLICATION_PREFETCH",
+                                round_index=0,
                             )
                         )
                         if inst_result.success and inst_result.data:
@@ -606,6 +623,8 @@ class AgentOrchestrator:
                         tool_name=forced_tool,
                         arguments={"loan_id": forced_loan_id},
                         result=forced_result,
+                        source="POLICY_FORCED",
+                        round_index=0,
                     )
                 )
                 total_dur_ms = (time.perf_counter() - start_time) * 1000.0
@@ -694,6 +713,8 @@ class AgentOrchestrator:
                         tool_name="search_knowledge",
                         arguments={"query": user_message},
                         result=knowledge_result,
+                        source="APPLICATION_PREFETCH",
+                        round_index=0,
                     )
                 )
                 self._audit.record(
@@ -752,6 +773,10 @@ class AgentOrchestrator:
 
             while current_round < self._max_rounds:
                 current_round += 1
+                tools_offered_names = [tool["function"]["name"] for tool in tools]
+                round_requested: list[dict[str, Any]] = []
+                round_denied_by_policy: list[dict[str, Any]] = []
+                round_executed: list[dict[str, Any]] = []
 
                 # 1. LLM Chat Completions Call
                 llm_start = time.perf_counter()
@@ -780,6 +805,15 @@ class AgentOrchestrator:
                         error_code="LLM_COMMUNICATION_ERROR",
                         extra={"error": str(exc)},
                     )
+                    rounds_evidence.append(
+                        {
+                            "round": current_round,
+                            "tools_offered_to_model": tools_offered_names,
+                            "tools_requested_by_model": [],
+                            "tools_denied_by_policy": [],
+                            "tools_executed": [],
+                        }
+                    )
                     return AgentExecutionResult(
                         answer=(
                             "Error al comunicar con el modelo de lenguaje local (Foundry Local). "
@@ -793,6 +827,7 @@ class AgentOrchestrator:
                         error=str(exc),
                         approval_requests=created_approvals,
                         correlation_id=obs_ctx.correlation_id,
+                        rounds_evidence=rounds_evidence,
                     )
 
                 choice = response.choices[0]
@@ -821,10 +856,27 @@ class AgentOrchestrator:
                 )
 
                 if not tool_calls:
+                    rounds_evidence.append(
+                        {
+                            "round": current_round,
+                            "tools_offered_to_model": tools_offered_names,
+                            "tools_requested_by_model": [],
+                            "tools_denied_by_policy": [],
+                            "tools_executed": [],
+                        }
+                    )
                     if account_result is not None and not any(
                         rec.tool_name == "get_my_loans" for rec in executed_records
                     ):
-                        executed_records.append(ToolCallRecord("get_my_loans", {}, account_result))
+                        executed_records.append(
+                            ToolCallRecord(
+                                tool_name="get_my_loans",
+                                arguments={},
+                                result=account_result,
+                                source="APPLICATION_PREFETCH",
+                                round_index=0,
+                            )
+                        )
                     content_str = msg.content or ""
                     raw_tool_patterns = (
                         r"\bget_loan_details\s*\(",
@@ -859,6 +911,7 @@ class AgentOrchestrator:
                             success=False,
                             error="Structured tool call was not emitted",
                             correlation_id=obs_ctx.correlation_id,
+                            rounds_evidence=rounds_evidence,
                         )
                     # Model provided direct final text answer
                     answer = msg.content or ""
@@ -899,6 +952,7 @@ class AgentOrchestrator:
                             success=False,
                             error="Cross-customer reference intercepted in agent response",
                             correlation_id=obs_ctx.correlation_id,
+                            rounds_evidence=rounds_evidence,
                         )
 
                     # Invariant: NO ACCOUNT FACTS WITHOUT AUTHORIZED TOOL EVIDENCE
@@ -958,6 +1012,7 @@ class AgentOrchestrator:
                             success=False,
                             error=f"Ungrounded account response rejected ({violation_reason})",
                             correlation_id=obs_ctx.correlation_id,
+                            rounds_evidence=rounds_evidence,
                         )
 
                     total_dur_ms = (time.perf_counter() - start_time) * 1000.0
@@ -983,6 +1038,7 @@ class AgentOrchestrator:
                         success=True,
                         approval_requests=created_approvals,
                         correlation_id=obs_ctx.correlation_id,
+                        rounds_evidence=rounds_evidence,
                     )
 
                 # Append assistant message with tool calls to conversation history
@@ -1028,12 +1084,27 @@ class AgentOrchestrator:
                         payload={"tool_name": fn_name, "arguments": parsed_args},
                     )
 
+                    is_write = fn_name in WRITE_TOOLS
+                    call_entry: dict[str, Any] = {
+                        "tool_name": fn_name,
+                        "arguments": parsed_args,
+                        "normalized_arguments": parsed_args,
+                        "customer_binding": customer_id,
+                        "read_write_classification": "WRITE" if is_write else "READ",
+                        "authorization_outcome": "PENDING",
+                        "denial_reason": None,
+                    }
+                    round_requested.append(call_entry)
+
                     if fn_name not in allowed_tool_names:
                         tool_result = ToolResult(
                             tool_name=fn_name,
                             success=False,
                             error="TOOL_NOT_ALLOWED_FOR_QUERY",
                         )
+                        call_entry["authorization_outcome"] = "DENIED"
+                        call_entry["denial_reason"] = tool_result.error
+                        round_denied_by_policy.append(call_entry)
                         self._metrics.increment("tool_call_failure_count")
                         self._audit.record(
                             event_type=AuditEventType.TOOL_DENIED,
@@ -1042,7 +1113,15 @@ class AgentOrchestrator:
                             actor="SYSTEM",
                             payload={"tool_name": fn_name, "reason": tool_result.error},
                         )
-                        executed_records.append(ToolCallRecord(fn_name, parsed_args, tool_result))
+                        executed_records.append(
+                            ToolCallRecord(
+                                fn_name,
+                                parsed_args,
+                                tool_result,
+                                source="MODEL_PROPOSAL",
+                                round_index=current_round,
+                            )
+                        )
                         messages.append(
                             {
                                 "role": "tool",
@@ -1059,11 +1138,53 @@ class AgentOrchestrator:
 
                     if fn_name == "get_my_loans" and account_result is not None:
                         account_model_calls += 1
+                        tool_result = account_result
+                        call_entry["authorization_outcome"] = (
+                            "EXECUTED" if tool_result.success else "DENIED"
+                        )
+                        call_entry["denial_reason"] = (
+                            tool_result.error if not tool_result.success else None
+                        )
+                        if tool_result.success:
+                            round_executed.append(call_entry)
+                        else:
+                            round_denied_by_policy.append(call_entry)
                         if account_model_calls > 1:
                             executed_records.append(
-                                ToolCallRecord("get_my_loans", {}, account_result)
+                                ToolCallRecord(
+                                    "get_my_loans",
+                                    parsed_args,
+                                    account_result,
+                                    source="MODEL_PROPOSAL",
+                                    round_index=current_round,
+                                )
                             )
-                        tool_result = account_result
+                        else:
+                            updated_prefetch = False
+                            for idx, r in enumerate(executed_records):
+                                if (
+                                    r.tool_name == "get_my_loans"
+                                    and r.source == "APPLICATION_PREFETCH"
+                                ):
+                                    executed_records[idx] = ToolCallRecord(
+                                        "get_my_loans",
+                                        parsed_args,
+                                        account_result,
+                                        source="MODEL_PROPOSAL",
+                                        round_index=current_round,
+                                    )
+                                    updated_prefetch = True
+                                    break
+                            if not updated_prefetch:
+                                executed_records.append(
+                                    ToolCallRecord(
+                                        "get_my_loans",
+                                        parsed_args,
+                                        account_result,
+                                        source="MODEL_PROPOSAL",
+                                        round_index=current_round,
+                                    )
+                                )
                         messages.append(
                             {
                                 "role": "tool",
@@ -1090,6 +1211,8 @@ class AgentOrchestrator:
                                 f"supervisión HOTL: {reason}."
                             ),
                         )
+                        call_entry["authorization_outcome"] = "DENIED"
+                        call_entry["denial_reason"] = tool_result.error
                         self._audit.record(
                             event_type=AuditEventType.TOOL_DENIED,
                             correlation_id=obs_ctx.correlation_id,
@@ -1108,6 +1231,8 @@ class AgentOrchestrator:
                                 tool_name=fn_name,
                                 arguments=parsed_args,
                                 result=tool_result,
+                                source="MODEL_PROPOSAL",
+                                round_index=current_round,
                             )
                         )
                         messages.append(
@@ -1178,6 +1303,8 @@ class AgentOrchestrator:
                                     execution_result=tool_result.data or {},
                                 )
                                 created_approvals.append(executed_req)
+                                call_entry["authorization_outcome"] = "EXECUTED"
+                                round_executed.append(call_entry)
                                 self._audit.record(
                                     event_type=AuditEventType.HITL_EXECUTED,
                                     correlation_id=obs_ctx.correlation_id,
@@ -1191,6 +1318,8 @@ class AgentOrchestrator:
                             else:
                                 created_approvals.append(approved_req)
                                 self._metrics.increment("tool_call_failure_count")
+                                call_entry["authorization_outcome"] = "DENIED"
+                                call_entry["denial_reason"] = tool_result.error
                         else:
                             self._metrics.increment("hitl_rejected_count")
                             rejected_req = self._hitl_manager.reject(
@@ -1214,6 +1343,8 @@ class AgentOrchestrator:
                                     "No se realizó ninguna modificación en Core Banking."
                                 ),
                             )
+                            call_entry["authorization_outcome"] = "DENIED"
+                            call_entry["denial_reason"] = tool_result.error
                     else:
                         tool_start = time.perf_counter()
                         with trace_span(
@@ -1223,14 +1354,21 @@ class AgentOrchestrator:
                             tool_result = self._registry.execute(fn_name, parsed_args, context)
                         tool_dur_ms = (time.perf_counter() - tool_start) * 1000.0
                         self._metrics.record_latency("tool_latencies_ms", tool_dur_ms)
-                        if not tool_result.success:
+                        if tool_result.success:
+                            call_entry["authorization_outcome"] = "EXECUTED"
+                            round_executed.append(call_entry)
+                        else:
                             self._metrics.increment("tool_call_failure_count")
+                            call_entry["authorization_outcome"] = "DENIED"
+                            call_entry["denial_reason"] = tool_result.error
 
                     executed_records.append(
                         ToolCallRecord(
                             tool_name=fn_name,
                             arguments=parsed_args,
                             result=tool_result,
+                            source="MODEL_PROPOSAL",
+                            round_index=current_round,
                         )
                     )
                     if fn_name == "get_loan_details" and tool_result.success:
@@ -1253,6 +1391,15 @@ class AgentOrchestrator:
                             ),
                         }
                     )
+                rounds_evidence.append(
+                    {
+                        "round": current_round,
+                        "tools_offered_to_model": tools_offered_names,
+                        "tools_requested_by_model": round_requested,
+                        "tools_denied_by_policy": round_denied_by_policy,
+                        "tools_executed": round_executed,
+                    }
+                )
                 effective_tool_choice = "auto"
                 tools = [
                     tool for tool in all_tools if tool["function"]["name"] in allowed_tool_names
@@ -1273,4 +1420,5 @@ class AgentOrchestrator:
                 error="Maximum tool rounds exceeded",
                 approval_requests=created_approvals,
                 correlation_id=obs_ctx.correlation_id,
+                rounds_evidence=rounds_evidence,
             )

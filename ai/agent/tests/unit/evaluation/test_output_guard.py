@@ -128,3 +128,94 @@ def test_redact_foreign_customer_ids() -> None:
     assert redacted == (
         "El cliente CUST-0001 consultó datos de [REDACTADO] y [REDACTADO] en el sistema."
     )
+
+
+def test_output_guard_tp_foreign_customer_disclosure() -> None:
+    """Foreign customer ID in generated output must be detected as cross-customer attempt (TP)."""
+    session_customer = "CUST-0001"
+    disclosures = [
+        "El préstamo LOAN-0002 pertenece al cliente CUST-0002 con saldo de 12000 PEN.",
+        "Datos de cuenta de CUST-9999 recuperados exitosamente.",
+        "SBS auditoria: el titular es cust-0005 según registros.",
+    ]
+    for text in disclosures:
+        assert is_cross_customer_attempt(text, session_customer) is True, (
+            f"Expected True Positive for foreign customer disclosure: '{text}'"
+        )
+
+
+def test_output_guard_tn_safe_generic_explanation() -> None:
+    """Generic explanations without customer tokens must NOT trigger output guard (TN)."""
+    session_customer = "CUST-0001"
+    safe_texts = [
+        (
+            "Los requisitos para un crédito vehicular son documento de identidad "
+            "y sustento de ingresos."
+        ),
+        "Para presentar un reclamo, acércate a una agencia o llama a nuestra central telefónica.",
+        "Las tasas de interés SBS varían según el producto y el plazo evaluado.",
+        "No encuentro información suficiente en la base de conocimiento autorizada.",
+    ]
+    for text in safe_texts:
+        assert is_cross_customer_attempt(text, session_customer) is False, (
+            f"Expected True Negative (no trigger) for safe generic text: '{text}'"
+        )
+
+
+def test_output_guard_tn_own_customer_id_mention() -> None:
+    """Mentioning the authenticated customer's own ID must NOT be flagged as cross-customer (TN)."""
+    session_customer = "CUST-0001"
+    own_id_texts = [
+        "Estimado cliente CUST-0001, tu saldo pendiente es 10000 PEN.",
+        "Confirmamos que la sesión corresponde a cust-0001.",
+        "Cliente CUST-0001: tu solicitud ha sido registrada correctamente.",
+    ]
+    for text in own_id_texts:
+        assert is_cross_customer_attempt(text, session_customer) is False, (
+            f"Expected True Negative (no trigger) when mentioning own customer ID: '{text}'"
+        )
+
+
+def test_output_guard_tn_malformed_lookalikes_no_false_positives() -> None:
+    """Malformed tokens or unrelated numbers must NOT trigger false positives (TN)."""
+    session_customer = "CUST-0001"
+    malformed_texts = [
+        "Referencia de ticket: CUSTOMER-0002 en el sistema antiguo.",
+        "Código interno: CUST_0002 y CUST-1 y CUST-12345.",
+        "Identificador: CLIENTE-0002 o USUARIO-0001.",
+        "Cuenta número 1234-5678-9012-3456 en soles.",
+        "Número de documento CUST-ABC no es un ID canónico.",
+    ]
+    for text in malformed_texts:
+        assert is_cross_customer_attempt(text, session_customer) is False, (
+            f"Expected True Negative (no false positive) for malformed lookalike: '{text}'"
+        )
+
+
+def test_output_guard_tp_multiple_ids_and_cross_customer_detection() -> None:
+    """Multiple customer IDs containing foreign IDs must trigger cross-customer detection (TP)."""
+    session_customer = "CUST-0001"
+    mixed_texts = [
+        "Sesión activa de CUST-0001. Transferencia hacia CUST-0002 procesada.",
+        "Clientes vinculados: CUST-0001, CUST-0003 y CUST-0004.",
+        "Comparativa: CUST-0002 tiene saldo 5000 mientras CUST-0001 tiene 2000.",
+    ]
+    for text in mixed_texts:
+        assert is_cross_customer_attempt(text, session_customer) is True, (
+            f"Expected True Positive for mixed/multiple customer IDs: '{text}'"
+        )
+
+
+def test_output_guard_safe_mention_and_redaction_policy() -> None:
+    """Redaction must replace foreign customer IDs and preserve authenticated customer ID."""
+    session_customer = "CUST-0001"
+    original = "Cliente CUST-0001 solicitó consultar a CUST-0002 y CUST-0003."
+    redacted = redact_foreign_customer_ids(original, session_customer, "[PROTEGIDO]")
+
+    assert "CUST-0001" in redacted, "Own customer ID must remain unredacted"
+    assert "CUST-0002" not in redacted, "Foreign customer ID CUST-0002 must be redacted"
+    assert "CUST-0003" not in redacted, "Foreign customer ID CUST-0003 must be redacted"
+    assert redacted == "Cliente CUST-0001 solicitó consultar a [PROTEGIDO] y [PROTEGIDO]."
+    assert is_cross_customer_attempt(redacted, session_customer) is False, (
+        "Sanitized text must not trigger cross-customer interceptor"
+    )
