@@ -13,7 +13,7 @@ from typing import Any, Iterator
 from mock_core_banking.persistence.database import Database
 from mock_core_banking.persistence.repositories import AuditEventRepository
 from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
@@ -103,8 +103,8 @@ class Observability:
             )
             session.commit()
 
-    def finished_spans(self) -> list[Any]:
-        return self.span_exporter.get_finished_spans()
+    def finished_spans(self) -> list[ReadableSpan]:
+        return list(self.span_exporter.get_finished_spans())
 
 
 def create_observability(database: Database | None = None) -> Observability:

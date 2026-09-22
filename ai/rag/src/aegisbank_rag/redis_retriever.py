@@ -14,6 +14,7 @@ from typing import Any
 import numpy as np
 import redis
 from redis.commands.search.query import Query
+from redis.commands.search.result import Result
 from redis.exceptions import ResponseError
 
 from aegisbank_rag.chunking import Chunk
@@ -53,7 +54,7 @@ class RedisVectorRetriever(Retriever):
             max_connections=max_connections,
             decode_responses=False,  # Need raw bytes for vector payloads
         )
-        self._client: redis.Redis[bytes] = redis.Redis(connection_pool=self._pool)
+        self._client: redis.Redis = redis.Redis(connection_pool=self._pool)
 
     def ensure_schema(self, *, force_recreate: bool = False) -> None:
         """Create or verify the RediSearch vector index."""
@@ -166,8 +167,8 @@ class RedisVectorRetriever(Retriever):
     def search(
         self,
         query: str,
-        top_k: int = 5,
         *,
+        top_k: int = 5,
         status: str = "active",
         topic: str | None = None,
     ) -> list[RetrievalHit]:
@@ -213,6 +214,9 @@ class RedisVectorRetriever(Retriever):
             res = self._client.ft(self.index_name).search(q, query_params=params)
         except ResponseError as err:
             logger.warning("Redis vector search failed: %s", err)
+            return []
+
+        if not isinstance(res, Result):
             return []
 
         hits: list[RetrievalHit] = []

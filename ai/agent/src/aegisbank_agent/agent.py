@@ -6,13 +6,14 @@ import json
 import os
 import re
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from aegisbank_rag.foundry_local import DEFAULT_MODEL_ALIAS, resolve_foundry_base_url
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolUnionParam
 
 from .constants import DEFAULT_MAX_TOOL_ROUNDS, SYSTEM_PROMPT_PATH
 from .hitl import ApprovalRequest, HITLApprovalManager
@@ -187,15 +188,17 @@ class AgentOrchestrator:
         tools: list[dict[str, Any]],
         tool_choice: Any = "auto",
     ) -> Any:
-        if hasattr(self._client, "chat") and hasattr(self._client.chat, "completions"):
-            return self._client.chat.completions.create(
+        client = self._client
+        if hasattr(client, "chat") and hasattr(client.chat, "completions"):
+            return client.chat.completions.create(
                 model=self._model,
-                messages=messages,
-                tools=tools,
+                messages=cast(Iterable[ChatCompletionMessageParam], messages),
+                tools=cast(Iterable[ChatCompletionToolUnionParam], tools),
                 tool_choice=tool_choice,
             )
-        if hasattr(self._client, "create"):
-            return self._client.create(
+        create_fn = getattr(client, "create", None)
+        if callable(create_fn):
+            return create_fn(
                 model=self._model,
                 messages=messages,
                 tools=tools,

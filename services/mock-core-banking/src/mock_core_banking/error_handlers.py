@@ -30,7 +30,9 @@ def _error_response(
     )
 
 
-async def domain_error_handler(request: Request, exc: DomainError) -> JSONResponse:
+async def domain_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, DomainError):
+        return await generic_exception_handler(request, exc)
     return _error_response(
         request,
         status_code=exc.status_code,
@@ -39,7 +41,9 @@ async def domain_error_handler(request: Request, exc: DomainError) -> JSONRespon
     )
 
 
-async def validation_error_handler(request: Request, _exc: RequestValidationError) -> JSONResponse:
+async def validation_error_handler(request: Request, _exc: Exception) -> JSONResponse:
+    if not isinstance(_exc, RequestValidationError):
+        return await generic_exception_handler(request, _exc)
     return _error_response(
         request,
         status_code=422,
@@ -48,7 +52,9 @@ async def validation_error_handler(request: Request, _exc: RequestValidationErro
     )
 
 
-async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+async def http_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    if not isinstance(exc, HTTPException):
+        return await generic_exception_handler(request, exc)
     public_errors = {
         404: ("ROUTE_NOT_FOUND", "Route was not found."),
         405: ("METHOD_NOT_ALLOWED", "HTTP method is not allowed for this route."),

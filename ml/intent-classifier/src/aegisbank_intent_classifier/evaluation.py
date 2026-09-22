@@ -6,7 +6,7 @@ from collections.abc import Callable, Sequence
 from importlib.metadata import version
 from pathlib import Path
 from statistics import fmean, pstdev
-from typing import Any
+from typing import Any, cast
 
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import (
@@ -86,7 +86,7 @@ def classification_metrics(expected: Sequence[str], predicted: Sequence[str]) ->
         predicted,
         labels=LABELS,
         average="macro",
-        zero_division=0,
+        zero_division=cast(str, 0),
     )
     return {
         "accuracy": _round_metric(accuracy_score(expected, predicted)),
@@ -99,7 +99,7 @@ def classification_metrics(expected: Sequence[str], predicted: Sequence[str]) ->
                 predicted,
                 labels=LABELS,
                 average="weighted",
-                zero_division=0,
+                zero_division=cast(str, 0),
             )
         ),
     }
@@ -108,18 +108,22 @@ def classification_metrics(expected: Sequence[str], predicted: Sequence[str]) ->
 def per_class_metrics(
     expected: Sequence[str], predicted: Sequence[str]
 ) -> dict[str, dict[str, float | int]]:
-    precision, recall, f1, support = precision_recall_fscore_support(
+    raw_scores = precision_recall_fscore_support(
         expected,
         predicted,
         labels=LABELS,
         average=None,
-        zero_division=0,
+        zero_division=cast(str, 0),
+    )
+    precision, recall, f1, support = cast(
+        tuple[Sequence[float], Sequence[float], Sequence[float], Sequence[int]],
+        raw_scores,
     )
     return {
         label: {
-            "precision": _round_metric(precision[index]),
-            "recall": _round_metric(recall[index]),
-            "f1": _round_metric(f1[index]),
+            "precision": _round_metric(float(precision[index])),
+            "recall": _round_metric(float(recall[index])),
+            "f1": _round_metric(float(f1[index])),
             "support": int(support[index]),
         }
         for index, label in enumerate(LABELS)
@@ -160,7 +164,7 @@ def evaluate_cross_validation(
             {
                 "fold": fold_number,
                 "group_overlap": len(train_groups & validation_groups),
-                "metrics": classification_metrics(expected, predictions.tolist()),
+                "metrics": classification_metrics(expected, [str(p) for p in predictions]),
                 "train_group_count": len(train_groups),
                 "train_size": len(train_indices),
                 "validation_group_count": len(validation_groups),
@@ -199,7 +203,9 @@ def run_frozen_experiment(records: Sequence[IntentExample], dataset_sha256: str)
         [record.text for record in train_records],
         [record.label for record in train_records],
     )
-    holdout_predictions = pipeline.predict([record.text for record in holdout_records]).tolist()
+    holdout_predictions = [
+        str(p) for p in pipeline.predict([record.text for record in holdout_records])
+    ]
     holdout_expected = [record.label for record in holdout_records]
 
     dummy = build_dummy_classifier()
@@ -207,7 +213,7 @@ def run_frozen_experiment(records: Sequence[IntentExample], dataset_sha256: str)
         [record.text for record in train_records],
         [record.label for record in train_records],
     )
-    dummy_predictions = dummy.predict([record.text for record in holdout_records]).tolist()
+    dummy_predictions = [str(p) for p in dummy.predict([record.text for record in holdout_records])]
 
     report = classification_report(
         holdout_expected,
@@ -215,7 +221,7 @@ def run_frozen_experiment(records: Sequence[IntentExample], dataset_sha256: str)
         labels=LABELS,
         target_names=LABELS,
         output_dict=True,
-        zero_division=0,
+        zero_division=cast(str, 0),
     )
     matrix = confusion_matrix_data(holdout_expected, holdout_predictions)
     misclassified = [

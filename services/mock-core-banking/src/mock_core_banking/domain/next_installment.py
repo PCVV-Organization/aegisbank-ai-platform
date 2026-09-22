@@ -2,14 +2,23 @@ from collections.abc import Iterable
 from datetime import date
 from typing import Protocol, TypeVar
 
+from sqlalchemy.orm import Mapped
+
 from .enums import InstallmentStatus
 
 
 class InstallmentCandidate(Protocol):
-    installment_id: str
-    installment_number: int
-    due_date: date
-    status: InstallmentStatus
+    @property
+    def installment_id(self) -> str | Mapped[str]: ...
+
+    @property
+    def installment_number(self) -> int | Mapped[int]: ...
+
+    @property
+    def due_date(self) -> date | Mapped[date]: ...
+
+    @property
+    def status(self) -> InstallmentStatus | Mapped[InstallmentStatus]: ...
 
 
 InstallmentType = TypeVar("InstallmentType", bound=InstallmentCandidate)

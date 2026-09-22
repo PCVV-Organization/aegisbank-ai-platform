@@ -71,7 +71,7 @@ def create_mcp_server(
     @server.tool(
         name="search_knowledge",
         description=registry.get_tool("search_knowledge").description,  # type: ignore[union-attr]
-        annotations=ToolAnnotations(readOnlyHint=True),
+        annotations=ToolAnnotations(read_only_hint=True),
     )
     def search_knowledge(query: str) -> dict[str, Any]:
         return _result(registry.execute("search_knowledge", {"query": query}, context))
@@ -79,7 +79,7 @@ def create_mcp_server(
     @server.tool(
         name="get_my_loans",
         description=registry.get_tool("get_my_loans").description,  # type: ignore[union-attr]
-        annotations=ToolAnnotations(readOnlyHint=True),
+        annotations=ToolAnnotations(read_only_hint=True),
     )
     def get_my_loans() -> dict[str, Any]:
         return _result(registry.execute("get_my_loans", {}, context))
@@ -87,7 +87,7 @@ def create_mcp_server(
     @server.tool(
         name="get_loan_details",
         description=registry.get_tool("get_loan_details").description,  # type: ignore[union-attr]
-        annotations=ToolAnnotations(readOnlyHint=True),
+        annotations=ToolAnnotations(read_only_hint=True),
     )
     def get_loan_details(loan_id: str) -> dict[str, Any]:
         return _result(registry.execute("get_loan_details", {"loan_id": loan_id}, context))
@@ -95,7 +95,7 @@ def create_mcp_server(
     @server.tool(
         name="get_next_installment",
         description=registry.get_tool("get_next_installment").description,  # type: ignore[union-attr]
-        annotations=ToolAnnotations(readOnlyHint=True),
+        annotations=ToolAnnotations(read_only_hint=True),
     )
     def get_next_installment(loan_id: str) -> dict[str, Any]:
         return _result(registry.execute("get_next_installment", {"loan_id": loan_id}, context))
@@ -106,7 +106,7 @@ def create_mcp_server(
     @server.tool(
         name=WRITE_TOOL_NAME,
         description=write_tool.description,
-        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False),
+        annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False),
     )
     def create_service_request(
         approval_id: str,

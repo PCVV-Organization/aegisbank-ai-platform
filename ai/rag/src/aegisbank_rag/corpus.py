@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -171,7 +172,7 @@ def validate_corpus(documents: list[Document]) -> None:
 
 
 def filter_active(
-    documents: list[Document],
+    documents: Sequence[Document],
     cutoff: date,
     *,
     include_statuses: tuple[str, ...] = ("active",),

@@ -75,7 +75,7 @@ class PgVectorRetriever(Retriever):
                     """
                 ).format(
                     table=sql.Identifier(self.table_name),
-                    dim=sql.SQL(str(int(self.embedding_model.dimension))),
+                    dim=sql.Literal(int(self.embedding_model.dimension)),
                 )
                 cur.execute(create_table_stmt)  # nosec B608
 
@@ -110,8 +110,8 @@ class PgVectorRetriever(Retriever):
                     """
                 ).format(
                     table=sql.Identifier(self.table_name),
-                    m_val=sql.SQL(str(int(m))),
-                    ef_val=sql.SQL(str(int(ef_construction))),
+                    m_val=sql.Literal(int(m)),
+                    ef_val=sql.Literal(int(ef_construction)),
                 )
                 cur.execute(stmt)  # nosec B608
             conn.commit()
@@ -128,7 +128,7 @@ class PgVectorRetriever(Retriever):
                     """
                 ).format(
                     table=sql.Identifier(self.table_name),
-                    lists_val=sql.SQL(str(int(lists))),
+                    lists_val=sql.Literal(int(lists)),
                 )
                 cur.execute(stmt)  # nosec B608
             conn.commit()

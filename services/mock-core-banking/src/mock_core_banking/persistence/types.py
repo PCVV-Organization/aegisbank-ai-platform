@@ -21,7 +21,7 @@ class UTCDateTime(TypeDecorator[datetime]):
             return normalized.replace(tzinfo=None)
         return normalized
 
-    def process_result_value(self, value: datetime | None, _dialect: Dialect) -> datetime | None:
+    def process_result_value(self, value: datetime | None, dialect: Dialect) -> datetime | None:
         if value is None:
             return None
         if value.tzinfo is None:

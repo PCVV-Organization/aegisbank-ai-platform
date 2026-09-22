@@ -28,8 +28,9 @@ class DenseLocalRetriever(Retriever):
 
     def fit(self, chunks: Sequence[Chunk]) -> None:
         self._chunks = list(chunks)
-        self._embedding.fit(chunk.content for chunk in self._chunks)
-        self._matrix = self._embedding.encode(chunk.content for chunk in self._chunks)
+        texts = [chunk.content for chunk in self._chunks]
+        self._embedding.fit(texts)
+        self._matrix = self._embedding.encode(texts)
 
     def search(self, query: str, *, top_k: int = 5) -> list[RetrievalHit]:
         if self._matrix is None:

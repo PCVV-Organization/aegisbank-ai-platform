@@ -11,12 +11,12 @@ from dataclasses import dataclass
 from typing import Protocol
 
 import numpy as np
+from scipy.sparse import spmatrix
 from sklearn.decomposition import TruncatedSVD
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 
 from aegisbank_rag.constants import LSA_COMPONENTS, RANDOM_STATE
-from aegisbank_rag.lexical import LEXICAL_VECTORIZER
+from aegisbank_rag.lexical import create_lexical_vectorizer
 
 
 class EmbeddingModel(Protocol):
@@ -37,14 +37,16 @@ class LocalDenseEmbeddingModel:
     normalize_embeddings: bool = True
 
     def __post_init__(self) -> None:
-        self._vectorizer = TfidfVectorizer(**LEXICAL_VECTORIZER)
+        self._vectorizer = create_lexical_vectorizer()
         self._svd: TruncatedSVD | None = None
         self._is_fitted: bool = False
 
     def fit(self, texts: Sequence[str]) -> None:
         """Fit vocabulary and projection matrix over the training corpus."""
         tfidf = self._vectorizer.fit_transform(texts)
-        n_components = min(self.dimension, max(1, min(tfidf.shape) - 1))
+        assert isinstance(tfidf, (spmatrix, np.ndarray))
+        shape = (int(tfidf.shape[0]), int(tfidf.shape[1]))
+        n_components = min(self.dimension, max(1, min(shape) - 1))
         self._svd = TruncatedSVD(
             n_components=n_components,
             random_state=RANDOM_STATE,
@@ -74,7 +76,8 @@ class LocalDenseEmbeddingModel:
         if self.normalize_embeddings:
             reduced = normalize(reduced, norm="l2", axis=1)
 
-        return [[float(v) for v in row] for row in reduced]
+        reduced_arr = np.asarray(reduced, dtype=np.float64)
+        return [[float(v) for v in row] for row in reduced_arr]
 
     def encode_one(self, text: str) -> list[float]:
         """Transform a single text into a normalized float vector."""

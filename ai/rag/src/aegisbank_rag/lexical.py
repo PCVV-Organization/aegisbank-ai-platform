@@ -22,11 +22,25 @@ LEXICAL_VECTORIZER: dict[str, object] = {
 }
 
 
+def create_lexical_vectorizer() -> TfidfVectorizer:
+    """Create a configured TfidfVectorizer instance with canonical parameters."""
+    return TfidfVectorizer(
+        lowercase=True,
+        ngram_range=(1, 2),
+        min_df=1,
+        max_df=1.0,
+        sublinear_tf=True,
+        norm="l2",
+        stop_words=None,
+        token_pattern=r"(?u)\b\w\w+\b",
+    )
+
+
 class LexicalRetriever(Retriever):
     name = "lexical_tfidf"
 
     def __init__(self) -> None:
-        self._vectorizer = TfidfVectorizer(**LEXICAL_VECTORIZER)
+        self._vectorizer = create_lexical_vectorizer()
         self._matrix = None
         self._chunks: list[Chunk] = []
 

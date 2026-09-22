@@ -60,7 +60,7 @@ class RedisCacheManager:
             socket_connect_timeout=socket_connect_timeout,
             decode_responses=True,
         )
-        self._client: redis.Redis[str] = redis.Redis(connection_pool=self._pool)
+        self._client: redis.Redis = redis.Redis(connection_pool=self._pool)
         self._hits = 0
         self._misses = 0
         self._sets = 0
