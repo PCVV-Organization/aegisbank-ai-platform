@@ -2,8 +2,7 @@
 
 > **Role Focus:** Lead / Senior AI Engineer (LLM / Agentic Systems & Enterprise Cloud Integration)  
 > **Target Domain:** Tier-1 Banking & Financial Services (e.g., Mibanco, BCP, Credicorp, Microsoft AI Foundry)  
-> **Release Target:** `v1.0.0 — Enterprise Hardening, Final E2E & Portfolio Release`  
-> **Baseline Commit:** `8393d88` (`fix(v0.15): validate App Configuration URL schemes`)  
+> **Release Baseline:** Finalized local release `v1.0.8` (historical milestones `v1.0.0` through `v1.0.7` preserved)
 > **Philosophy:** *The LLM interprets and proposes; deterministic identity, policy, authorization, validation, and business rules decide.*
 
 ---
@@ -164,22 +163,38 @@ AegisBank strictly bounds its performance claims:
 
 ---
 
-## 6. Honest Capability Maturity Matrix (v1.0.0)
+## 6. Honest Capability Maturity Matrix (v1.0.8)
+
+### Evidence Taxonomy
+To maintain strict engineering truthfulness, all verifications are categorized by evidence level:
+- `USER_E2E`: Real operator/customer workflow executed via the public CLI entrypoint (`aegisbank_agent.cli run`) with interactive stdin.
+- `SERVICE_E2E`: Inter-service HTTP requests across process or container boundaries (`POST /api/v1/service-requests`).
+- `COMPONENT_LIVE`: In-process Python class invocations backed by live local models (`phi-4-mini` on Foundry Local).
+- `INFRA_LIVE`: Real containerized infrastructure verified healthy (Redis on 6379, Postgres on 5432).
+- `OBSERVATION`: Read-only inspections of persistent storage records in separate, fresh processes.
+- `AUTOMATED_TEST`: Deterministic regression, unit, contract, and type safety checks (Pyright 0 errors, FAST 13/13).
 
 | Layer | Component | Status | Verification Evidence |
 |---|---|---|---|
-| **Agent Core** | Orchestrator, Prompts, Routing | `TESTED-LOCAL` | 248 passed tests in `ai/agent/tests` |
-| **Security** | Ownership, Redaction, Threat Model | `TESTED-LOCAL` | Invariant tests, STRIDE threat model |
-| **Safety** | HITL State Machine, HOTL Kill-Switch | `TESTED-LOCAL` | `test_mcp_hitl_acceptance.py`, `test_hotl_kill_switch.py` |
+| **Agent Core** | Orchestrator, Prompts, Routing | `TESTED-LOCAL` | 248+ passed tests in `ai/agent/tests`, Least Agency allowlists, Pyright 0 errors |
+| **Security** | Ownership, Redaction, Threat Model | `TESTED-LOCAL` | Session Ownership isolation, IDOR defenses, foreign customer redaction |
+| **Safety** | HITL State Machine, HOTL Kill-Switch | `TESTED-LOCAL & USER_E2E` | Real CLI stdin HITL ('n' -> 0 mutations; 'y' -> HTTP 201, SR-000003 + EVT-SR-000003 in isolated DB) |
 | **Reliability** | Idempotency, Retry, Circuit Breaker | `TESTED-LOCAL` | `test_idempotency.py`, `test_circuit_breaker.py` |
 | **Messaging** | Transactional Outbox, DLQ | `TESTED-LOCAL` | `test_outbox.py`, `test_consumer_dlq.py` |
-| **Data Stores** | PostgreSQL + pgvector, Redis OSS 8 | `TESTED-LOCAL` | Docker Compose, HNSW index tests |
+| **Data Stores** | PostgreSQL + pgvector, Redis OSS 8 | `TESTED-LOCAL` | Pinned digests, HNSW index tests, Redis gap closure (88/88 passed, 0 skipped) |
+| **Containers** | Docker Isolated Reproducibility | `TESTED-LOCAL` | Parameterized compose, isolated acceptance script with unique namespace, 0 daemon collision, clean teardown |
 | **Serverless** | Functions Host on Linux Container | `TESTED-LOCAL` | `test_functions_runtime_e2e.py` (v0.13.1) |
 | **Serverless** | Functions Host on Windows Native | `BLOCKED` | Diagnosed Win32 `cygrpc` path limit (`ERROR_FILENAME_EXCED_RANGE`) |
 | **Evaluation** | Local MLflow & Holdout Harness | `TESTED-LOCAL` | Candidate promoted by policy; `STATISTICAL_SUPERIORITY_NOT_ESTABLISHED` |
 | **Performance** | Local 25-iteration Read Baseline | `LOCAL-LAB-PERFORMANCE-BASELINE` | `scripts/performance_baseline.py`; load/stress/soak `PROD-UNPROVEN` |
 | **Cloud Infra** | Azure Key Vault, Entra ID Managed Identity | `CLOUD-PENDING` | Local synthetic mocks verified; no cloud billing |
+| **Remote CI** | GitHub Actions Pipeline | `CI-CONFIGURED / RUNNER-PENDING` | Workflow configured in `.github/workflows/ci.yml`; remote runner unexecuted |
 | **Production** | Multi-region HA, High TPS, Certifications | `PROD-UNPROVEN` | Intentionally excluded from educational lab |
+
+> **Explicit Boundaries & Limits:**
+> - Manual live compound query (Scenario 7) is truthfully classified as a single-tool compound read (`TRUE MULTISTEP: NO`).
+> - The previous release tag `v1.0.7` is permanently preserved as a historical milestone commit.
+> - CLI idempotency replay is verified at the component and HTTP boundary level; cross-process CLI replay requires manual key parameterization.
 
 ---
 

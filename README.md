@@ -8,20 +8,19 @@ deciden qué se ejecuta.
 
 ## Estado del proyecto
 
-**Cierre local 2026-09-21:** gate FAST 13/13, 466 pruebas aprobadas y 11 omitidas;
-11 E2E aprobadas. Release bloqueada por 75 errores Pyright; R2 sigue parcial.
-Consultar el [informe y plan de commits](docs/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
-Los resultados live anteriores son históricos; no se creó una nueva release.
+**Cierre local v1.0.8 (2026-09-22):** gate FAST 13/13; suites: 488 PASS y 0 SKIP (brecha de
+Redis cerrada con servicio canónico `aegisbank-redis` en `127.0.0.1:6379`). Pyright registra
+0 errores y 0 warnings en todo el código fuente (Agent, RAG, ML, Core Banking).
+Reproducibilidad aislada en Docker validada y parametrizada con namespace único y teardown limpio.
+E2E de usuario (USER_E2E) interactivo en CLI verificado: rechazo ('n' -> 0 mutaciones) y
+aprobación ('y' -> HTTP 201 en Core Banking, 1 ServiceRequest y 1 OutboxEvent en base aislada)
+con formateo fidedigno de soles (S/) y cuota vencida.
 
-Referencia revisada el **2026-09-15**: commit `477ac3b`, identificado como
-**v1.0.6** en el historial Git. La organización documental v1.0.2 es un hito
-anterior, no la versión técnica actual. Hay cambios locales de seguridad y
-evaluación posteriores a esa base; no constituyen por sí solos una nueva release.
+Límites explícitos: CI remoto permanece `CI-CONFIGURED / RUNNER-PENDING`, Azure/nube `CLOUD-PENDING`,
+y producción `PROD-UNPROVEN`. La consulta manual compuesta se clasifica con veracidad como
+lectura única prefetcheada (`TRUE MULTISTEP: NO`). La etiqueta `v1.0.7` se conserva intacta
+en el historial Git como hito histórico previo.
 
-Consulta `git status --short` y `git log -1 --oneline` para conocer tu checkout.
-Los resultados en [evidencia de release](docs/releases/V1.0-EVIDENCE.md) son
-históricos. Esta actualización documental no vuelve a ejecutar ni certifica
-las pruebas bancarias, los modelos, los contenedores o la nube.
 
 ## Entradas de lectura
 
