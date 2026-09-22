@@ -59,6 +59,24 @@ def test_agent_direct_response() -> None:
     assert "Hola" in result.answer
 
 
+def test_model_cannot_execute_tool_outside_query_policy(tool_registry: ToolRegistry) -> None:
+    """A registered tool remains forbidden when it was not granted to this query."""
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.side_effect = [
+        DummyResponse(DummyMessage(tool_calls=[DummyToolCall("unexpected", "get_my_loans", "{}")])),
+        DummyResponse(DummyMessage(content="Hola, puedo orientarte.")),
+    ]
+    execute = MagicMock(wraps=tool_registry.execute)
+    tool_registry.execute = execute
+    result = AgentOrchestrator(client=mock_client, registry=tool_registry).run(
+        "Hola", customer_id="CUST-0001"
+    )
+    execute.assert_not_called()
+    assert len(result.tool_calls) == 1
+    assert not result.tool_calls[0].result.success
+    assert result.tool_calls[0].result.error == "TOOL_NOT_ALLOWED_FOR_QUERY"
+
+
 def test_agent_tool_execution_flow(tool_registry: ToolRegistry) -> None:
     """Agent executes tool calls across multiple rounds and produces grounded answer."""
     mock_client = MagicMock()

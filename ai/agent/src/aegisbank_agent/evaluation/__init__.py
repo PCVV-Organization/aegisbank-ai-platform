@@ -34,6 +34,15 @@ from aegisbank_agent.evaluation.evaluators import (
     load_v015_eval_cases,
     write_evaluation_reports,
 )
+from aegisbank_agent.evaluation.red_team import (
+    RED_TEAM_SUITE_VERSION,
+    RedTeamCase,
+    RedTeamMetrics,
+    RedTeamObservation,
+    observe_case,
+    run_cases,
+    run_local_cases,
+)
 from aegisbank_agent.evaluation.taxonomy import (
     ConfusionMatrix,
     ErrorType,
@@ -50,6 +59,10 @@ __all__ = [
     "EvaluationFailure",
     "MetricResult",
     "MetricType",
+    "RED_TEAM_SUITE_VERSION",
+    "RedTeamCase",
+    "RedTeamMetrics",
+    "RedTeamObservation",
     "bootstrap_paired_confidence_interval",
     "compute_aggregate",
     "evaluate_abstention",
@@ -70,5 +83,8 @@ __all__ = [
     "load_eval_cases",
     "load_v015_eval_cases",
     "mcnemar_test",
+    "observe_case",
+    "run_cases",
+    "run_local_cases",
     "write_evaluation_reports",
 ]

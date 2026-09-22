@@ -413,3 +413,73 @@ class KnowledgeRoutingDecision:
     required: bool
     sufficient: bool
     result: Any = None
+
+
+_WRITE_ACTION_PATTERNS = (
+    r"\b(?:crea|registra|presenta|abre|genera)\s+(?:un\s+|una\s+)?"
+    r"(?:reclamo|solicitud|queja|ticket|caso|impugnacion|reprogramacion)\b",
+    r"\b(?:registrar|crear|ingresar|presentar|generar|iniciar|abrir|hacer|formular|meter|solicitar)\s+"
+    r"(?:un\s+|una\s+)?(?:reclamo|solicitud|queja|ticket|caso|impugnacion|reprogramacion)\b",
+    r"\b(?:reclamo|solicitud|queja|impugnacion)\s+(?:nuevo|nueva|urgente)\b",
+    r"\bquiero\s+(?:reclamar|quejarme|solicitar|impugnar|hacer\s+un\s+reclamo|presentar\s+un\s+reclamo)\b",
+    r"\bdeseo\s+(?:reclamar|impugnar|presentar\s+un\s+reclamo|registrar\s+un\s+reclamo)\b",
+    r"\b(?:registrar|crear|ingresar|solicitar)\s+(?:reclamo|solicitud|reprogramacion)\b",
+    r"\bcreate_service_request\b",
+)
+
+
+def requires_write_action(query: str) -> bool:
+    """Return True if user explicitly requests to create or register a service request/claim."""
+    normalized = _normalize(query)
+    return any(re.search(pattern, normalized) for pattern in _WRITE_ACTION_PATTERNS)
+
+
+def resolve_minimal_tool_allowlist(query: str, available_tools: list[str]) -> list[str]:
+    """Return the minimal tool set required for the active user intent (Least Agency).
+
+    Enforces defense-in-depth:
+    - GREETING / CAPABILITY: zero tools exposed.
+    - WRITE_ACTION: exposes create_service_request + referenced account tools.
+    - ACCOUNT_READ: exposes strictly account allowlist (no WRITE tools).
+    - KNOWLEDGE: exposes strictly search_knowledge (no account/write tools).
+    - OTHER: fallback to all available tools.
+    """
+    if is_greeting(query) or is_capability_query(query):
+        return []
+
+    write_required = requires_write_action(query)
+    account_required = requires_account_data(query)
+    knowledge_required = requires_authorized_knowledge(query)
+
+    resolved: set[str] = set()
+
+    if write_required:
+        if "create_service_request" in available_tools:
+            resolved.add("create_service_request")
+        if account_required:
+            for t in account_tool_allowlist(query):
+                if t in available_tools:
+                    resolved.add(t)
+        return [t for t in available_tools if t in resolved]
+
+    if account_required:
+        account_tools = set(account_tool_allowlist(query))
+        return [t for t in available_tools if t in account_tools]
+
+    if knowledge_required:
+        return [t for t in available_tools if t == "search_knowledge"]
+
+    return list(available_tools)
+
+
+def redact_foreign_customer_ids(
+    text: str, session_customer_id: str, replacement: str = "[CLIENTE-REDACTADO]"
+) -> str:
+    """Replace canonical customer IDs belonging to other customers with a sanitized token."""
+    normalized_session = session_customer_id.strip().upper()
+
+    def _repl(match: re.Match[str]) -> str:
+        cid = match.group(0).upper()
+        return cid if cid == normalized_session else replacement
+
+    return _CUSTOMER_ID_REGEX.sub(_repl, text)

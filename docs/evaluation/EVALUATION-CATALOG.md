@@ -1,7 +1,13 @@
 # AegisBank AI Platform — AI Evaluation Catalog & Provenance Register
 
-> **Status:** Authoritative Catalog of Evaluation Runs, Datasets, Runners, and Artifacts  
-> **Standard:** Banking Model Risk Management (SR 11-7 / EBA) and MLflow Experiment Tracking  
+> Reconciliación 2026-09-21: las métricas live de Phase 2 son históricas.
+> El JSON del 2026-09-12 identifica `phase2.2-r2-live-v1`; las etiquetas R1
+> de abajo se conservan como procedencia narrativa, no como estado actual.
+> UTPR usa registros de ejecución, no captura independiente de propuestas del
+> modelo. Véase [cierre de baseline](../quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+
+> **Status:** Authoritative Catalog of Evaluation Runs, Datasets, Runners, and Artifacts
+> **Standard:** Banking Model Risk Management (SR 11-7 / EBA) and MLflow Experiment Tracking
 > **Companion Document:** [README.md](README.md) (Capability-Based Evaluation Taxonomy)
 
 ---
@@ -19,6 +25,7 @@ The following register indexes every evaluation suite executed within the AegisB
 | **4. Agent & 5. Safety** | Does the candidate orchestrator resolve metamorphic routing queries without safety regressions or calibration drift? | `v015_eval_suite.jsonl` (35 synthetic multi-turn traces) | `python scripts/run_v015_evaluation.py` / `python scripts/evaluation_gate.py` | Accuracy (0.971 vs 0.886), Ownership (1.0), No-Write (1.0), McNemar $p=0.248$, Cohen's $h=0.348$ | `reports/v015-evaluation-report.json`, SQLite MLflow in `reports/mlruns-v015/` | [v0.15 Evaluation Docs](v015-ai-evaluation-mlops.md), [v0.15 Evidence](../quality/V0150-EVALUATION-MLOPS-EVIDENCE.md) | `v0.15.0` *(hardened v1.0.1)* | `TESTED-LOCAL` |
 | **6. System E2E** | Do all 8 critical banking customer journeys execute deterministically across Agent, MCP, DB, Outbox, and Functions? | 8 canonical E2E journeys (`tests/e2e/test_critical_journeys.py`) | `pytest tests/e2e/test_critical_journeys.py` | Journey Pass Rate (8/8 = 100%), Outbox Commit (100%), Idempotency (100%) | Pytest execution traces | [E2E Matrix](../quality/E2E-MATRIX.md), [Portfolio Evidence](../releases/PORTFOLIO-INTERVIEW-EVIDENCE.md) | `v1.0.0` | `TESTED-LOCAL` |
 | **7. Performance** | What are the baseline latency percentiles (p50/p95/p99) and error rate under bounded local laboratory iterations? | 25 sequential iterations of standard loan balance inquiry flow | `python scripts/performance_baseline.py` | Iterations (25), Error Rate (0.0%), p50 (14.2ms), p95 (19.8ms), p99 (24.1ms) | `reports/performance_baseline.json` | [Performance Evidence](../quality/V1.0-PERFORMANCE-EVIDENCE.md), [SLI/SLO Report](../quality/V1.0-SLI-SLO-LAB-REPORT.md) | `v1.0.0` *(hardened v1.0.1)* | `LOCAL-LAB-PERFORMANCE-BASELINE` |
+| **8. Adversarial Security** | Do deterministic boundaries survive fixed, indirect RAG, tool-output, mutation, session-poisoning, and utility controls under real banking capabilities? | Frozen v1 suite plus Phase-2/2.2-R1 synthetic fixtures; all data synthetic | `pytest ai/agent/tests/unit/routing/test_adversarial_red_team.py`; `pytest ai/agent/tests/unit/evaluation/test_phase2_red_team.py`; `pytest ai/agent/tests/unit/evaluation/test_invariant_registry_consistency.py`; opt-in `python scripts/run_local_red_team.py`; opt-in `python scripts/run_phase22_live.py` | Frozen ASR 0% (40 tests); Invariant Consistency (3 tests); Phase 2.1 live ASR 0/8 (benign 3/3 = 100%, false refusal 0/3 = 0%); Phase 2.2-R1 live ASR 0/4 = 0.0% (XPIA 0/2, Tool-Output 0/2, benign 2/2 = 100%, false refusal 0/2 = 0%); real tools (get_my_loans, get_loan_details, create_service_request); trajectory audit; natural retrieval pilot; zero disclosures or writes | [Phase-2 Evidence](../security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md), `reports/red_team_phase2.json`, `reports/red_team_phase22.json` | `v1.1-phase2.2-r1` | `TESTED-LOCAL`; multi-seed volume and cloud/production unproven |
 
 ---
 
