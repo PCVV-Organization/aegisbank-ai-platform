@@ -21,9 +21,10 @@ def _run(*args: str) -> subprocess.CompletedProcess[str]:
 
 
 def _health_url() -> bool:
+    port = os.environ.get("MOCK_CORE_BANKING_PORT", "8000")
     try:
         with urllib.request.urlopen(
-            "http://127.0.0.1:8000/health/ready", timeout=3
+            f"http://127.0.0.1:{port}/health/ready", timeout=3
         ) as response:
             return response.status == 200
     except OSError:

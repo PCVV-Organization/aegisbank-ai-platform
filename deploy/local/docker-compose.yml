@@ -9,9 +9,9 @@ services:
       context: ../../services/mock-core-banking
       dockerfile: Dockerfile
     image: aegisbank/mock-core-banking:0.11.0
-    container_name: aegisbank-mock-core-banking
+    container_name: ${CONTAINER_PREFIX:-aegisbank}-mock-core-banking
     ports:
-      - "8000:8000"
+      - "${MOCK_CORE_BANKING_PORT:-8000}:8000"
     environment:
       AEGISBANK_ENV: "container"
       AEGISBANK_DATABASE_URL: "sqlite:////app/data/aegisbank-dev.db"
@@ -35,7 +35,7 @@ services:
 
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: aegisbank-mssql-emulator
+    container_name: ${CONTAINER_PREFIX:-aegisbank}-mssql-emulator
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in the shell; never commit it}
@@ -50,13 +50,13 @@ services:
 
   servicebus-emulator:
     image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
-    container_name: aegisbank-servicebus-emulator
+    container_name: ${CONTAINER_PREFIX:-aegisbank}-servicebus-emulator
     restart: unless-stopped
     depends_on:
       mssql:
         condition: service_healthy
     ports:
-      - "5672:5672"
+      - "${SERVICEBUS_PORT:-5672}:5672"
     environment:
       SQL_SERVER: "mssql"
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD in the shell; never commit it}
@@ -75,10 +75,10 @@ services:
   postgres-pgvector:
     profiles: ["data"]
     image: pgvector/pgvector:0.8.0-pg17
-    container_name: aegisbank-postgres-pgvector
+    container_name: ${CONTAINER_PREFIX:-aegisbank}-postgres-pgvector
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_DB: aegisbank_rag
       POSTGRES_USER: aegisuser
@@ -95,12 +95,12 @@ services:
   cosmos-emulator:
     profiles: ["cosmos", "data"]
     image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest
-    container_name: aegisbank-cosmos-emulator
+    container_name: ${CONTAINER_PREFIX:-aegisbank}-cosmos-emulator
     restart: unless-stopped
     ports:
-      - "8081:8081"
-      - "8080:8080"
-      - "1234:1234"
+      - "${COSMOS_PORT_8081:-8081}:8081"
+      - "${COSMOS_PORT_8080:-8080}:8080"
+      - "${COSMOS_PORT_1234:-1234}:1234"
     environment:
       AZURE_COSMOS_EMULATOR_PARTITION_COUNT: 4
       AZURE_COSMOS_EMULATOR_ENABLE_DATA_EXPLORER: "true"
@@ -116,10 +116,10 @@ services:
   redis:
     profiles: ["redis", "data"]
     image: redis:8.10.1-trixie@sha256:298e5b3bc566bade82f46ad5511777a4a07a294097ce16ada2f6a42be5239df5
-    container_name: aegisbank-redis
+    container_name: ${CONTAINER_PREFIX:-aegisbank}-redis
     restart: unless-stopped
     ports:
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     command: ["redis-server", "--save", "60", "1", "--loglevel", "notice"]
     networks:
       - aegisbank-net
@@ -133,10 +133,10 @@ services:
   app-configuration-emulator:
     profiles: ["config", "all"]
     image: mcr.microsoft.com/azure-app-configuration/app-configuration-emulator:1.2.0@sha256:f84ca52fcf51aab3bad8a0363198c161e8a79eb41712d27779f6e0eb777c7000
-    container_name: aegisbank-app-configuration-emulator
+    container_name: ${CONTAINER_PREFIX:-aegisbank}-app-configuration-emulator
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8082:8483"
+      - "127.0.0.1:${APPCONFIG_PORT:-8082}:8483"
     environment:
       Tenant:AnonymousAuthEnabled: "true"
       Authentication:Anonymous:AnonymousUserRole: "Owner"
@@ -155,6 +155,6 @@ networks:
 
 volumes:
   core-banking-data:
-    name: aegisbank-core-banking-data
+    name: ${VOLUME_PREFIX:-aegisbank}-core-banking-data
   pgvector-data:
-    name: aegisbank-pgvector-data
+    name: ${VOLUME_PREFIX:-aegisbank}-pgvector-data
