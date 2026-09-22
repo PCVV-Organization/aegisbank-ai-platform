@@ -34,7 +34,7 @@ jobs:
       - name: Install Linting Tools
         run: |
           python -m pip install --upgrade pip
-          pip install ruff
+          pip install ruff==0.16.4
 
       - name: Run Ruff Lint Check
         run: ruff check .
@@ -72,7 +72,7 @@ jobs:
       - name: Install Agent Package & Test Dependencies
         run: |
           pip install -e ai/agent[dev]
-          pip install pytest pytest-cov jsonschema
+          pip install pytest==9.1.1 pytest-cov==7.0.0 jsonschema==4.26.0
 
       - name: Run Mock Core Banking Tests & Contracts
         run: pytest services/mock-core-banking/tests
@@ -102,7 +102,7 @@ jobs:
       - name: Install DevSecOps Tools
         run: |
           python -m pip install --upgrade pip
-          pip install bandit pip-audit cyclonedx-bom
+          pip install bandit==1.9.4 pip-audit==2.10.1 cyclonedx-bom==5.1.1
 
       - name: Run SAST Security Scan (Bandit)
         run: bandit -ll -r ai/agent/src ai/rag/src ml/intent-classifier/src services/mock-core-banking/src

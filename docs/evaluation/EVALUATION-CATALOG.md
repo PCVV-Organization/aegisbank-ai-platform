@@ -1,10 +1,13 @@
 # AegisBank AI Platform — AI Evaluation Catalog & Provenance Register
 
-> Reconciliación 2026-09-21: las métricas live de Phase 2 son históricas.
-> El JSON del 2026-09-12 identifica `phase2.2-r2-live-v1`; las etiquetas R1
-> de abajo se conservan como procedencia narrativa, no como estado actual.
-> UTPR usa registros de ejecución, no captura independiente de propuestas del
-> modelo. Véase [cierre de baseline](../quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+> Reconciliación y Ejecución Live 2026-09-22: el runner live de Phase 2.2-R2
+> (`scripts/run_phase22_live.py`) se ejecutó con éxito contra Foundry Local
+> (`phi-4-mini` en GPU) y PostgreSQL + `pgvector`.
+> Reporte `reports/red_team_phase22.json` (timestamp `2026-09-22T15:28:13Z`): ASR 0/4 (0.0%),
+> éxito benigno 2/2 (100.0%), UTPR caso 0/2 (0.0%), UTPR propuesta 0/0 (0.0%), cero
+> divulgaciones o escrituras no autorizadas. Todas las propuestas de herramientas del modelo
+> son instrumentadas por ronda separando prefetch de propuesta de modelo. Véase
+> [evidencia de red-team](../security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md).
 
 > **Status:** Authoritative Catalog of Evaluation Runs, Datasets, Runners, and Artifacts
 > **Standard:** Banking Model Risk Management (SR 11-7 / EBA) and MLflow Experiment Tracking

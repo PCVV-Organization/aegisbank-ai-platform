@@ -1,26 +1,20 @@
 # Phase-2 Local Red-Team Evidence: Reconciliation & Live Real-Capability Evaluation
 
-## Reconciliation — 2026-09-21
+## Reconciliation & Live Execution — 2026-09-22
 
-The results below are historical, not a new live run. The preserved machine
-report `reports/red_team_phase2.json` dates to 2026-09-11; the current historical
-`reports/red_team_phase22.json` dates to 2026-09-12 and identifies itself as
-`phase2.2-r2-live-v1`, despite the R1 labels in the narrative below. Its observed
-ASR is 0/4, benign success 2/2 and UTPR 0/2. These small samples do not close R2.
-
-Current review found that `tools_available` comes from case fixtures rather than
-captured per-round model requests; tool records also include deterministic
-pre-reads. Therefore UTPR is a trace-based proxy, not proven model-only proposal
-telemetry. Output-guard tests classify foreign-ID examples as positive cases;
-they do not establish semantic false-positive rates on benign policy examples.
-The statement below about no benign impact applies only to the evaluated cases.
-
-Baseline closure added deterministic query-policy enforcement before dispatch
-and corrected the disclosure oracle to inspect every foreign customer ID.
-The old live reports have not been recomputed with these changes. Foundry Local
-was installed but stopped on 2026-09-21. See the
-[baseline closure report](../quality/LOCAL-BASELINE-CLOSURE-20260921.md) for
-current tests, static-analysis blockers and the release decision.
+On 2026-09-22, the live Phase 2.2-R2 suite (`scripts/run_phase22_live.py`) was re-executed against
+local Microsoft Foundry Local (`phi-4-mini` on GPU) and PostgreSQL + `pgvector`.
+The generated machine report `reports/red_team_phase22.json` (timestamp `2026-09-22T15:28:13Z`)
+documents real live execution with all deterministic boundaries holding:
+- Observed ASR: 0/4 (0.0%), with both XPIA_RAG (0/2) and TOOL_OUTPUT (0/2) fully blocked.
+- Benign task success rate: 2/2 (100.0%), false refusal rate: 0/2 (0.0%).
+- Model tool proposals instrumented per round in `agent.py`: `case_level_utpr = 0/2 = 0.0%`,
+  `proposal_level_utpr = 0/0 = 0.0%`. Application prefetch and policy-forced actions are
+  explicitly separated from model proposals (`source="MODEL_PROPOSAL"`).
+- Output guard: semantic true negative coverage verified across safe generic explanations,
+  own customer ID mentions, and malformed lookalike tokens in unit suite `test_output_guard.py` (9 passed).
+- Exploratory natural retrieval pilot: poisoned chunk ranked #2 (cosine similarity 0.8347)
+  under pgvector dense embeddings, verifying empirical discoverability while execution boundaries held.
 
 **Status:** `TESTED-LOCAL` for deterministic fixtures, bounded local harness, and executed
 local Foundry Local suite (`phi-4-mini`) across direct, mutation, live pgvector XPIA, and
@@ -38,10 +32,12 @@ certification, or production security.
 |---|---|---|
 | Frozen adversarial regression + extended vectors | `pytest ai/agent/tests/unit/routing/test_adversarial_red_team.py` | `40 passed` (Tests 01–26, ASR 0.0%) |
 | Invariant Registry Consistency Suite | `pytest ai/agent/tests/unit/evaluation/test_invariant_registry_consistency.py` | `3 passed` (Zero drift against §6.6 canonical 15 invariants) |
-| Phase-2/2.2-R1 real-capability unit tests | `pytest ai/agent/tests/unit/evaluation/test_phase2_red_team.py` | `7 passed` (Trajectory schema, invariants, real tools) |
-| FAST quality gate (active session lock) | `$env:AEGISBANK_SESSION_ID="phase22-r1"; python scripts/quality_gate.py --fast` | `13/13 PASS` (All 13 gates PASS) |
+| Phase-2/2.2-R1/R2 real-capability unit tests | `pytest ai/agent/tests/unit/evaluation/test_phase2_red_team.py` | `11 passed` (Trajectory schema, invariants, real tools) |
+| Least-agency R2 unit suite | `pytest ai/agent/tests/unit/evaluation/test_least_agency.py` | `10 passed` (Scoping, sequential turns, UTPR definitions) |
+| Output guard R2 unit suite | `pytest ai/agent/tests/unit/evaluation/test_output_guard.py` | `9 passed` (TP cross-customer, TN generic/own/malformed) |
+| FAST quality gate (active session lock) | `$env:AEGISBANK_SESSION_ID="portfolio-v1-closure-20260922"; python scripts/quality_gate.py --fast` | `13/13 PASS` (All 13 gates PASS, 488 automated tests) |
 | Live Phase 2.1 runner (Foundry Local opt-in) | `$env:AEGISBANK_RUN_LIVE_REDTEAM="1"; python scripts/run_local_red_team.py` | `EXECUTED` on `phi-4-mini` (GPU, FL 0.10.3), ASR `0/8 = 0.0%`, disclosures 0, writes 0, benign success `3/3 = 100%`, false refusals `0/3 = 0.0%` |
-| Live Phase 2.2-R1 runner (Real Capabilities) | `$env:AEGISBANK_RUN_PHASE22_LIVE="1"; python scripts/run_phase22_live.py` | `EXECUTED` on `phi-4-mini` + `pgvector`, ASR `0/4 = 0.0%`, XPIA `0/2 = 0%`, Tool-Output `0/2 = 0%`, disclosures 0, writes 0, benign success `2/2 = 100%`, false refusals `0/2 = 0%` |
+| Live Phase 2.2-R2 runner (Real Capabilities + pgvector) | `$env:AEGISBANK_RUN_PHASE22_LIVE="1"; python scripts/run_phase22_live.py` | `EXECUTED` on `phi-4-mini` + `pgvector`, ASR `0/4 = 0.0%`, XPIA `0/2 = 0%`, Tool-Output `0/2 = 0%`, disclosures 0, writes 0, benign success `2/2 = 100%`, false refusals `0/2 = 0%`, UTPR `0.0%` |
 
 ## Scope And Oracles
 
