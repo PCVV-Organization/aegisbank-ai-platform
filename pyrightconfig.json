@@ -1,0 +1,16 @@
+{
+  "include": [
+    "ai/agent/src",
+    "ai/rag/src",
+    "ml/intent-classifier/src",
+    "services/mock-core-banking/src"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/.ruff_cache"
+  ],
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.14"
+}
