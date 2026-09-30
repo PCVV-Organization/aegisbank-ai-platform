@@ -17,6 +17,8 @@ el checkout actual, comunicar la diferencia y conservar el histórico.
 - [RBAC Least-Privilege Matrix](RBAC-LEAST-PRIVILEGE-MATRIX.md) — documented cloud roles; it is not an assignment record.
 - [Staging Acceptance Runbook](STAGING-ACCEPTANCE-RUNBOOK.md) — acceptance criteria to execute only after authorized provisioning.
 - [Production Deployment Runbook](PRODUCTION-DEPLOYMENT-RUNBOOK.md) — promotion and rollback procedure; it does not authorize a deployment.
+- [Identity Troubleshooting Guide](IDENTITY-TROUBLESHOOTING.md) — diagnostic procedures for Entra Workload Identity and Managed Identity authorization failures.
+- [Production Foundation Implementation Report](PRODUCTION-FOUNDATION-IMPLEMENTATION-REPORT.md) — superseding implementation report for Azure Staging Ready configuration, identity, and Container Apps foundation.
 
 ## Mantenimiento
 

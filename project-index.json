@@ -455,11 +455,19 @@
       "category": "operations-reference"
     },
     {
+      "path": "docs/operations/IDENTITY-TROUBLESHOOTING.md",
+      "category": "operations-reference"
+    },
+    {
       "path": "docs/operations/KUBERNETES-TROUBLESHOOTING.md",
       "category": "operations-reference"
     },
     {
       "path": "docs/operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/PRODUCTION-FOUNDATION-IMPLEMENTATION-REPORT.md",
       "category": "operations-reference"
     },
     {
