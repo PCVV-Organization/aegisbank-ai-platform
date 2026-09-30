@@ -7,6 +7,12 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Any
 
+_LOAN_STATUS_KNOWLEDGE_PATTERNS = (
+    r"\bque\s+(?:es|significa)\s+(?:el\s+)?(?:estado\s+)?delinquent\b",
+    r"\bdefinicion\s+de\s+(?:estado\s+)?delinquent\b",
+    r"\bque\s+(?:es|significa)\s+la\s+morosidad\b",
+    r"\bque\s+(?:es|significa)\s+un\s+prestamo\s+moroso\b",
+)
 _POLICY_TERMS = (
     "politica",
     "requisito",
@@ -280,7 +286,13 @@ def requires_authorized_knowledge(query: str) -> bool:
     if requires_write_action(query):
         return False
     normalized = _normalize(query)
-    return any(term in normalized for term in _POLICY_TERMS)
+    return (
+        any(term in normalized for term in _POLICY_TERMS)
+        or any(
+            re.search(pattern, normalized)
+            for pattern in _LOAN_STATUS_KNOWLEDGE_PATTERNS
+        )
+    )
 
 
 def requires_account_data(query: str) -> bool:

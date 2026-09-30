@@ -79,6 +79,20 @@ def test_resolve_minimal_tool_allowlist_knowledge_query() -> None:
     assert allowlist == ["search_knowledge"]
 
 
+def test_loan_status_definition_uses_only_knowledge_search() -> None:
+    """Loan-status definitions must use grounded knowledge, never account or write tools."""
+    available = [
+        "get_my_loans",
+        "get_loan_details",
+        "search_knowledge",
+        "create_service_request",
+    ]
+
+    assert resolve_minimal_tool_allowlist(
+        "¿Qué significa el estado DELINQUENT?", available
+    ) == ["search_knowledge"]
+
+
 def test_resolve_minimal_tool_allowlist_write_intent() -> None:
     """Write queries must receive write tools and relevant account tools, not search tools."""
     available = [

@@ -1,0 +1,11 @@
+{
+  "document_id": "loan_statuses",
+  "version": "v1",
+  "title": "Estados de préstamos simulados",
+  "topic": "creditos",
+  "effective_from": "2026-09-30",
+  "effective_to": null,
+  "status": "active",
+  "source": "aegisbank/synthetic/charter/loan-statuses",
+  "body": "En AegisBank AI Platform, DELINQUENT es un estado sintético de préstamo que indica morosidad: existe una obligación vencida que permanece pendiente de pago según el cronograma simulado. Este estado no equivale a una acusación penal ni describe la conducta personal del cliente. El saldo, las cuotas y los cargos aplicables se consultan para cada préstamo autorizado."
+}

@@ -1,19 +1,19 @@
 {
   "by_status": {
-    "active": 11,
+    "active": 12,
     "draft": 0,
     "retired": 0,
     "superseded": 1
   },
   "by_topic": {
     "comisiones": 2,
-    "creditos": 3,
+    "creditos": 4,
     "cuotas": 1,
     "politicas": 2,
     "productos": 2,
     "reclamos": 2
   },
-  "document_count": 12,
+  "document_count": 13,
   "documents": [
     {
       "document_id": "comisiones_tiposyaplicacion",
@@ -61,6 +61,14 @@
       "effective_to": null,
       "status": "active",
       "topic": "cuotas",
+      "version": "v1"
+    },
+    {
+      "document_id": "loan_statuses",
+      "effective_from": "2026-09-30",
+      "effective_to": null,
+      "status": "active",
+      "topic": "creditos",
       "version": "v1"
     },
     {
