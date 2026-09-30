@@ -1,0 +1,75 @@
+# AegisBank AI Platform — Staging Deployment Pipeline (OIDC Passwordless)
+# Status: CONFIGURED_NOT_REMOTE_VALIDATED
+# Note: This workflow is configured for future authorized execution using
+# GitHub OIDC federation (azure/login@v2). It does NOT run automatically on push
+# and requires manual workflow_dispatch authorization.
+
+name: Deploy Staging (Azure OIDC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deployment:
+        description: 'Type "DEPLOY-STAGING" to confirm staging infrastructure deployment'
+        required: true
+        default: 'DRY-RUN'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-staging-deployment
+  cancel-in-progress: false
+
+jobs:
+  pre-deployment-gates:
+    name: Verify Quality & DevSecOps Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Validate Bicep Declarations
+        run: |
+          az bicep build --file deploy/azure/main.bicep --stdout > /dev/null
+
+      - name: Verify Quality Script Exists
+        run: |
+          python -m compileall scripts/quality_gate.py
+
+  deploy-staging-infrastructure:
+    name: Deploy Azure Staging Foundation (OIDC)
+    runs-on: ubuntu-latest
+    needs: pre-deployment-gates
+    if: ${{ github.event.inputs.confirm_deployment == 'DEPLOY-STAGING' }}
+    environment:
+      name: staging
+      url: https://portal.azure.com
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Azure OIDC Login (Passwordless)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Foundation Infrastructure
+        run: |
+          echo "Deploying AegisBank Staging Foundation via Bicep..."
+          az deployment group create \
+            --resource-group "${{ vars.AZURE_STAGING_RESOURCE_GROUP || 'rg-aegisbank-staging' }}" \
+            --template-file deploy/azure/main.bicep \
+            --parameters @deploy/azure/parameters.staging.json
+
+      - name: Report Deployment Evidence
+        run: |
+          echo "Staging foundation deployment submitted. Retain logs for audit evidence."

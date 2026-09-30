@@ -459,7 +459,19 @@
       "category": "operations-reference"
     },
     {
+      "path": "docs/operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/RBAC-LEAST-PRIVILEGE-MATRIX.md",
+      "category": "operations-reference"
+    },
+    {
       "path": "docs/operations/README.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/STAGING-ACCEPTANCE-RUNBOOK.md",
       "category": "operations-reference"
     },
     {

@@ -14,6 +14,9 @@ el checkout actual, comunicar la diferencia y conservar el histórico.
 - [Production Configuration, Secrets & Identity Audit Prompt](production-configuration-secrets-identity-audit-prompt.md) — reusable LLM prompt for a read-only, evidence-based cloud-readiness discovery; planning only.
 - [Production Configuration, Secrets & Identity Audit Results](production-configuration-secrets-identity-audit.md) — completed evidence-based read-only audit; cloud work remains pending.
 - [Azure Staging Runbook](AZURE-STAGING-RUNBOOK.md) — reviewed promotion and rollback sequence; it is not cloud execution evidence.
+- [RBAC Least-Privilege Matrix](RBAC-LEAST-PRIVILEGE-MATRIX.md) — documented cloud roles; it is not an assignment record.
+- [Staging Acceptance Runbook](STAGING-ACCEPTANCE-RUNBOOK.md) — acceptance criteria to execute only after authorized provisioning.
+- [Production Deployment Runbook](PRODUCTION-DEPLOYMENT-RUNBOOK.md) — promotion and rollback procedure; it does not authorize a deployment.
 
 ## Mantenimiento
 

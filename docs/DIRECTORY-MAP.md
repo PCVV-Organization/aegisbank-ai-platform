@@ -6,9 +6,9 @@ No incluye entornos, secretos ni contenido de datasets/informes. Una carpeta sin
 
 | Carpeta | Responsabilidad | Archivos directos |
 | --- | --- | --- |
-| `.` | Aplicación bancaria sintética; README explica propósito y límites | `.cursorrules`, `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `README.LLM.md`, `README.md`, `llms-full.txt`, `llms.txt`, `project-index.json`, `pyrightconfig.json` |
+| `.` | Aplicación bancaria sintética; README explica propósito y límites | `.cursorrules`, `.dockerignore`, `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `README.LLM.md`, `README.md`, `llms-full.txt`, `llms.txt`, `project-index.json`, `pyrightconfig.json` |
 | `.github` | Automatización CI declarada; no prueba ejecución remota | `README.md`, `copilot-instructions.md` |
-| `.github/workflows` | Automatización CI declarada; no prueba ejecución remota | `azure-validate.yml`, `ci.yml` |
+| `.github/workflows` | Automatización CI declarada; no prueba ejecución remota | `azure-validate.yml`, `ci.yml`, `deploy-staging.yml` |
 | `ai` | Componentes de IA del producto; no tooling del desarrollador | `README.md` |
 | `ai/agent` | Orquestación de un único agente con autorización determinista | `README.md`, `pyproject.toml` |
 | `ai/agent/data` | Casos de evaluación sintéticos; no son instrucciones | `agent-eval.jsonl`, `eval-cases.jsonl` |
@@ -41,7 +41,7 @@ No incluye entornos, secretos ni contenido de datasets/informes. Una carpeta sin
 | `ai/agent/tests/integration/observability` | Pruebas de componentes conectados en proceso | `test_hotl_kill_switch.py` |
 | `ai/agent/tests/integration/reliability` | Pruebas de componentes conectados en proceso | `test_failure_injection.py` |
 | `ai/agent/tests/unit` | Pruebas aisladas del comportamiento de un componente | `test_session_store.py` |
-| `ai/agent/tests/unit/configuration` | Pruebas aisladas del comportamiento de un componente | `__init__.py`, `test_keyvault_references.py`, `test_providers.py` |
+| `ai/agent/tests/unit/configuration` | Pruebas aisladas del comportamiento de un componente | `__init__.py`, `test_keyvault_references.py`, `test_production_guards.py`, `test_providers.py` |
 | `ai/agent/tests/unit/evaluation` | Pruebas aisladas del comportamiento de un componente | `test_ab_testing.py`, `test_evaluators.py`, `test_invariant_registry_consistency.py`, `test_least_agency.py`, `test_output_guard.py`, `test_phase2_red_team.py` |
 | `ai/agent/tests/unit/messaging` | Pruebas aisladas del comportamiento de un componente | `test_consumer_dlq.py`, `test_outbox.py` |
 | `ai/agent/tests/unit/mlops` | Pruebas aisladas del comportamiento de un componente | `test_drift_detector.py`, `test_mlops_tracker.py` |
@@ -54,15 +54,15 @@ No incluye entornos, secretos ni contenido de datasets/informes. Una carpeta sin
 | `ai/rag/data/corpus` | Corpus y conjuntos sintéticos versionados; no ingerir automáticamente | `comisiones_tiposyaplicacion_v1.json`, `comisiones_trazaeimpuestos_v1.json`, `creditos_producto_general_v1.json`, `creditos_producto_general_v2.json`, `creditos_tasa_de_interes_v1.json`, `cuotas_calculoycronograma_v1.json`, `loan-statuses_v1.json`, `politicas_absteneveryevidence_v1.json`, `politicas_separaciondeautoridad_v1.json`, `productos_catalogoficticio_v1.json`, `productos_requisitosycondiciones_v1.json`, `reclamos_categoriasyestados_v1.json`, `reclamos_procedimiento_v1.json` |
 | `ai/rag/prompts` | Recuperación de evidencia y generación con citas verificadas | `rag-answer-v001.json` |
 | `ai/rag/src` | Recuperación de evidencia y generación con citas verificadas |  |
-| `ai/rag/src/aegisbank_rag` | Recuperación de evidencia y generación con citas verificadas | `README.md`, `__init__.py`, `cache.py`, `chunking.py`, `cli.py`, `constants.py`, `context.py`, `corpus.py`, `dense_local.py`, `embedding.py`, `evaluation.py`, `foundry_local.py`, `generation.py`, `generation_evaluation.py`, `hybrid.py`, `lexical.py`, `metrics.py`, `pgvector_retriever.py`, `prompting.py`, `provider.py`, `redis_retriever.py`, `retriever.py` |
+| `ai/rag/src/aegisbank_rag` | Recuperación de evidencia y generación con citas verificadas | `README.md`, `__init__.py`, `azure_foundry.py`, `cache.py`, `chunking.py`, `cli.py`, `constants.py`, `context.py`, `corpus.py`, `dense_local.py`, `embedding.py`, `evaluation.py`, `foundry_local.py`, `generation.py`, `generation_evaluation.py`, `hybrid.py`, `lexical.py`, `metrics.py`, `pgvector_retriever.py`, `prompting.py`, `provider.py`, `redis_retriever.py`, `retriever.py` |
 | `ai/rag/tests` | Recuperación de evidencia y generación con citas verificadas | `conftest.py`, `test_chunking.py`, `test_citation.py`, `test_corpus.py`, `test_dense_local.py`, `test_evaluation.py`, `test_hybrid.py`, `test_lexical.py`, `test_metrics.py`, `test_pgvector_retriever.py`, `test_redis_cache.py`, `test_redis_reproducibility.py`, `test_redis_retriever.py`, `test_reproducibility.py` |
-| `ai/rag/tests/v05` | Recuperación de evidencia y generación con citas verificadas | `__init__.py`, `support.py`, `test_context.py`, `test_foundry_local.py`, `test_generation.py`, `test_generation_evaluation.py`, `test_prompting.py` |
+| `ai/rag/tests/v05` | Recuperación de evidencia y generación con citas verificadas | `__init__.py`, `support.py`, `test_azure_foundry.py`, `test_context.py`, `test_foundry_local.py`, `test_generation.py`, `test_generation_evaluation.py`, `test_prompting.py` |
 | `contracts` | Esquemas de interfaces y eventos; validar productores y consumidores | `README.md`, `bootstrap-manifest.schema.json`, `core-banking-openapi.schema.json`, `cosmos-event-item.schema.json`, `graph.schema.json`, `index.schema.json`, `manifest.schema.json`, `mcp-tools.schema.json`, `service-request-created.schema.json`, `session.schema.json` |
 | `contracts/cloudevents` | Esquemas de interfaces y eventos; validar productores y consumidores | `service-request-created-v1.schema.json` |
 | `data` | Datos sintéticos compartidos de evaluación; no datos bancarios reales | `README.md` |
 | `data/evaluation` | Datos sintéticos compartidos de evaluación; no datos bancarios reales | `v015_eval_suite.jsonl` |
 | `deploy` | Configuración de infraestructura; ejecución requiere alcance explícito | `README.md` |
-| `deploy/azure` | Configuración de infraestructura; ejecución requiere alcance explícito | `main.bicep` |
+| `deploy/azure` | Configuración de infraestructura; ejecución requiere alcance explícito | `main.bicep`, `parameters.production.json`, `parameters.staging.json` |
 | `deploy/kubernetes` | Manifiestos de laboratorio; no autorización para AKS | `README.md`, `configmap.yaml`, `deployment.yaml`, `namespace.yaml`, `service.yaml` |
 | `deploy/local` | Docker Compose local y configuración de emuladores | `Config.json`, `README.md`, `docker-compose.yml` |
 | `docs` | Guías, referencias y evidencias con vigencia diferenciada | `DIRECTORY-MAP.md`, `README.md`, `START-HERE.md`, `navigation.json` |
@@ -71,7 +71,7 @@ No incluye entornos, secretos ni contenido de datasets/informes. Una carpeta sin
 | `docs/engineering` | Responsabilidades de código, separación de repositorios y reglas para mantener documentación e índices coherentes. | `DOCUMENTATION-MAINTENANCE.md`, `DOCUMENTATION-SYSTEM.md`, `OWNERSHIP-MAP.md`, `README.md`, `REPOSITORY-BOUNDARIES.md` |
 | `docs/evaluation` | Guías, referencias y evidencias con vigencia diferenciada | `EVALUATION-CATALOG.md`, `README.md`, `v015-ai-evaluation-mlops.md` |
 | `docs/learning` | Explicaciones y glosario para aprender los conceptos. Volver al código y pruebas para comprobar cómo se implementan aquí. | `AZURE-FUNCTIONS-TRIGGERS-BINDINGS.md`, `CONTAINERS-SERVICE-BUS.md`, `GLOSSARY.md`, `MASTERS-NOTES.md`, `PGVECTOR.md`, `README.md`, `TEACHING-CONTRACT.md`, `V1.0-MASTERS-NOTES.md` |
-| `docs/operations` | Procedimientos para diagnosticar fallos. Confirmar entorno y permisos antes de comandos que alteran servicios o datos. | `AZURE-STAGING-RUNBOOK.md`, `KUBERNETES-TROUBLESHOOTING.md`, `README.md`, `production-configuration-secrets-identity-audit-prompt.md`, `production-configuration-secrets-identity-audit.md` |
+| `docs/operations` | Procedimientos para diagnosticar fallos. Confirmar entorno y permisos antes de comandos que alteran servicios o datos. | `AZURE-STAGING-RUNBOOK.md`, `KUBERNETES-TROUBLESHOOTING.md`, `PRODUCTION-DEPLOYMENT-RUNBOOK.md`, `RBAC-LEAST-PRIVILEGE-MATRIX.md`, `README.md`, `STAGING-ACCEPTANCE-RUNBOOK.md`, `production-configuration-secrets-identity-audit-prompt.md`, `production-configuration-secrets-identity-audit.md` |
 | `docs/operations/runbooks` | Pasos de respuesta a incidentes, colas, dependencias y rollback. Identificar recursos propios antes de cualquier acción destructiva. | `README.md`, `dependency-outage.md`, `dlq-and-kill-switch.md`, `incident-response.md`, `rollback.md` |
 | `docs/quality` | Estrategia de pruebas e informes fechados. PASS, SKIP, BLOCKED e histórico tienen significados distintos; revisar fecha y comando. | `E2E-MATRIX.md`, `PYRIGHT-VALIDATION.md`, `README.md`, `TEST-STRATEGY.md`, `TEST-SUITE-RATIONALIZATION.md` |
 | `docs/releases` | Evidencias de entregas y presentación. Confirmar releases con Git y tags; el título de un documento no demuestra una publicación. | `PORTFOLIO-INTERVIEW-EVIDENCE.md`, `README.md`, `V1.0-EVIDENCE.md` |
