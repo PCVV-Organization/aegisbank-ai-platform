@@ -105,8 +105,9 @@ def test_cloud_secret_provider_uses_key_vault_adapter(monkeypatch) -> None:
     monkeypatch.setenv("AZURE_KEY_VAULT_URL", "https://aegisbank.vault.azure.net")
     captured = {}
 
-    def fake_provider(*, vault_url):
+    def fake_provider(*, vault_url, credential=None):
         captured["vault_url"] = vault_url
+        captured["credential"] = credential
         return LocalSyntheticSecretProvider()
 
     monkeypatch.setattr(
@@ -114,3 +115,24 @@ def test_cloud_secret_provider_uses_key_vault_adapter(monkeypatch) -> None:
     )
     assert isinstance(build_default_secret_provider(), LocalSyntheticSecretProvider)
     assert captured["vault_url"] == "https://aegisbank.vault.azure.net"
+
+
+def test_azure_keyvault_provider_versioned_secret_call() -> None:
+    calls = []
+
+    class MockSecret:
+        value = "versioned-value"
+
+    class MockClient:
+        def get_secret(self, name: str, version: str | None = None):
+            calls.append((name, version))
+            return MockSecret()
+
+    provider = AzureKeyVaultSecretProvider(client=MockClient())
+    val = provider.require("my-secret", version="v2")
+    assert val == "versioned-value"
+    assert calls == [("my-secret", "v2")]
+
+    val2 = provider.require("my-secret")
+    assert val2 == "versioned-value"
+    assert calls == [("my-secret", "v2"), ("my-secret", None)]

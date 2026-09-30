@@ -387,9 +387,9 @@ class AppConfigurationCloudProvider:
                 "AZURE_APPCONFIG_ENDPOINT must use https in cloud environments"
             )
         if self.credential is None:
-            from azure.identity import DefaultAzureCredential
+            from .identity import resolve_azure_credential
 
-            self.credential = DefaultAzureCredential()
+            self.credential = resolve_azure_credential()
         if self.loader is None:
             from azure.appconfiguration.provider import SettingSelector, load
 
@@ -462,7 +462,10 @@ def build_default_provider() -> ConfigurationProvider:
         if not endpoint:
             raise MissingConfigurationKey("AZURE_APPCONFIG_ENDPOINT")
         label = os.getenv("AEGISBANK_CONFIG_LABEL", environment.value)
-        return AppConfigurationCloudProvider(endpoint=endpoint, _label=label)
+        from .identity import resolve_azure_credential
+
+        cred = resolve_azure_credential(environment)
+        return AppConfigurationCloudProvider(endpoint=endpoint, _label=label, credential=cred)
 
     flag = os.getenv("AEGISBANK_USE_APPCONFIG_EMULATOR", "true").lower()
     if flag not in {"1", "true", "yes", "on"}:

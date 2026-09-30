@@ -48,6 +48,7 @@ from .environment import (
     resolve_runtime_environment,
     validate_runtime_configuration,
 )
+from .identity import resolve_azure_credential
 from .secrets import (
     AzureKeyVaultSecretProvider,
     KeyVaultReferenceResolver,
@@ -93,6 +94,7 @@ __all__ = [
     "load_local_dotenv",
     "reset_default_provider",
     "reset_default_secret_provider",
+    "resolve_azure_credential",
     "set_default_provider",
     "set_default_secret_provider",
     "snapshot_for_audit",

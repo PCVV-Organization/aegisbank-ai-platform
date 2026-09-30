@@ -52,11 +52,11 @@ class SecretProvider(Protocol):
 
     name: str
 
-    def get(self, name: str) -> str: ...
+    def get(self, name: str, version: str | None = None) -> str: ...
 
-    def get_optional(self, name: str) -> str | None: ...
+    def get_optional(self, name: str, version: str | None = None) -> str | None: ...
 
-    def require(self, name: str) -> str: ...
+    def require(self, name: str, version: str | None = None) -> str: ...
 
     def describe(self, name: str) -> SecretSource | None: ...
 
@@ -79,14 +79,18 @@ class LocalSyntheticSecretProvider:
         """Store a synthetic secret in the local memory store."""
         self._secrets[name] = value
 
-    def get(self, name: str) -> str:
-        return self.require(name)
+    def get(self, name: str, version: str | None = None) -> str:
+        return self.require(name, version=version)
 
-    def get_optional(self, name: str) -> str | None:
+    def get_optional(self, name: str, version: str | None = None) -> str | None:
+        if version:
+            v_key = f"{name}/{version}"
+            if v_key in self._secrets:
+                return self._secrets[v_key]
         return self._secrets.get(name)
 
-    def require(self, name: str) -> str:
-        val = self._secrets.get(name)
+    def require(self, name: str, version: str | None = None) -> str:
+        val = self.get_optional(name, version=version)
         if val is None:
             raise MissingSecret(f"Secret '{name}' not found in {self.name}")
         return val
@@ -122,28 +126,33 @@ class AzureKeyVaultSecretProvider:
             self._client = client
         elif vault_url is not None:
             # Lazy import to keep azure-keyvault-secrets optional at import time
-            from azure.identity import DefaultAzureCredential
             from azure.keyvault.secrets import SecretClient
 
-            cred = credential or DefaultAzureCredential()
+            from .identity import resolve_azure_credential
+
+            cred = credential or resolve_azure_credential()
             self._client = SecretClient(vault_url=vault_url, credential=cred)
         else:
             self._client = None
 
-    def get(self, name: str) -> str:
-        return self.require(name)
+    def get(self, name: str, version: str | None = None) -> str:
+        return self.require(name, version=version)
 
-    def get_optional(self, name: str) -> str | None:
+    def get_optional(self, name: str, version: str | None = None) -> str | None:
         try:
-            return self.require(name)
+            return self.require(name, version=version)
         except MissingSecret:
             return None
 
-    def require(self, name: str) -> str:
+    def require(self, name: str, version: str | None = None) -> str:
         if self._client is None:
             raise SecretError("AzureKeyVaultSecretProvider has no active SecretClient configured")
         try:
-            secret = self._client.get_secret(name)
+            secret = (
+                self._client.get_secret(name, version=version)
+                if version
+                else self._client.get_secret(name)
+            )
             if hasattr(secret, "value"):
                 return str(secret.value)
             return str(secret)
@@ -174,16 +183,24 @@ class _ResolveDispatcher:
             def _class_resolve(
                 reference: str, secret_provider: SecretProvider | None = None
             ) -> str:
-                _, secret_name, _ = owner.parse_secret_identifier(reference)
+                _, secret_name, version = owner.parse_secret_identifier(reference)
                 provider = secret_provider or get_default_secret_provider()
-                return provider.require(secret_name)
+                try:
+                    return provider.require(secret_name, version=version)
+                except TypeError:
+                    return provider.require(secret_name)
 
             return _class_resolve
 
         def _instance_resolve(reference: str, secret_provider: SecretProvider | None = None) -> str:
-            _, secret_name, _ = owner.parse_secret_identifier(reference)
+            _, secret_name, version = owner.parse_secret_identifier(reference)
             provider = secret_provider or instance.secret_provider or get_default_secret_provider()
-            return provider.require(secret_name)
+            try:
+                return provider.require(secret_name, version=version)
+            except TypeError:
+                return provider.require(secret_name)
+
+            return _instance_resolve
 
         return _instance_resolve
 
@@ -234,17 +251,20 @@ _DEFAULT_SECRET_PROVIDER: SecretProvider | None = None
 def build_default_secret_provider() -> SecretProvider:
     """Select synthetic local secrets or the Azure Key Vault provider explicitly.
 
-    Staging and production never fall back to synthetic values.  The Key Vault
+    Staging and production never fall back to synthetic values. The Key Vault
     URL is intentionally bootstrap-only; credentials come from
-    ``DefaultAzureCredential`` inside the adapter.
+    ``resolve_azure_credential()`` inside the adapter.
     """
+    from .identity import resolve_azure_credential
+
     environment = resolve_runtime_environment()
     if not environment.is_cloud:
         return LocalSyntheticSecretProvider()
     vault_url = os.getenv("AZURE_KEY_VAULT_URL", "")
     if not vault_url.startswith("https://"):
         raise EnvironmentSelectionError("AZURE_KEY_VAULT_URL must use https in cloud environments")
-    return AzureKeyVaultSecretProvider(vault_url=vault_url)
+    cred = resolve_azure_credential(environment)
+    return AzureKeyVaultSecretProvider(vault_url=vault_url, credential=cred)
 
 
 def get_default_secret_provider() -> SecretProvider:

@@ -158,6 +158,9 @@ def validate_runtime_configuration(
     if pg_url and ("aegis_password" in pg_url or is_local_endpoint(pg_url)):
         problems.append("AEGISBANK_PGVECTOR_URL")
 
+    if source.get("AEGISBANK_DATABASE_URL"):
+        problems.append("AEGISBANK_DATABASE_URL")
+
     if _is_enabled(source.get("TEST_AUTH_BYPASS")) or _is_enabled(
         source.get("AEGISBANK_TEST_AUTH_BYPASS")
     ):

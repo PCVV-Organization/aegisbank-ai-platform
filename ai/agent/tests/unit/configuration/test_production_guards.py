@@ -173,3 +173,15 @@ def test_cloud_config_provider_rejects_http_in_cloud() -> None:
             endpoint="http://insecure-appconfig.azconfig.io",
             _label="production",
         )
+
+
+def test_validate_runtime_configuration_rejects_direct_database_url_in_cloud() -> None:
+    bad_values = {
+        "AEGISBANK_ENV": "staging",
+        "AEGISBANK_DATABASE_URL": "sqlite:////app/data/aegisbank.db",
+        "AZURE_APPCONFIG_ENDPOINT": "https://aegisbank.azconfig.io",
+        "AZURE_KEY_VAULT_URL": "https://aegisbank.vault.azure.net/",
+    }
+    with pytest.raises(EnvironmentSelectionError) as exc_info:
+        validate_runtime_configuration(RuntimeEnvironment.STAGING, bad_values)
+    assert "AEGISBANK_DATABASE_URL" in str(exc_info.value)
