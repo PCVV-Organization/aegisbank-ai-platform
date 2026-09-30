@@ -23,6 +23,7 @@ Mixing them in one abstraction is exactly what Microsoft warns against
 """
 
 from .config import (
+    AppConfigurationCloudProvider,
     AppConfigurationEmulatorProvider,
     ConfigurationError,
     ConfigurationProvider,
@@ -40,6 +41,7 @@ from .config import (
     set_default_provider,
     snapshot_for_audit,
 )
+from .environment import EnvironmentSelectionError, RuntimeEnvironment, resolve_runtime_environment
 from .secrets import (
     AzureKeyVaultSecretProvider,
     KeyVaultReferenceResolver,
@@ -49,6 +51,7 @@ from .secrets import (
     SecretError,
     SecretProvider,
     SecretSource,
+    build_default_secret_provider,
     get_default_secret_provider,
     reset_default_secret_provider,
     set_default_secret_provider,
@@ -56,11 +59,13 @@ from .secrets import (
 
 __all__ = [
     "AppConfigurationEmulatorProvider",
+    "AppConfigurationCloudProvider",
     "AzureKeyVaultSecretProvider",
     "ConfigurationError",
     "ConfigurationProvider",
     "ConfigurationSource",
     "EnvironmentConfigurationProvider",
+    "EnvironmentSelectionError",
     "InvalidConfigurationValue",
     "KeyVaultReferenceResolver",
     "LocalSyntheticSecretProvider",
@@ -70,7 +75,9 @@ __all__ = [
     "SecretError",
     "SecretProvider",
     "SecretSource",
+    "RuntimeEnvironment",
     "build_default_provider",
+    "build_default_secret_provider",
     "coerce_bool",
     "coerce_float",
     "coerce_int",
@@ -82,4 +89,5 @@ __all__ = [
     "set_default_provider",
     "set_default_secret_provider",
     "snapshot_for_audit",
+    "resolve_runtime_environment",
 ]

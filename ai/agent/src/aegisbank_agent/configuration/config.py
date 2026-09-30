@@ -43,6 +43,11 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Mapping, Protocol, runtime_checkable
 
+from .environment import (
+    resolve_runtime_environment,
+    validate_runtime_configuration,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -359,6 +364,80 @@ class AppConfigurationEmulatorProvider:
         )
 
 
+@dataclass(slots=True)
+class AppConfigurationCloudProvider:
+    """Azure App Configuration adapter authenticated with ``DefaultAzureCredential``.
+
+    Imports and network access are deferred until this cloud-only provider is
+    explicitly selected.  The official provider resolves App Configuration values
+    and Key Vault references with the same managed-identity credential.
+    """
+
+    endpoint: str
+    _label: str
+    credential: Any = None
+    loader: Any = None
+    name: str = "azure-app-configuration"
+    _provider: Any = field(init=False, default=None)
+    _cache: dict[str, str] = field(init=False, default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if not self.endpoint.startswith("https://"):
+            raise ConfigurationError(
+                "AZURE_APPCONFIG_ENDPOINT must use https in cloud environments"
+            )
+        if self.credential is None:
+            from azure.identity import DefaultAzureCredential
+
+            self.credential = DefaultAzureCredential()
+        if self.loader is None:
+            from azure.appconfiguration.provider import SettingSelector, load
+
+            selects = [SettingSelector(key_filter="*", label_filter="\\0")]
+            if self._label:
+                selects.append(SettingSelector(key_filter="*", label_filter=self._label))
+
+            def default_loader(**kwargs: Any) -> Any:
+                return load(
+                    endpoint=self.endpoint,
+                    credential=self.credential,
+                    keyvault_credential=self.credential,
+                    selects=selects,
+                    refresh_enabled=True,
+                    startup_timeout=30,
+                    **kwargs,
+                )
+
+            self.loader = default_loader
+        self.refresh()
+
+    def refresh(self) -> None:
+        if self._provider is None:
+            self._provider = self.loader()
+        else:
+            refresh = getattr(self._provider, "refresh", None)
+            if callable(refresh):
+                refresh()
+        self._cache = {key: str(value) for key, value in self._provider.items()}
+
+    def get(self, key: str) -> str:
+        return require_key(self, key)
+
+    def get_optional(self, key: str) -> str | None:
+        return self._cache.get(key)
+
+    def require(self, key: str) -> str:
+        return require_key(self, key)
+
+    def current_label(self) -> str | None:
+        return self._label
+
+    def describe(self, key: str) -> ConfigurationSource | None:
+        if key not in self._cache:
+            return None
+        return ConfigurationSource(name=self.name, label=self._label, last_refresh_at=None)
+
+
 def build_default_provider() -> ConfigurationProvider:
     """Select the canonical provider based on environment.
 
@@ -376,6 +455,15 @@ def build_default_provider() -> ConfigurationProvider:
     via :py:func:`set_default_provider` without patching individual
     call sites.
     """
+    environment = resolve_runtime_environment()
+    if environment.is_cloud:
+        validate_runtime_configuration(environment)
+        endpoint = os.getenv("AZURE_APPCONFIG_ENDPOINT", "")
+        if not endpoint:
+            raise MissingConfigurationKey("AZURE_APPCONFIG_ENDPOINT")
+        label = os.getenv("AEGISBANK_CONFIG_LABEL", environment.value)
+        return AppConfigurationCloudProvider(endpoint=endpoint, _label=label)
+
     flag = os.getenv("AEGISBANK_USE_APPCONFIG_EMULATOR", "true").lower()
     if flag not in {"1", "true", "yes", "on"}:
         return EnvironmentConfigurationProvider(_label=os.getenv("AEGISBANK_CONFIG_LABEL", "local"))

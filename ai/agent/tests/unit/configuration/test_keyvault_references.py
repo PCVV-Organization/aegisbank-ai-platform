@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from aegisbank_agent.configuration.environment import EnvironmentSelectionError
 from aegisbank_agent.configuration.secrets import (
     AzureKeyVaultSecretProvider,
     KeyVaultReferenceResolver,
@@ -11,6 +12,7 @@ from aegisbank_agent.configuration.secrets import (
     MissingSecret,
     SecretAccessDenied,
     SecretError,
+    build_default_secret_provider,
     get_default_secret_provider,
     reset_default_secret_provider,
     set_default_secret_provider,
@@ -89,3 +91,26 @@ def test_default_secret_provider_lifecycle() -> None:
 
     reset_default_secret_provider()
     assert get_default_secret_provider() is not custom_p
+
+
+def test_cloud_secret_provider_fails_closed_without_key_vault(monkeypatch) -> None:
+    monkeypatch.setenv("AEGISBANK_ENV", "production")
+    monkeypatch.delenv("AZURE_KEY_VAULT_URL", raising=False)
+    with pytest.raises(EnvironmentSelectionError, match="AZURE_KEY_VAULT_URL"):
+        build_default_secret_provider()
+
+
+def test_cloud_secret_provider_uses_key_vault_adapter(monkeypatch) -> None:
+    monkeypatch.setenv("AEGISBANK_ENV", "staging")
+    monkeypatch.setenv("AZURE_KEY_VAULT_URL", "https://aegisbank.vault.azure.net")
+    captured = {}
+
+    def fake_provider(*, vault_url):
+        captured["vault_url"] = vault_url
+        return LocalSyntheticSecretProvider()
+
+    monkeypatch.setattr(
+        "aegisbank_agent.configuration.secrets.AzureKeyVaultSecretProvider", fake_provider
+    )
+    assert isinstance(build_default_secret_provider(), LocalSyntheticSecretProvider)
+    assert captured["vault_url"] == "https://aegisbank.vault.azure.net"

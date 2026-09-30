@@ -15,9 +15,12 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from dataclasses import dataclass, field
 from typing import Any, Mapping, Protocol, runtime_checkable
+
+from .environment import EnvironmentSelectionError, resolve_runtime_environment
 
 logger = logging.getLogger(__name__)
 
@@ -228,11 +231,27 @@ class KeyVaultReferenceResolver:
 _DEFAULT_SECRET_PROVIDER: SecretProvider | None = None
 
 
+def build_default_secret_provider() -> SecretProvider:
+    """Select synthetic local secrets or the Azure Key Vault provider explicitly.
+
+    Staging and production never fall back to synthetic values.  The Key Vault
+    URL is intentionally bootstrap-only; credentials come from
+    ``DefaultAzureCredential`` inside the adapter.
+    """
+    environment = resolve_runtime_environment()
+    if not environment.is_cloud:
+        return LocalSyntheticSecretProvider()
+    vault_url = os.getenv("AZURE_KEY_VAULT_URL", "")
+    if not vault_url.startswith("https://"):
+        raise EnvironmentSelectionError("AZURE_KEY_VAULT_URL must use https in cloud environments")
+    return AzureKeyVaultSecretProvider(vault_url=vault_url)
+
+
 def get_default_secret_provider() -> SecretProvider:
     """Return the process-wide default secret provider."""
     global _DEFAULT_SECRET_PROVIDER
     if _DEFAULT_SECRET_PROVIDER is None:
-        _DEFAULT_SECRET_PROVIDER = LocalSyntheticSecretProvider()
+        _DEFAULT_SECRET_PROVIDER = build_default_secret_provider()
     return _DEFAULT_SECRET_PROVIDER
 
 

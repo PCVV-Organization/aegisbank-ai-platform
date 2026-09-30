@@ -16,6 +16,7 @@ from typing import Any, Callable
 from azure.servicebus import ServiceBusClient, ServiceBusMessage
 from azure.servicebus.exceptions import ServiceBusError
 
+from ..configuration.environment import resolve_runtime_environment
 from .messaging import Message, MessageBus
 
 logger = logging.getLogger("aegisbank.reliability.azure_servicebus")
@@ -34,18 +35,42 @@ class AzureServiceBusMessageBus(MessageBus):
         self,
         connection_string: str | None = None,
         default_queue_name: str = "service-requests",
+        fully_qualified_namespace: str | None = None,
+        credential: Any = None,
     ) -> None:
-        self.connection_string = (
-            connection_string
-            or os.getenv("AEGISBANK_SERVICEBUS_CONN_STR")
-            or DEFAULT_EMULATOR_CONN_STR
+        environment = resolve_runtime_environment()
+        self.fully_qualified_namespace = fully_qualified_namespace or os.getenv(
+            "AEGISBANK_SERVICEBUS_NAMESPACE"
         )
+        self.credential = credential
+        if environment.is_cloud:
+            if not self.fully_qualified_namespace:
+                raise RuntimeError(
+                    "AEGISBANK_SERVICEBUS_NAMESPACE is required in cloud environments"
+                )
+            self.connection_string = None
+        else:
+            self.connection_string = (
+                connection_string
+                or os.getenv("AEGISBANK_SERVICEBUS_CONN_STR")
+                or DEFAULT_EMULATOR_CONN_STR
+            )
         self.default_queue_name = default_queue_name
         self._client: ServiceBusClient | None = None
 
     def _get_client(self) -> ServiceBusClient:
         if self._client is None:
-            self._client = ServiceBusClient.from_connection_string(self.connection_string)
+            if self.fully_qualified_namespace is not None and self.connection_string is None:
+                if self.credential is None:
+                    from azure.identity import DefaultAzureCredential
+
+                    self.credential = DefaultAzureCredential()
+                self._client = ServiceBusClient(
+                    fully_qualified_namespace=self.fully_qualified_namespace,
+                    credential=self.credential,
+                )
+            else:
+                self._client = ServiceBusClient.from_connection_string(self.connection_string)
         return self._client
 
     def close(self) -> None:

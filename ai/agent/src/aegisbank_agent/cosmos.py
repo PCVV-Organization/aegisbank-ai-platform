@@ -17,10 +17,11 @@ from azure.cosmos.exceptions import (
     CosmosResourceNotFoundError,
 )
 
-DEFAULT_COSMOS_ENDPOINT = os.environ.get("COSMOS_ENDPOINT", "http://127.0.0.1:8081")
-DEFAULT_COSMOS_KEY = os.environ.get(
-    "COSMOS_KEY",
-    "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+from .configuration.environment import resolve_runtime_environment
+
+DEFAULT_COSMOS_ENDPOINT = "http://127.0.0.1:8081"
+DEFAULT_COSMOS_KEY = (
+    "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
 )
 DEFAULT_DATABASE_NAME = "aegisbank"
 DEFAULT_CONTAINER_NAME = "agent_events"
@@ -30,19 +31,29 @@ DEFAULT_CONTAINER_NAME = "agent_events"
 class CosmosRepository:
     """Canonical repository for Azure Cosmos DB NoSQL document and event storage."""
 
-    endpoint: str = field(default_factory=lambda: DEFAULT_COSMOS_ENDPOINT)
-    credential: str = field(default_factory=lambda: DEFAULT_COSMOS_KEY)
+    endpoint: str | None = None
+    credential: Any = None
     database_name: str = DEFAULT_DATABASE_NAME
     container_name: str = DEFAULT_CONTAINER_NAME
     partition_key_path: str = "/customer_id"
 
     def __post_init__(self) -> None:
+        environment = resolve_runtime_environment()
+        if self.endpoint is None:
+            self.endpoint = os.getenv("COSMOS_ENDPOINT", DEFAULT_COSMOS_ENDPOINT)
+        if self.credential is None:
+            if environment.is_cloud:
+                from azure.identity import DefaultAzureCredential
+
+                self.credential = DefaultAzureCredential()
+            else:
+                self.credential = os.getenv("COSMOS_KEY", DEFAULT_COSMOS_KEY)
         self._client: CosmosClient | None = None
         self._db: Any = None
         self._container: Any = None
 
     def _get_client(self) -> CosmosClient:
-        if not self.endpoint.strip():
+        if not self.endpoint or not self.endpoint.strip():
             raise RuntimeError("COSMOS_ENDPOINT is required for Cosmos DB access")
         if self._client is None:
             self._client = CosmosClient(self.endpoint, credential=self.credential)
