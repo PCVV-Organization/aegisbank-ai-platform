@@ -28,7 +28,15 @@ LOAN_ID_PATTERN: re.Pattern[str] = re.compile(r"^LOAN-[0-9]{4}$")
 
 def create_default_database() -> Database:
     """Create and seed an in-memory or configured database with synthetic banking data."""
+    from aegisbank_agent.configuration.environment import resolve_runtime_environment
+
+    env = resolve_runtime_environment()
     db_url = os.getenv("AEGISBANK_DATABASE_URL")
+    if env.is_cloud and db_url:
+        raise RuntimeError(
+            "Direct Core Banking database access is prohibited in cloud environments; "
+            "Agent must interact via Core Banking API boundary"
+        )
     if db_url:
         db = Database(db_url)
         db.create_schema()

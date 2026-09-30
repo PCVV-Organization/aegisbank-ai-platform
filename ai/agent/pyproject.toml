@@ -24,6 +24,8 @@ dependencies = [
     "azure-keyvault-secrets==4.11.2",
     "mlflow-skinny>=3.16.0",
     "alembic>=1.19.0",
+    "fastapi>=0.141.0",
+    "uvicorn>=0.30.0",
 ]
 
 [project.optional-dependencies]
