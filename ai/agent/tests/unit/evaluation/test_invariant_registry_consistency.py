@@ -41,6 +41,10 @@ def test_canonical_invariants_unique_and_complete() -> None:
 def test_briefing_contains_all_15_canonical_invariants() -> None:
     """Verify Section 6.6 of the canonical briefing defines all 15 invariants accurately."""
     briefing_path = REPO_ROOT / "docs" / "briefings" / "AEGISBANK-AI-PLATFORM-CHATGPT-BRIEFING.md"
+    if not briefing_path.exists():
+        briefing_path = (
+            REPO_ROOT / "history" / "briefings" / "AEGISBANK-AI-PLATFORM-CHATGPT-BRIEFING.md"
+        )
     assert briefing_path.exists(), f"Briefing missing at {briefing_path}"
     content = briefing_path.read_text(encoding="utf-8")
 

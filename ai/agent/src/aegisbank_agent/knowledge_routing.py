@@ -305,12 +305,8 @@ def requires_authorized_knowledge(query: str) -> bool:
     if requires_write_action(query):
         return False
     normalized = _normalize(query)
-    return (
-        any(term in normalized for term in _POLICY_TERMS)
-        or any(
-            re.search(pattern, normalized)
-            for pattern in _LOAN_STATUS_KNOWLEDGE_PATTERNS
-        )
+    return any(term in normalized for term in _POLICY_TERMS) or any(
+        re.search(pattern, normalized) for pattern in _LOAN_STATUS_KNOWLEDGE_PATTERNS
     )
 
 
