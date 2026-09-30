@@ -119,6 +119,14 @@
       "category": "entrypoint"
     },
     {
+      "path": "CLAUDE.md",
+      "category": "entrypoint"
+    },
+    {
+      "path": "GEMINI.md",
+      "category": "entrypoint"
+    },
+    {
       "path": "README.LLM.md",
       "category": "entrypoint"
     },

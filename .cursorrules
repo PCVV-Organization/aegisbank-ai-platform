@@ -1,0 +1,15 @@
+# AegisBank Application — Cursor Rules
+
+## Contexto y arquitectura
+- Repositorio de la aplicación bancaria de laboratorio (Python, monolito modular con FastAPI, RAG, ML y agente Aegis).
+- Contratos principales: consultar siempre `AGENTS.md` y `README.LLM.md`.
+- Componentes canónicos: consultar `docs/architecture/CANONICAL-COMPONENTS.md` antes de implementar componentes.
+
+## Ejecución y entorno virtual
+- Ejecutar siempre usando el entorno virtual local: `.\.venv\Scripts\python.exe`.
+- Para cambios de código, adquirir SessionGuard con `scripts/session_guard.py`.
+
+## Reglas permanentes
+- Solo datos sintéticos y reproducibles.
+- Human-in-the-Loop (HITL) estricto: toda operación de escritura exige confirmación humana.
+- No modificar archivos generados (`llms.txt`, `llms-full.txt`, `project-index.json`, `docs/DIRECTORY-MAP.md`) manualmente; usar `python -B scripts/documentation_index.py --write`.

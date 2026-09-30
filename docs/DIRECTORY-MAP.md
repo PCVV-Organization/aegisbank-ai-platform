@@ -6,7 +6,7 @@ No incluye entornos, secretos ni contenido de datasets/informes. Una carpeta sin
 
 | Carpeta | Responsabilidad | Archivos directos |
 | --- | --- | --- |
-| `.` | Aplicación bancaria sintética; README explica propósito y límites | `.gitignore`, `AGENTS.md`, `README.LLM.md`, `README.md`, `llms-full.txt`, `llms.txt`, `project-index.json`, `pyrightconfig.json` |
+| `.` | Aplicación bancaria sintética; README explica propósito y límites | `.cursorrules`, `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `README.LLM.md`, `README.md`, `llms-full.txt`, `llms.txt`, `project-index.json`, `pyrightconfig.json` |
 | `.github` | Automatización CI declarada; no prueba ejecución remota | `README.md`, `copilot-instructions.md` |
 | `.github/workflows` | Automatización CI declarada; no prueba ejecución remota | `ci.yml` |
 | `ai` | Componentes de IA del producto; no tooling del desarrollador | `README.md` |
