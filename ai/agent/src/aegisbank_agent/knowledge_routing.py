@@ -92,10 +92,11 @@ _PAYMENT_DATE_PATTERNS = (
     r"\bfechas?\s+de\s+pago\b",
     r"\bfecha\s+de\s+vencimiento\b",
     r"\bfechas?\s+de\s+vencimiento\b",
-    r"\bcuando\s+pago\b",
+    r"\bcuando\s+(?:debo\s+|tengo\s+que\s+)?pagar(?:los)?\b",
     r"\bcuando\s+vence\b",
-    r"\bproxima\s+cuota\b",
-    r"\bcuotas?\b",
+    r"\b(?:proxima|siguiente)\s+cuota\b",
+    r"\bcuota\s+pendiente\b",
+    r"\bcuota(?:\s+[a-z0-9]+){0,2}\s+pendiente\b",
     r"\bvencimientos?\b",
 )
 _PLACEHOLDER_REGEX = re.compile(
@@ -238,7 +239,12 @@ def asks_my_loan_statuses(query: str) -> bool:
 
 
 def asks_for_payment_dates(query: str) -> bool:
-    """Return True when user asks for payment dates or installment details."""
+    """Return True for a read-only next-installment or payment-schedule intent.
+
+    This is a bounded semantic family, not a list of one-off sentences.  It
+    deliberately requires a due-date, schedule, or interrogative payment signal;
+    an imperative such as ``paga LOAN-0001`` remains outside this read intent.
+    """
     normalized = _normalize(query)
     return any(re.search(pat, normalized) for pat in _PAYMENT_DATE_PATTERNS)
 
@@ -334,38 +340,12 @@ def account_tool_allowlist(query: str) -> list[str]:
     tools: list[str] = []
 
     if loan_id is not None:
-        asks_installment = any(
-            t in normalized
-            for t in (
-                "cuota",
-                "vencimiento",
-                "proxima cuota",
-                "cuanto debo",
-                "mis cuotas",
-                "cuando vence",
-                "fecha de pago",
-                "fechas de pago",
-            )
-        )
-        asks_details = (
-            any(
-                t in normalized
-                for t in (
-                    "detalle",
-                    "saldo",
-                    "informacion",
-                    "estado",
-                    "muestrame",
-                    "consultar",
-                )
-            )
-            or not asks_installment
-        )
-        if asks_details:
-            tools.append("get_loan_details")
-        if asks_installment:
-            tools.append("get_next_installment")
-        return tools or ["get_loan_details"]
+        # A due-date/installment question is more specific than the generic
+        # presence of a loan identifier.  Force only its read tool so the agent
+        # cannot substitute total outstanding balance for a scheduled installment.
+        if asks_for_payment_dates(query):
+            return ["get_next_installment"]
+        return ["get_loan_details"]
 
     needs_loan_list = (
         "mis prestamos" in normalized

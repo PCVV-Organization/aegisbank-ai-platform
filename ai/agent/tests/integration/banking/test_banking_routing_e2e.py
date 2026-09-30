@@ -9,7 +9,11 @@ import pytest
 from mock_core_banking.persistence.database import Database
 
 from aegisbank_agent.agent import AgentOrchestrator
-from aegisbank_agent.knowledge_routing import account_tool_allowlist, requires_account_data
+from aegisbank_agent.knowledge_routing import (
+    account_tool_allowlist,
+    requires_account_data,
+    resolve_minimal_tool_allowlist,
+)
 from aegisbank_agent.observability.audit import AuditLogger
 from aegisbank_agent.observability.metrics import OperationalMetrics
 from aegisbank_agent.tools.banking_tools import (
@@ -158,6 +162,63 @@ def test_case_b_next_installment_executes_get_next_installment(in_memory_db: Dat
     assert result.success is True
     tool_names = [tc.tool_name for tc in result.tool_calls]
     assert "get_next_installment" in tool_names
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "¿LOAN-0001 cuando tengo que pagarlos?",
+        "¿Cuándo tengo que pagar LOAN-0001?",
+        "¿Cuándo vence LOAN-0001?",
+        "¿Cuál es mi próxima cuota de LOAN-0001?",
+        "¿Qué cuota tengo pendiente de LOAN-0001?",
+        "¿Cuál es la fecha de pago de LOAN-0001?",
+    ],
+)
+def test_specific_installment_read_precedes_generic_loan_details(
+    in_memory_db: Database, query: str
+) -> None:
+    """A concrete loan's due-date intent uses only the deterministic installment read."""
+    registry = ToolRegistry(
+        [GetLoanDetailsTool(in_memory_db), GetNextInstallmentTool(in_memory_db)]
+    )
+    mock_client = MagicMock()
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+
+    result = orchestrator.run(query, customer_id="CUST-0001")
+
+    assert account_tool_allowlist(query) == ["get_next_installment"]
+    assert result.success is True
+    assert result.rounds == 0
+    assert [(call.tool_name, call.arguments) for call in result.tool_calls] == [
+        ("get_next_installment", {"loan_id": "LOAN-0001"})
+    ]
+    assert "Cuota" in result.answer
+    mock_client.chat.completions.create.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "Detalle de LOAN-0001",
+        "¿Cuál es el saldo de LOAN-0001?",
+        "¿Cuál es el estado de LOAN-0001?",
+    ],
+)
+def test_specific_loan_detail_read_remains_details_only(query: str) -> None:
+    assert account_tool_allowlist(query) == ["get_loan_details"]
+
+
+def test_payment_imperative_never_exposes_a_money_movement_tool() -> None:
+    available = [
+        "get_my_loans",
+        "get_loan_details",
+        "get_next_installment",
+        "create_service_request",
+    ]
+    allowed = resolve_minimal_tool_allowlist("Paga LOAN-0001", available)
+    assert allowed == ["get_loan_details"]
+    assert not any(name.startswith(("pay", "transfer")) for name in allowed)
 
 
 def test_case_c_combined_query_executes_multi_step_chain(in_memory_db: Database) -> None:
