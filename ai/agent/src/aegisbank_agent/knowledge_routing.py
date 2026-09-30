@@ -238,6 +238,17 @@ def asks_my_loan_statuses(query: str) -> bool:
     )
 
 
+def has_explicit_loan_detail_intent(query: str) -> bool:
+    """Recognize only explicit, low-ambiguity requests for loan details.
+
+    Natural-language questions with a loan ID are intentionally *not* classified
+    here. They receive the bounded read-only tool set and the LLM proposes the
+    appropriate tool; deterministic authorization remains downstream.
+    """
+    normalized = _normalize(query)
+    return any(term in normalized for term in ("detalle", "saldo", "estado", "informacion"))
+
+
 def asks_for_payment_dates(query: str) -> bool:
     """Return True for a read-only next-installment or payment-schedule intent.
 
@@ -336,12 +347,13 @@ def account_tool_allowlist(query: str) -> list[str]:
     tools: list[str] = []
 
     if loan_id is not None:
-        # A due-date/installment question is more specific than the generic
-        # presence of a loan identifier.  Force only its read tool so the agent
-        # cannot substitute total outstanding balance for a scheduled installment.
-        if asks_for_payment_dates(query):
-            return ["get_next_installment"]
-        return ["get_loan_details"]
+        # Keep the zero-round optimization only for an explicit details request.
+        # Every other loan-ID question is linguistically ambiguous, so expose a
+        # bounded READ-only proposal set to the LLM. Policy, ownership, schemas,
+        # HITL/HOTL, and execution remain deterministic downstream.
+        if has_explicit_loan_detail_intent(query):
+            return ["get_loan_details"]
+        return ["get_loan_details", "get_next_installment"]
 
     needs_loan_list = (
         "mis prestamos" in normalized

@@ -164,37 +164,47 @@ def test_case_b_next_installment_executes_get_next_installment(in_memory_db: Dat
     assert "get_next_installment" in tool_names
 
 
-@pytest.mark.parametrize(
-    "query",
-    [
-        "¿LOAN-0001 cuando tengo que pagarlos?",
-        "¿Cuándo tengo que pagar LOAN-0001?",
-        "¿Cuándo vence LOAN-0001?",
-        "¿Cuál es mi próxima cuota de LOAN-0001?",
-        "¿Qué cuota tengo pendiente de LOAN-0001?",
-        "¿Cuál es la fecha de pago de LOAN-0001?",
-    ],
-)
-def test_specific_installment_read_precedes_generic_loan_details(
-    in_memory_db: Database, query: str
+def test_ambiguous_loan_question_uses_bounded_semantic_tool_proposal(
+    in_memory_db: Database,
 ) -> None:
-    """A concrete loan's due-date intent uses only the deterministic installment read."""
+    """The LLM interprets natural language inside a deterministic READ-only boundary."""
     registry = ToolRegistry(
         [GetLoanDetailsTool(in_memory_db), GetNextInstallmentTool(in_memory_db)]
     )
-    mock_client = MagicMock()
-    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+    call = DummyToolCall(
+        "semantic_01", "get_next_installment", json.dumps({"loan_id": "LOAN-0001"})
+    )
+    client = MagicMock()
+    client.chat.completions.create.side_effect = [
+        DummyResponse(DummyMessage(tool_calls=[call])),
+        DummyResponse(DummyMessage(content="Tu próxima cuota vence el 2026-03-01.")),
+    ]
+    query = "¿LOAN-0001 cuándo tengo que pagarlo?"
 
-    result = orchestrator.run(query, customer_id="CUST-0001")
+    result = AgentOrchestrator(client=client, registry=registry).run(query, customer_id="CUST-0001")
 
-    assert account_tool_allowlist(query) == ["get_next_installment"]
-    assert result.success is True
-    assert result.rounds == 0
-    assert [(call.tool_name, call.arguments) for call in result.tool_calls] == [
+    assert account_tool_allowlist(query) == ["get_loan_details", "get_next_installment"]
+    assert [(item.tool_name, item.arguments) for item in result.tool_calls] == [
         ("get_next_installment", {"loan_id": "LOAN-0001"})
     ]
-    assert "Cuota" in result.answer
-    mock_client.chat.completions.create.assert_not_called()
+    offered = client.chat.completions.create.call_args_list[0].kwargs["tools"]
+    assert [tool["function"]["name"] for tool in offered] == [
+        "get_loan_details",
+        "get_next_installment",
+    ]
+
+
+def test_explicit_loan_detail_remains_a_zero_round_fast_path(in_memory_db: Database) -> None:
+    registry = ToolRegistry(
+        [GetLoanDetailsTool(in_memory_db), GetNextInstallmentTool(in_memory_db)]
+    )
+    client = MagicMock()
+    result = AgentOrchestrator(client=client, registry=registry).run(
+        "Detalle de LOAN-0001", customer_id="CUST-0001"
+    )
+    assert result.rounds == 0
+    assert [item.tool_name for item in result.tool_calls] == ["get_loan_details"]
+    client.chat.completions.create.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -217,7 +227,7 @@ def test_payment_imperative_never_exposes_a_money_movement_tool() -> None:
         "create_service_request",
     ]
     allowed = resolve_minimal_tool_allowlist("Paga LOAN-0001", available)
-    assert allowed == ["get_loan_details"]
+    assert allowed == ["get_loan_details", "get_next_installment"]
     assert not any(name.startswith(("pay", "transfer")) for name in allowed)
 
 
