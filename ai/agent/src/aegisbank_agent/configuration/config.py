@@ -393,7 +393,7 @@ class AppConfigurationCloudProvider:
         if self.loader is None:
             from azure.appconfiguration.provider import SettingSelector, load
 
-            selects = [SettingSelector(key_filter="*", label_filter="\\0")]
+            selects = [SettingSelector(key_filter="*", label_filter="\0")]
             if self._label:
                 selects.append(SettingSelector(key_filter="*", label_filter=self._label))
 

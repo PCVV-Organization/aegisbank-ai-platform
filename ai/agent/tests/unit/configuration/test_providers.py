@@ -123,3 +123,22 @@ def test_cloud_provider_uses_injected_mapping_and_refreshes() -> None:
     provider.refresh()
     assert provider.require("AegisBank:Agent:MaxRounds") == "4"
     assert calls == ["load"]
+
+
+def test_cloud_provider_selector_keeps_the_sdk_null_label(monkeypatch) -> None:
+    captured = {}
+
+    class Selector:
+        def __init__(self, **kwargs) -> None:
+            captured.setdefault("selectors", []).append(kwargs)
+
+    monkeypatch.setattr("azure.appconfiguration.provider.SettingSelector", Selector)
+    monkeypatch.setattr("azure.appconfiguration.provider.load", lambda **_: {})
+
+    provider = AppConfigurationCloudProvider(
+        endpoint="https://aegisbank.example.azconfig.io",
+        _label="staging",
+        credential=object(),
+    )
+    assert provider.current_label() == "staging"
+    assert captured["selectors"][0]["label_filter"] == "\0"
