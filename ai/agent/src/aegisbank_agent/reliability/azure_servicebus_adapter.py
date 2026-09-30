@@ -73,7 +73,8 @@ class AzureServiceBusMessageBus(MessageBus):
                 self._client = ServiceBusClient.from_connection_string(self.connection_string)
             else:
                 raise RuntimeError(
-                    "ServiceBusClient requires either fully_qualified_namespace or connection_string"
+                    "ServiceBusClient requires either fully_qualified_namespace "
+                    "or connection_string"
                 )
         return self._client
 
