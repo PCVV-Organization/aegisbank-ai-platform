@@ -49,9 +49,10 @@ Following Microsoft Azure Well-Architected Framework and enterprise governance b
 
 In compliance with repository governance (`v1.0.2`), an automated structural audit was conducted across all ADR files to verify standard sections (`Status`, `Context`, `Decision`, `Consequences`). In alignment with the **append-only rule**, observed discrepancies are recorded here rather than rewriting accepted files:
 
-### File Mapping & Historical Variants
-* **ADR-023:** The canonical accepted record is indexed as [ADR-023-contract-first-compatibility-protection.md](./ADR-023-contract-first-compatibility-protection.md). An extended companion draft exists at [ADR-023-contract-first-compatibility-and-schema-protection.md](./ADR-023-contract-first-compatibility-and-schema-protection.md) detailing schema files in `contracts/`. Both are retained append-only.
-* **ADR-024:** The canonical accepted record is indexed as [ADR-024-ci-security-gates-before-deployment.md](./ADR-024-ci-security-gates-before-deployment.md). An extended companion draft exists at [ADR-024-ci-cd-pipeline-and-devsecops-shift-left-gates.md](./ADR-024-ci-cd-pipeline-and-devsecops-shift-left-gates.md) detailing GitHub Actions CI workflows. Both are retained append-only.
+### Canonical records
+ADR-023 and ADR-024 each have one accepted canonical record. The former
+companion drafts were consolidated into those records during the documentation
+cleanup; Git history preserves their original text.
 
 ### Structural Gaps Noted in Early Records
 * **ADR-005:** Structured as an evaluation matrix rather than standard Context/Decision/Consequences sections; retained for historical accuracy.

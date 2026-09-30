@@ -14,6 +14,11 @@ Run static checks, tests, Bandit, pip-audit, CycloneDX SBOM and secret scanning 
 before any future delivery stage. This milestone configures CI only and stores no Azure
 credentials.
 
+The declared workflow covers checkout, Python setup, Ruff, compilation, layered tests,
+coverage, SAST, dependency audit, SBOM generation and secret scanning. Remote runner
+execution remains evidence-dependent; a configured workflow does not itself prove that
+the gates have run.
+
 ## Consequences
 
 The pipeline may fail or report dependency audit blocked when external advisory data is
