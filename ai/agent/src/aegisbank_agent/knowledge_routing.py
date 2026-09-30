@@ -12,6 +12,8 @@ _LOAN_STATUS_KNOWLEDGE_PATTERNS = (
     r"\bdefinicion\s+de\s+(?:estado\s+)?delinquent\b",
     r"\bque\s+(?:es|significa)\s+la\s+morosidad\b",
     r"\bque\s+(?:es|significa)\s+un\s+prestamo\s+moroso\b",
+    r"\bque\s+estados?\s+(?:tenemos|puede(?:n)?\s+tener|existen)\b",
+    r"\bestados?\s+(?:de\s+)?(?:un\s+)?prestamo\b",
 )
 _POLICY_TERMS = (
     "politica",

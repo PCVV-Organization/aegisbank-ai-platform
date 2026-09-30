@@ -43,6 +43,7 @@ from .observability.hotl import HOTLSupervisor, get_hotl_supervisor
 from .observability.logging import StructuredLogger, get_logger
 from .observability.metrics import OperationalMetrics, get_metrics
 from .observability.tracer import trace_span
+from .reliability.retry import RetryPolicy
 from .session_store import OwnershipViolationError, SQLiteSessionStore
 from .tools.base import AgentContext, ToolResult
 from .tools.registry import ToolRegistry
@@ -245,6 +246,27 @@ class AgentOrchestrator:
                 tool_choice=tool_choice,
             )
         raise AttributeError("LLM client does not provide a create completion interface")
+
+    def _call_completions_with_foundry_busy_retry(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        tool_choice: Any = "auto",
+    ) -> Any:
+        """Retry only transient Foundry Local contention with bounded backoff.
+
+        Foundry Local can return ``Infer Request is busy`` while an earlier local
+        inference is still draining. The shared classifier retries that response,
+        timeouts, and connection resets, but fails fast for invalid requests and
+        policy errors.
+        """
+        retry_policy = RetryPolicy(
+            max_retries=int(os.getenv("AEGISBANK_FOUNDRY_BUSY_MAX_RETRIES", "5")),
+            base_delay=float(os.getenv("AEGISBANK_FOUNDRY_BUSY_RETRY_BASE_SECONDS", "2")),
+            max_delay=8.0,
+            jitter=False,
+        )
+        return retry_policy.execute(self._call_completions, messages, tools, tool_choice)
 
     @staticmethod
     def _format_loan_details_answer(data: dict[str, Any], query: str = "") -> str:
@@ -845,7 +867,7 @@ class AgentOrchestrator:
                             "round": current_round,
                         },
                     ):
-                        response = self._call_completions(
+                        response = self._call_completions_with_foundry_busy_retry(
                             messages, tools, tool_choice=effective_tool_choice
                         )
                     llm_dur_ms = (time.perf_counter() - llm_start) * 1000.0

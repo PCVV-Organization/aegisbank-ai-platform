@@ -429,6 +429,24 @@ def test_foundry_client_honors_local_timeout_override(monkeypatch) -> None:
     assert fake_openai.call_args.kwargs["max_retries"] == 1
 
 
+def test_foundry_busy_response_is_retried_before_returning_an_error(monkeypatch) -> None:
+    """Transient Foundry contention is retried without inventing a response."""
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.side_effect = [
+        Exception("Error code: 500 - Infer Request is busy"),
+        _Response(_Message(content="¡Hola! ¿Cómo puedo ayudarte hoy?")),
+    ]
+    monkeypatch.setenv("AEGISBANK_FOUNDRY_BUSY_MAX_RETRIES", "1")
+    monkeypatch.setenv("AEGISBANK_FOUNDRY_BUSY_RETRY_BASE_SECONDS", "0")
+    orchestrator = AgentOrchestrator(client=mock_client, registry=ToolRegistry([]))
+
+    result = orchestrator.run("Di hola", customer_id="CUST-0001")
+
+    assert result.success is True
+    assert result.answer == "¡Hola! ¿Cómo puedo ayudarte hoy?"
+    assert mock_client.chat.completions.create.call_count == 2
+
+
 def test_foundry_timeout_returns_safe_error_without_hallucination() -> None:
     """LLM timeout returns structured safe error and never hallucinates account data."""
     mock_client = MagicMock()

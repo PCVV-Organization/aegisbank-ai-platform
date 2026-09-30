@@ -91,6 +91,9 @@ def test_loan_status_definition_uses_only_knowledge_search() -> None:
     assert resolve_minimal_tool_allowlist(
         "¿Qué significa el estado DELINQUENT?", available
     ) == ["search_knowledge"]
+    assert resolve_minimal_tool_allowlist(
+        "¿Qué estados puede tener un préstamo?", available
+    ) == ["search_knowledge"]
 
 
 def test_resolve_minimal_tool_allowlist_write_intent() -> None:
