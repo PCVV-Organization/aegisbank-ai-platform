@@ -226,6 +226,17 @@ def is_comparative_loan_query(query: str) -> bool:
     return any(re.search(pat, normalized) for pat in _COMPARATIVE_LOAN_PATTERNS)
 
 
+def asks_my_loan_statuses(query: str) -> bool:
+    """Return True when an authenticated user asks for their loans' statuses."""
+    normalized = _normalize(query)
+    return (
+        extract_loan_id(query) is None
+        and "estado" in normalized
+        and ("prestamo" in normalized or "credito" in normalized)
+        and any(token in normalized for token in ("mi ", "mis ", "tengo"))
+    )
+
+
 def asks_for_payment_dates(query: str) -> bool:
     """Return True when user asks for payment dates or installment details."""
     normalized = _normalize(query)

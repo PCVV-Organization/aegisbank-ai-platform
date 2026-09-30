@@ -21,6 +21,7 @@ from .knowledge_routing import (
     account_tool_allowlist,
     asks_for_payment_dates,
     asks_loan_ownership,
+    asks_my_loan_statuses,
     classify_service_inquiry,
     extract_customer_ids,
     extract_loan_id,
@@ -295,6 +296,21 @@ class AgentOrchestrator:
         )
 
     @staticmethod
+    def _format_my_loan_statuses_answer(data: dict[str, Any]) -> str:
+        """Render a direct second-person status summary from authorized loan data."""
+        loans = data.get("loans", []) if isinstance(data, dict) else []
+        if not isinstance(loans, list) or not loans:
+            return "No tienes préstamos registrados en este momento."
+        lines = ["Tus préstamos y sus estados:"]
+        for loan in loans:
+            if not isinstance(loan, dict):
+                continue
+            loan_id = str(loan.get("loan_id", "préstamo sin identificador"))
+            status = str(loan.get("status", "sin estado disponible"))
+            lines.append(f"- {loan_id}: {status}.")
+        return "\n".join(lines)
+
+    @staticmethod
     def _format_installment_answer(data: dict[str, Any]) -> str:
         """Render a user-facing summary from a ``get_next_installment`` payload."""
         if not isinstance(data, dict):
@@ -520,6 +536,15 @@ class AgentOrchestrator:
                 ]
 
                 loans = (account_result.data or {}).get("loans", [])
+                if asks_my_loan_statuses(user_message):
+                    return AgentExecutionResult(
+                        answer=self._format_my_loan_statuses_answer(account_result.data or {}),
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
                 if is_comparative_loan_query(user_message):
                     if not loans:
                         return AgentExecutionResult(

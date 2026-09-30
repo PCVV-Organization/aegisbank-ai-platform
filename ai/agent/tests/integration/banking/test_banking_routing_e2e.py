@@ -97,6 +97,23 @@ def test_case_a_my_loans_query_executes_get_my_loans(in_memory_db: Database) -> 
     assert metrics.get_counter("banking_tool_invoked_count") == 1
 
 
+def test_my_loan_statuses_are_returned_in_second_person_without_llm(in_memory_db: Database) -> None:
+    """Authenticated status queries render every authorized loan state directly."""
+    registry = ToolRegistry([GetMyLoansTool(in_memory_db)])
+    mock_client = MagicMock()
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+
+    result = orchestrator.run("¿Qué estados tienen mis préstamos?", customer_id="CUST-0001")
+
+    assert result.success is True
+    assert result.rounds == 0
+    assert [call.tool_name for call in result.tool_calls] == ["get_my_loans"]
+    assert result.answer.startswith("Tus préstamos y sus estados:")
+    assert "LOAN-0001: DELINQUENT." in result.answer
+    assert "LOAN-0002: ACTIVE." in result.answer
+    mock_client.chat.completions.create.assert_not_called()
+
+
 def test_case_b_next_installment_executes_get_next_installment(in_memory_db: Database) -> None:
     metrics = OperationalMetrics()
     registry = ToolRegistry(
