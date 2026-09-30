@@ -28,7 +28,7 @@ def main() -> int:
     retriever.create_ivfflat_index()
     plans["ivfflat"] = retriever.explain_query("requisitos de crédito", top_k=5)
     retriever.drop_vector_indexes()
-    output = Path("docs/evaluation/v012-pgvector-query-plans.json")
+    output = Path("reports/evaluation/v012-pgvector-query-plans.json")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(plans, indent=2), encoding="utf-8")
     print(f"query plans saved to {output}")

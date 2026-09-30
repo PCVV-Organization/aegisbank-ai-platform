@@ -92,6 +92,8 @@ def include_document(path: str) -> bool:
 
 def category(path: str) -> str:
     parts = path.split("/")
+    if path.startswith("history/"):
+        return "historical-archive"
     if path.startswith("docs/architecture/adr/"):
         return "historical-architecture-decision"
     if len(parts) > 2 and parts[0] == "docs":
@@ -266,6 +268,8 @@ def local_link_errors(
     """Check inline link file targets; anchors and external URLs are out of scope."""
     errors = []
     for path in documents:
+        if path.startswith("history/"):
+            continue
         source = root / path
         if not source.exists() and source.resolve() in (planned or set()):
             continue

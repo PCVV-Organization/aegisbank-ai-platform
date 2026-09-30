@@ -5,7 +5,7 @@
 - Milestone target: v0.5
 - Deciders: project owner (user), AegisBank AI Platform
 - Supersedes: none
-- Related: `docs/research/pydantic-ai-mcp-integration.md`, AGENTS.md "Local Tooling"
+- Related historical research: `history/research/pydantic-ai-mcp-integration.md`, AGENTS.md "Local Tooling"
 
 ## Context
 

@@ -75,10 +75,10 @@ class DocumentationIndexTests(unittest.TestCase):
             (root / "private/secret.md").write_text("private", encoding="utf-8")
             self.assertEqual(index.document_paths(root), ["README.md"])
 
-    def test_historical_prompts_are_not_classified_as_instructions(self):
+    def test_historical_archive_is_not_classified_as_active_documentation(self):
         self.assertEqual(
-            index.category("docs/chatgpt-prompts/001_PROMPT.md"),
-            "historical-prompt-not-instructions",
+            index.category("history/chatgpt-prompts/001_PROMPT.md"),
+            "historical-archive",
         )
 
     def test_missing_component_fails_instead_of_publishing_broken_index(self):

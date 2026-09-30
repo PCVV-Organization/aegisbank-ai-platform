@@ -19,4 +19,4 @@ Run these commands from the application Git root. The image tag is a component
 tag, not the current platform version. Startup requires a working Docker engine
 and downloads/builds images; configuration presence does not prove a running lab
 or an Azure deployment. See the [platform README](../../README.md) and
-[historical runtime evidence](../../docs/quality/V0131-RUNTIME-EVIDENCE.md).
+[historical runtime evidence](../../history/quality/V0131-RUNTIME-EVIDENCE.md).

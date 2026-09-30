@@ -15,7 +15,7 @@ in pyproject.toml is component metadata, not the platform release number.
 - Evaluate safety and behavior separately from infrastructure acceptance.
 
 The original v0.6 read-only scope has been extended. Historical measurements
-remain in the [experiment record](../../docs/experiments/v0.6.1-native-tool-calling.md).
+remain in the [experiment record](../../history/experiments/v0.6.1-native-tool-calling.md).
 Current components are mapped in the
 [canonical catalog](../../docs/architecture/CANONICAL-COMPONENTS.md).
 

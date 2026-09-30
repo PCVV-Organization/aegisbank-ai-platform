@@ -5,7 +5,7 @@
 # `mcr.microsoft.com/azure-functions/python:4-python3.14` because it ships
 # the Functions host AND the Python 3.14 worker bundled (which is the
 # version missing from the Windows Core Tools installer — see
-# docs/quality/V0131-RUNTIME-EVIDENCE.md). The image is otherwise bare-bones;
+# history/quality/V0131-RUNTIME-EVIDENCE.md). The image is otherwise bare-bones;
 # we install the project's Python dependencies with pip so the runtime is
 # self-contained.
 #

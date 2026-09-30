@@ -13,7 +13,7 @@ For a first reading, use [START-HERE](START-HERE.md). The generated
 [Documentation evolution](engineering/DOCUMENTATION-SYSTEM.md) explains what
 must change when code, contracts, configuration or evidence evolve.
 
-Current local audit: [baseline closure, evidence and commit plan](quality/LOCAL-BASELINE-CLOSURE-20260921.md)
+Current local audit: [baseline closure, evidence and commit plan](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md)
 (2026-09-21). Release blocked; historical live runs are labeled separately.
 
 This Git contains the application. Development tooling has its own repository;
@@ -68,9 +68,9 @@ docs/
 ### Quality, Testing & Performance Evidence
 * **[Test Strategy & Pyramid](quality/TEST-STRATEGY.md):** Layered testing across Unit, Integration, Contract, FAST gate, and E2E boundaries.
 * **[E2E Journey Matrix](quality/E2E-MATRIX.md):** Verification matrix for the 8 critical banking journeys (Journeys A through H).
-* **[Performance Evidence](quality/V1.0-PERFORMANCE-EVIDENCE.md)** & **[SLI/SLO Lab Report](quality/V1.0-SLI-SLO-LAB-REPORT.md):** Local laboratory baseline measurements (p50, p95, p99 latency, error rate) under 25 bounded iterations.
+* **Historical performance evidence:** [performance baseline](../history/quality/V1.0-PERFORMANCE-EVIDENCE.md) and [SLI/SLO lab report](../history/quality/V1.0-SLI-SLO-LAB-REPORT.md).
 * **[Test Suite Rationalization](quality/TEST-SUITE-RATIONALIZATION.md):** Elimination of test debt (reduced agent suite by 25% while preserving 16 critical security invariants).
-* **Runtime Verification Evidence:** [v0.13.1 Functions Host Evidence](quality/V0131-RUNTIME-EVIDENCE.md), [v0.14.0 AppConfig/KeyVault Evidence](quality/V0140-APPCONFIG-IDENTITY-EVIDENCE.md), [v0.15.0 Evaluation Evidence](quality/V0150-EVALUATION-MLOPS-EVIDENCE.md), and [v1.0.0 Release Evidence](releases/V1.0-EVIDENCE.md).
+* **Runtime Verification Evidence:** [v0.13.1 Functions Host Evidence](../history/quality/V0131-RUNTIME-EVIDENCE.md), [v0.14.0 AppConfig/KeyVault Evidence](../history/quality/V0140-APPCONFIG-IDENTITY-EVIDENCE.md), [v0.15.0 Evaluation Evidence](../history/quality/V0150-EVALUATION-MLOPS-EVIDENCE.md), and [v1.0.0 Release Evidence](releases/V1.0-EVIDENCE.md).
 
 ### Security & DevSecOps
 * **[DevSecOps Shift-Left Gates](security/DEVSECOPS-GATES.md):** Automated SAST (Bandit), SCA (pip-audit), SBOM generation (CycloneDX), and Secret Scanning.
@@ -93,11 +93,7 @@ docs/
 
 *These artifacts represent the historical construction and exploration process. They are preserved for reproducibility and auditability, but are excluded from primary portfolio navigation:*
 
-* **[ChatGPT Prompts Log (000–026)](chatgpt-prompts/):** 28 chronological prompt transcripts recording the incremental engineering directives from bootstrap to v1.0 release.
-* **[Early Milestone Experiments](experiments/):** Initial exploration documents ([v0.3 Intent Baseline](experiments/v0.3-intent-classification-baseline.md), [v0.4 RAG Foundation](experiments/v0.4-rag-retrieval-foundation.md), [v0.5 Grounded Generation](experiments/v0.5-grounded-generation-evaluation.md), [v0.6 Native Tool Calling](experiments/v0.6.1-native-tool-calling.md), [v0.7 MCP HITL](experiments/v0.7.0-mcp-hitl.md)). Their findings are consolidated in the canonical evaluation suite.
-* **[Project Charter](charter/):** Initial bootstrap scope ([Vision](charter/01-vision.md), [Scope](charter/02-scope.md), [Use Cases](charter/03-use-cases.md), [Non-Goals](charter/04-non-goals.md), [Success Criteria](charter/05-success-criteria.md)).
-* **[Career Gap Analysis](career/role-profile-images-and-gap-analysis.md):** Internal personal skills alignment against 2026 Lead AI Engineer job specifications.
-* **[Research Notes](research/):** SDK evaluation notes ([PydanticAI](research/pydantic-ai-mcp-integration.md), [MCP Python SDK](research/mcp-python-sdk-hitl-patterns.md)).
+* [Historical archive](../history/README.md): prompts, early experiments, charter, career material, research notes and dated evidence. It is preserved for traceability and excluded from the standard LLM reading path.
 
 ---
 
@@ -110,14 +106,13 @@ Every document in `docs/` is classified into one of 11 formal governance categor
 | `CANONICAL/REFERENCE` | Stable authoritative specifications and references | `docs/architecture/`, `docs/requirements/` | [CANONICAL-COMPONENTS.md](architecture/CANONICAL-COMPONENTS.md), [V1.0-MATURITY-MATRIX.md](requirements/V1.0-MATURITY-MATRIX.md) |
 | `ARCHITECTURE/ADR` | Append-only architectural decision records | `docs/architecture/adr/` | [ADR-001](architecture/adr/ADR-001-modular-monolith-first.md) to [ADR-030](architecture/adr/ADR-030-local-ai-evaluation-and-mlops-foundation.md) |
 | `EVALUATION-PROTOCOL` | Human-authored evaluation methodologies and taxonomies | `docs/evaluation/` | [docs/evaluation/README.md](evaluation/README.md), [EVALUATION-CATALOG.md](evaluation/EVALUATION-CATALOG.md) |
-| `RAW-EVALUATION-EVIDENCE` | Machine-generated evaluation benchmarks and query plans | `docs/evaluation/` (historical), `reports/` | [v012_retrieval_comparison.json](evaluation/v012_retrieval_comparison.json), [v012-pgvector-query-plans.json](evaluation/v012-pgvector-query-plans.json) |
-| `QUALITY-GATE` | Executed test strategies, matrices, and runtime evidence | `docs/quality/` | [TEST-STRATEGY.md](quality/TEST-STRATEGY.md), [E2E-MATRIX.md](quality/E2E-MATRIX.md), [V1.0-PERFORMANCE-EVIDENCE.md](quality/V1.0-PERFORMANCE-EVIDENCE.md) |
+| `RAW-EVALUATION-EVIDENCE` | Machine-generated historical benchmarks and query plans | `history/evaluation/`, `reports/` | [historical evaluation outputs](../history/evaluation/) |
+| `QUALITY-GATE` | Executed test strategies, matrices, and runtime evidence | `docs/quality/` | [TEST-STRATEGY.md](quality/TEST-STRATEGY.md), [E2E-MATRIX.md](quality/E2E-MATRIX.md), [V1.0-PERFORMANCE-EVIDENCE.md](../history/quality/V1.0-PERFORMANCE-EVIDENCE.md) |
 | `OPERATIONS` | Operational runbooks, procedures, and troubleshooting | `docs/operations/` | [runbooks/incident-response.md](operations/runbooks/incident-response.md), [runbooks/rollback.md](operations/runbooks/rollback.md) |
 | `SECURITY` | Threat models, DevSecOps gates, and security baselines | `docs/security/` | [V1.0-THREAT-MODEL.md](security/V1.0-THREAT-MODEL.md), [DEVSECOPS-GATES.md](security/DEVSECOPS-GATES.md) |
 | `LEARNING` | Conceptual explanations, didactics, and teaching contracts | `docs/learning/` | [MASTERS-NOTES.md](learning/MASTERS-NOTES.md), [TEACHING-CONTRACT.md](learning/TEACHING-CONTRACT.md) |
-| `EXPERIMENT-HISTORY` | Historical exploratory milestones superseded by release code | `docs/experiments/` | [v0.3-intent-classification-baseline.md](experiments/v0.3-intent-classification-baseline.md) |
+| `HISTORICAL-ARCHIVE` | Prompts, experiments, dated evidence and superseded context | `history/` | [archive index](../history/README.md) |
 | `RELEASE/PORTFOLIO` | Published release evidence and interview defense narratives | `docs/releases/` | [PORTFOLIO-INTERVIEW-EVIDENCE.md](releases/PORTFOLIO-INTERVIEW-EVIDENCE.md), [V1.0-EVIDENCE.md](releases/V1.0-EVIDENCE.md) |
-| `HISTORICAL-AUDIT` | Immutable chronological construction logs and prompt runs | `docs/chatgpt-prompts/`, `docs/charter/` | [000_PROMPT.md](chatgpt-prompts/000_PROMPT.md) to [026_PROMPT.md](chatgpt-prompts/026_PROMPT.md) |
 
 ---
 
@@ -126,7 +121,7 @@ Every document in `docs/` is classified into one of 11 formal governance categor
 To maintain clean documentation architecture over time, all future additions must adhere to the following placement rules:
 
 1. **Human-Authored Protocols:** Methodologies, evaluation protocols, and taxonomies must reside in `docs/evaluation/`.
-2. **Human-Readable Evidence:** Markdown reports summarizing test or benchmark execution must reside in `docs/quality/` or `docs/releases/`.
-3. **Machine-Generated Raw Outputs:** Raw JSON, JSONL, SQLite MLflow runs, or profiling dumps must be generated in `reports/` or `reports/evaluation/`. Historical artifacts already committed in `docs/evaluation/` (`v012_retrieval_comparison.json`, `v012-pgvector-query-plans.json`) must NOT be moved cosmetically to avoid breaking external links and git history.
+2. **Human-Readable Evidence:** Current guidance belongs in `docs/quality/` or `docs/releases/`; dated reports move to `history/quality/`.
+3. **Machine-Generated Raw Outputs:** New JSON, JSONL, SQLite MLflow runs and profiling dumps belong in `reports/` or `reports/evaluation/`. Tracked historical outputs live in `history/evaluation/`.
 4. **Append-Only ADRs:** Architecture decisions cannot be edited or deleted once accepted. Changes require a new ADR superseding the previous one.
 5. **No True Duplication:** Documentation must reference existing single sources of truth via markdown links rather than duplicating content across files.

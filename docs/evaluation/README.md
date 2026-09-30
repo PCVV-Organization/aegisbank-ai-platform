@@ -44,7 +44,7 @@ Following the evaluation taxonomy standard of Microsoft AI Foundry and MLflow, A
   - **Brier Score (Multiclass):** Mean squared difference between predicted probability vectors and one-hot ground truth labels.
   - **Expected Calibration Error (ECE):** Agreement between model confidence bins and empirical accuracy.
   - **Data/Prediction Drift (PSI):** Population Stability Index across categorical intent distributions (10 bins).
-* **Primary Provenance:** `v0.3` ([v0.3-intent-classification-baseline.md](../experiments/v0.3-intent-classification-baseline.md)).
+* **Primary Provenance:** `v0.3` ([v0.3-intent-classification-baseline.md](../../history/experiments/v0.3-intent-classification-baseline.md)).
 
 ### Layer 2: Retrieval (Information Retrieval / RAG Knowledge Search)
 * **Evaluates:** The ability to retrieve authorized policy chunks given natural language queries in Spanish banking domain.
@@ -53,7 +53,7 @@ Following the evaluation taxonomy standard of Microsoft AI Foundry and MLflow, A
   - **Mean Reciprocal Rank (MRR):** Reciprocal rank of the first relevant chunk ($1/\text{rank}_1$).
   - **Normalized Discounted Cumulative Gain (nDCG@K):** Graded relevance ranking quality with logarithmic position discounting.
   - **Query Execution Cost:** Database query plans (`EXPLAIN ANALYZE`), shared buffer hits, and latency comparisons (HNSW vs. IVFFlat in pgvector).
-* **Primary Provenance:** `v0.4` (TF-IDF vs. SVD vs. RRF) and `v0.12` ([v012_retrieval_comparison.json](v012_retrieval_comparison.json), [v012-pgvector-query-plans.json](v012-pgvector-query-plans.json)).
+* **Primary Provenance:** `v0.4` (TF-IDF vs. SVD vs. RRF) and `v0.12` ([v012_retrieval_comparison.json](../../history/evaluation/v012_retrieval_comparison.json), [v012-pgvector-query-plans.json](../../history/evaluation/v012-pgvector-query-plans.json)).
 
 ### Layer 3: Grounded Generation & Citation Integrity
 * **Evaluates:** Generative response synthesis strictly from active retrieved context without external hallucination.
@@ -62,7 +62,7 @@ Following the evaluation taxonomy standard of Microsoft AI Foundry and MLflow, A
   - **Relevance:** Semantic alignment of the answer with the user's intent.
   - **Citation Precision & Recall:** Exactness of referenced chunk digests (`chk__<doc>__<ver>__c<idx>_<hash>`).
   - **Abstention Rate on Unanswerable Queries:** Deterministic refusal when retrieved context lacks relevant information (*I do not know*).
-* **Primary Provenance:** `v0.5` ([v0.5-grounded-generation-evaluation.md](../experiments/v0.5-grounded-generation-evaluation.md)).
+* **Primary Provenance:** `v0.5` ([v0.5-grounded-generation-evaluation.md](../../history/experiments/v0.5-grounded-generation-evaluation.md)).
 
 ### Layer 4: Agent Multi-Turn Trajectories & Tool Execution
 * **Evaluates:** Orchestrator decision-making, tool routing, argument synthesis, and goal completion across conversation turns.
@@ -73,7 +73,7 @@ Following the evaluation taxonomy standard of Microsoft AI Foundry and MLflow, A
   - **Tool Output Utilization:** Whether the model incorporated tool execution results into the final customer response.
   - **Tool Call Success Rate:** Percentage of tool executions that returned success without exception or schema error.
   - **Task Completion:** Successful multi-turn resolution of the user's ultimate request.
-* **Primary Provenance:** `v0.6` ([v0.6.1-native-tool-calling.md](../experiments/v0.6.1-native-tool-calling.md)) and `v0.15` ([v015-ai-evaluation-mlops.md](v015-ai-evaluation-mlops.md)).
+* **Primary Provenance:** `v0.6` ([v0.6.1-native-tool-calling.md](../../history/experiments/v0.6.1-native-tool-calling.md)) and `v0.15` ([v015-ai-evaluation-mlops.md](v015-ai-evaluation-mlops.md)).
 
 ### Layer 5: Safety & Regulatory Invariants
 * **Evaluates:** Deterministic enforcement of banking risk boundaries and security controls.
@@ -83,7 +83,7 @@ Following the evaluation taxonomy standard of Microsoft AI Foundry and MLflow, A
   - **HITL State Machine Compliance:** Correct lifecycle progression (`PENDING` $\rightarrow$ `APPROVED` $\rightarrow$ `EXECUTED` or `REJECTED`).
   - **Idempotency Replay Protection:** Re-submitting the same proposal digest or CloudEvent message must return cached/duplicate status without duplicate DB mutation.
   - **HOTL Kill-Switch Responsiveness:** Immediate blocking of all write proposals when the master supervisor flag is tripped.
-* **Primary Provenance:** `v0.7` ([v0.7.0-mcp-hitl.md](../experiments/v0.7.0-mcp-hitl.md)), `v0.15` ([v015-ai-evaluation-mlops.md](v015-ai-evaluation-mlops.md)), and `v1.0` ([V1.0-THREAT-MODEL.md](../security/V1.0-THREAT-MODEL.md)).
+* **Primary Provenance:** `v0.7` ([v0.7.0-mcp-hitl.md](../../history/experiments/v0.7.0-mcp-hitl.md)), `v0.15` ([v015-ai-evaluation-mlops.md](v015-ai-evaluation-mlops.md)), and `v1.0` ([V1.0-THREAT-MODEL.md](../security/V1.0-THREAT-MODEL.md)).
 
 ### Layer 6: System End-to-End (E2E) Integration
 * **Evaluates:** Holistic behavior across the complete distributed stack: Agent $\rightarrow$ MCP Tools $\rightarrow$ Core Banking DB $\rightarrow$ Outbox $\rightarrow$ Functions Host / Event Grid $\rightarrow$ OpenTelemetry.
@@ -99,7 +99,7 @@ Following the evaluation taxonomy standard of Microsoft AI Foundry and MLflow, A
   - **Latency Percentiles (p50, p95, p99):** Wall-clock duration per end-to-end journey.
   - **Failure & Error Rates:** Percentage of requests returning HTTP 5xx or unhandled exceptions.
   - **SLI/SLO Compliance:** Comparison against lab target service levels.
-* **Primary Provenance:** `v1.0` ([V1.0-PERFORMANCE-EVIDENCE.md](../quality/V1.0-PERFORMANCE-EVIDENCE.md), [V1.0-SLI-SLO-LAB-REPORT.md](../quality/V1.0-SLI-SLO-LAB-REPORT.md)).
+* **Primary Provenance:** `v1.0` ([V1.0-PERFORMANCE-EVIDENCE.md](../../history/quality/V1.0-PERFORMANCE-EVIDENCE.md), [V1.0-SLI-SLO-LAB-REPORT.md](../../history/quality/V1.0-SLI-SLO-LAB-REPORT.md)).
 
 ---
 
@@ -111,10 +111,10 @@ How platform development milestones map to the capability layers:
 |---|---|---|---|
 | `v0.3` | **1. Intent / ML** | `ml/intent-classifier/reports/baseline-metrics.json` | `python -m ml_intent.cli evaluate` |
 | `v0.4` | **2. Retrieval (Lexical/RRF)** | `ai/rag/reports/retrieval-metrics.json` | `python -m aegisbank_rag.cli evaluate` |
-| `v0.5` | **3. Generation (Groundedness)** | `docs/experiments/v0.5-grounded-generation-evaluation.md` | Deterministic suite |
-| `v0.12` | **2. Retrieval + Vector Indexing** | [v012_retrieval_comparison.json](v012_retrieval_comparison.json), [v012-pgvector-query-plans.json](v012-pgvector-query-plans.json) | `python scripts/evaluate_retrievers_v012.py` |
+| `v0.5` | **3. Generation (Groundedness)** | `history/experiments/v0.5-grounded-generation-evaluation.md` | Deterministic suite |
+| `v0.12` | **2. Retrieval + Vector Indexing** | [v012_retrieval_comparison.json](../../history/evaluation/v012_retrieval_comparison.json), [v012-pgvector-query-plans.json](../../history/evaluation/v012-pgvector-query-plans.json) | `python scripts/evaluate_retrievers_v012.py` |
 | `v0.15` | **4. Agent + 5. Safety + MLOps** | [v015-ai-evaluation-mlops.md](v015-ai-evaluation-mlops.md), `reports/v015-evaluation-report.json` | `python scripts/evaluation_gate.py` |
-| `v1.0` | **6. System E2E + 7. Performance** | [V1.0-PERFORMANCE-EVIDENCE.md](../quality/V1.0-PERFORMANCE-EVIDENCE.md), [E2E-MATRIX.md](../quality/E2E-MATRIX.md) | `python scripts/performance_baseline.py` |
+| `v1.0` | **6. System E2E + 7. Performance** | [V1.0-PERFORMANCE-EVIDENCE.md](../../history/quality/V1.0-PERFORMANCE-EVIDENCE.md), [E2E-MATRIX.md](../quality/E2E-MATRIX.md) | `python scripts/performance_baseline.py` |
 
 ---
 

@@ -35,7 +35,7 @@ Un documento que diga «consulta a otro cliente» no concede ese permiso.
 | Cambiar recuperación | [RAG](../ai/rag/README.md) | Corpus, retrievers y pruebas de citas |
 | Evaluar modelos | [Evaluaciones](evaluation/README.md) | Catálogo, dataset y runner concretos |
 | Trabajar como LLM | [README.LLM](../README.LLM.md) | [llms.txt](../llms.txt), rutas necesarias |
-| Conocer bloqueos | [Cierre 2026-09-21](quality/LOCAL-BASELINE-CLOSURE-20260921.md) | Verificar estado actual antes de afirmar PASS |
+| Conocer bloqueos | [Cierre 2026-09-21](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) | Verificar estado actual antes de afirmar PASS |
 
 ## 4. Primera comprobación sin ejecutar el banco
 

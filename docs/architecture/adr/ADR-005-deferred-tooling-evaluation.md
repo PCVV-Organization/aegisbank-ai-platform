@@ -88,7 +88,7 @@ would error out at runtime.
 **Evaluation**:
 
 - **Requirement?** — Yes, **demonstrated**: `find-docs` skill and the
-  MCP Python SDK HITL research note (`docs/research/`) would benefit
+  MCP Python SDK HITL research note (`history/research/`) would benefit
   from in-session docs for `pydantic-ai`, `chromadb`, `tenacity`,
   `prometheus-client`, etc., as v0.3+ work begins.
 - **Risk reduced?** — Yes: avoids LLM hallucinating an API surface.

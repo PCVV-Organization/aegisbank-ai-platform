@@ -17,7 +17,7 @@
 | **Reliability & Messaging** | `ai/agent/src/aegisbank_agent/reliability/**` | Resiliencia operativa: `IdempotencyGuard`, `RetryPolicy` con backoff y jitter, `CircuitBreaker` (FSM 3 estados), timeouts, `LocalMessageBus`, `OutboxProcessor`, `IdempotentConsumer` y `DeadLetterQueue (DLQ)`. |
 | **Observability & AgentOps** | `ai/agent/src/aegisbank_agent/observability/**` | Telemetría OpenTelemetry (spans, tracer), logs estructurados con redacción de datos sensibles, métricas operativas (`OperationalMetrics`), registro de auditoría (`AuditLogger`) y supervisión HOTL (`HOTLSupervisor`). |
 | **Quality & DevSecOps** | `scripts/**`, `.github/workflows/**`, `docs/quality/**`, `docs/security/**`, `contracts/**` | Compuertas deterministas de calidad (`quality_gate.py`), coordinación cross-session (`session_guard.py`), escaneo SAST (Bandit), auditoría SCA (pip-audit), SBOM CycloneDX y suite de contratos/E2E. |
-| **Teaching & Governance** | `docs/learning/**`, `docs/architecture/**`, `docs/requirements/**`, `docs/chatgpt-prompts/**` | Material pedagógico nivel Maestría (Teaching Contract, glosario, notas), matriz de cobertura frente a Mibanco 2026, y ADRs inmutables. |
+| **Teaching & Governance** | `docs/learning/**`, `docs/architecture/**`, `docs/requirements/**`, `history/chatgpt-prompts/**` | Material pedagógico nivel Maestría (Teaching Contract, glosario, notas), matriz de cobertura frente a Mibanco 2026, ADRs inmutables e historial de prompts no operativo. |
 
 ---
 

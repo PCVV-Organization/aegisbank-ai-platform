@@ -24,4 +24,4 @@ Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo c
 
 Esta guía describe responsabilidades del checkout, no una certificación ni una
 ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../docs/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+[estado fechado](../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).

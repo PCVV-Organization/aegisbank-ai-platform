@@ -111,6 +111,10 @@
       "category": "component-guide"
     },
     {
+      "path": ".github/copilot-instructions.md",
+      "category": "component-guide"
+    },
+    {
       "path": "AGENTS.md",
       "category": "entrypoint"
     },
@@ -335,15 +339,7 @@
       "category": "historical-architecture-decision"
     },
     {
-      "path": "docs/architecture/adr/ADR-023-contract-first-compatibility-and-schema-protection.md",
-      "category": "historical-architecture-decision"
-    },
-    {
       "path": "docs/architecture/adr/ADR-023-contract-first-compatibility-protection.md",
-      "category": "historical-architecture-decision"
-    },
-    {
-      "path": "docs/architecture/adr/ADR-024-ci-cd-pipeline-and-devsecops-shift-left-gates.md",
       "category": "historical-architecture-decision"
     },
     {
@@ -379,162 +375,6 @@
       "category": "historical-architecture-decision"
     },
     {
-      "path": "docs/briefings/AEGISBANK-AI-PLATFORM-CHATGPT-BRIEFING.md",
-      "category": "context-snapshot-verify-against-checkout"
-    },
-    {
-      "path": "docs/briefings/README.md",
-      "category": "context-snapshot-verify-against-checkout"
-    },
-    {
-      "path": "docs/career/README.md",
-      "category": "portfolio-context"
-    },
-    {
-      "path": "docs/career/role-profile-images-and-gap-analysis.md",
-      "category": "portfolio-context"
-    },
-    {
-      "path": "docs/charter/01-vision.md",
-      "category": "historical-charter"
-    },
-    {
-      "path": "docs/charter/02-scope.md",
-      "category": "historical-charter"
-    },
-    {
-      "path": "docs/charter/03-use-cases.md",
-      "category": "historical-charter"
-    },
-    {
-      "path": "docs/charter/04-non-goals.md",
-      "category": "historical-charter"
-    },
-    {
-      "path": "docs/charter/05-success-criteria.md",
-      "category": "historical-charter"
-    },
-    {
-      "path": "docs/charter/README.md",
-      "category": "historical-charter"
-    },
-    {
-      "path": "docs/chatgpt-prompts/000_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/001_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/002_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/003_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/004_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/005_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/006_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/007_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/008_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/009_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/010_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/011_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/012_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/013_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/014_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/015_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/016_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/017_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/018_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/019_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/020A_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/020_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/021_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/022A_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/023_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/024_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/025_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/026_PROMPT.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
-      "path": "docs/chatgpt-prompts/README.md",
-      "category": "historical-prompt-not-instructions"
-    },
-    {
       "path": "docs/engineering/DOCUMENTATION-MAINTENANCE.md",
       "category": "engineering-reference"
     },
@@ -565,34 +405,6 @@
     {
       "path": "docs/evaluation/v015-ai-evaluation-mlops.md",
       "category": "evaluation-protocol-or-historical-evidence"
-    },
-    {
-      "path": "docs/experiments/README.md",
-      "category": "historical-experiment"
-    },
-    {
-      "path": "docs/experiments/v0.3-intent-classification-baseline.md",
-      "category": "historical-experiment"
-    },
-    {
-      "path": "docs/experiments/v0.4-rag-retrieval-foundation.md",
-      "category": "historical-experiment"
-    },
-    {
-      "path": "docs/experiments/v0.5-foundry-local-recovery-plan.md",
-      "category": "historical-experiment"
-    },
-    {
-      "path": "docs/experiments/v0.5-grounded-generation-evaluation.md",
-      "category": "historical-experiment"
-    },
-    {
-      "path": "docs/experiments/v0.6.1-native-tool-calling.md",
-      "category": "historical-experiment"
-    },
-    {
-      "path": "docs/experiments/v0.7.0-mcp-hitl.md",
-      "category": "historical-experiment"
     },
     {
       "path": "docs/learning/AZURE-FUNCTIONS-TRIGGERS-BINDINGS.md",
@@ -655,19 +467,11 @@
       "category": "operations-reference"
     },
     {
-      "path": "docs/quality/DOCUMENTATION-REORGANIZATION-20260915.md",
-      "category": "quality-reference-or-dated-evidence"
-    },
-    {
       "path": "docs/quality/E2E-MATRIX.md",
       "category": "quality-reference-or-dated-evidence"
     },
     {
-      "path": "docs/quality/LOCAL-BASELINE-CLOSURE-20260921.md",
-      "category": "quality-reference-or-dated-evidence"
-    },
-    {
-      "path": "docs/quality/NAVIGATION-20260922.md",
+      "path": "docs/quality/PYRIGHT-VALIDATION.md",
       "category": "quality-reference-or-dated-evidence"
     },
     {
@@ -680,26 +484,6 @@
     },
     {
       "path": "docs/quality/TEST-SUITE-RATIONALIZATION.md",
-      "category": "quality-reference-or-dated-evidence"
-    },
-    {
-      "path": "docs/quality/V0131-RUNTIME-EVIDENCE.md",
-      "category": "quality-reference-or-dated-evidence"
-    },
-    {
-      "path": "docs/quality/V0140-APPCONFIG-IDENTITY-EVIDENCE.md",
-      "category": "quality-reference-or-dated-evidence"
-    },
-    {
-      "path": "docs/quality/V0150-EVALUATION-MLOPS-EVIDENCE.md",
-      "category": "quality-reference-or-dated-evidence"
-    },
-    {
-      "path": "docs/quality/V1.0-PERFORMANCE-EVIDENCE.md",
-      "category": "quality-reference-or-dated-evidence"
-    },
-    {
-      "path": "docs/quality/V1.0-SLI-SLO-LAB-REPORT.md",
       "category": "quality-reference-or-dated-evidence"
     },
     {
@@ -729,18 +513,6 @@
     {
       "path": "docs/requirements/V1.0-MATURITY-MATRIX.md",
       "category": "requirements-reference"
-    },
-    {
-      "path": "docs/research/README.md",
-      "category": "historical-research"
-    },
-    {
-      "path": "docs/research/mcp-python-sdk-hitl-patterns.md",
-      "category": "historical-research"
-    },
-    {
-      "path": "docs/research/pydantic-ai-mcp-integration.md",
-      "category": "historical-research"
     },
     {
       "path": "docs/security/CONTAINER-SECURITY.md",
@@ -777,6 +549,238 @@
     {
       "path": "functions/aegisbank-events/README.md",
       "category": "component-guide"
+    },
+    {
+      "path": "history/README.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/briefings/AEGISBANK-AI-PLATFORM-CHATGPT-BRIEFING.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/briefings/README.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/career/README.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/career/role-profile-images-and-gap-analysis.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/charter/01-vision.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/charter/02-scope.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/charter/03-use-cases.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/charter/04-non-goals.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/charter/05-success-criteria.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/charter/README.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/000_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/001_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/002_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/003_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/004_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/005_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/006_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/007_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/008_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/009_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/010_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/011_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/012_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/013_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/014_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/015_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/016_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/017_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/018_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/019_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/020A_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/020_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/021_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/022A_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/023_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/024_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/025_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/026_PROMPT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/chatgpt-prompts/README.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/experiments/README.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/experiments/v0.3-intent-classification-baseline.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/experiments/v0.4-rag-retrieval-foundation.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/experiments/v0.5-foundry-local-recovery-plan.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/experiments/v0.5-grounded-generation-evaluation.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/experiments/v0.6.1-native-tool-calling.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/experiments/v0.7.0-mcp-hitl.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/quality/DOCUMENTATION-REORGANIZATION-20260915.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/quality/LOCAL-BASELINE-CLOSURE-20260921.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/quality/NAVIGATION-20260922.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/quality/V0131-RUNTIME-EVIDENCE.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/quality/V0140-APPCONFIG-IDENTITY-EVIDENCE.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/quality/V0150-EVALUATION-MLOPS-EVIDENCE.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/quality/V1.0-PERFORMANCE-EVIDENCE.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/quality/V1.0-SLI-SLO-LAB-REPORT.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/research/README.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/research/mcp-python-sdk-hitl-patterns.md",
+      "category": "historical-archive"
+    },
+    {
+      "path": "history/research/pydantic-ai-mcp-integration.md",
+      "category": "historical-archive"
     },
     {
       "path": "ml/README.md",

@@ -88,6 +88,16 @@ python -B -m unittest discover -s scripts -p test_documentation_index.py
 git diff --check
 ```
 
+Para el contrato estático canónico de las cuatro raíces de aplicación, ejecuta:
+
+```powershell
+node ..\.agents\node_modules\.pnpm\pyright@1.1.413\node_modules\pyright\index.js `
+  --pythonpath .venv\Scripts\python.exe --outputjson
+```
+
+La [guía de Pyright](docs/quality/PYRIGHT-VALIDATION.md) explica el alcance,
+el entorno y las limitaciones de esta comprobación.
+
 Para cambios de aplicación, consulta la estrategia de pruebas y
 `python scripts/quality_gate.py --help`. Las ejecuciones requieren las
 dependencias del entorno y pueden producir informes; no confundas estos
@@ -106,7 +116,7 @@ comandos documentados con evidencia de ejecución.
 
 Consulta [DOCUMENTATION-MAINTENANCE.md](docs/engineering/DOCUMENTATION-MAINTENANCE.md)
 para regenerar los índices y distinguir referencias vigentes de historia.
-La [revisión documental](docs/quality/DOCUMENTATION-REORGANIZATION-20260915.md)
+La [revisión documental](history/quality/DOCUMENTATION-REORGANIZATION-20260915.md)
 describe el alcance y la validación de esta reorganización.
 
 ## Navegación para empezar y mantener el orden

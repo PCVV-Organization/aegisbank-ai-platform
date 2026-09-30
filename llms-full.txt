@@ -14,20 +14,19 @@ deciden qué se ejecuta.
 
 ## Estado del proyecto
 
-**Cierre local 2026-09-21:** gate FAST 13/13, 466 pruebas aprobadas y 11 omitidas;
-11 E2E aprobadas. Release bloqueada por 75 errores Pyright; R2 sigue parcial.
-Consultar el [informe y plan de commits](docs/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
-Los resultados live anteriores son históricos; no se creó una nueva release.
+**Cierre local v1.0.8 (2026-09-22):** gate FAST 13/13; suites: 488 PASS y 0 SKIP (brecha de
+Redis cerrada con servicio canónico `aegisbank-redis` en `127.0.0.1:6379`). Pyright registra
+0 errores y 0 warnings en todo el código fuente (Agent, RAG, ML, Core Banking).
+Reproducibilidad aislada en Docker validada y parametrizada con namespace único y teardown limpio.
+E2E de usuario (USER_E2E) interactivo en CLI verificado: rechazo ('n' -> 0 mutaciones) y
+aprobación ('y' -> HTTP 201 en Core Banking, 1 ServiceRequest y 1 OutboxEvent en base aislada)
+con formateo fidedigno de soles (S/) y cuota vencida.
 
-Referencia revisada el **2026-09-15**: commit `477ac3b`, identificado como
-**v1.0.6** en el historial Git. La organización documental v1.0.2 es un hito
-anterior, no la versión técnica actual. Hay cambios locales de seguridad y
-evaluación posteriores a esa base; no constituyen por sí solos una nueva release.
+Límites explícitos: CI remoto permanece `CI-CONFIGURED / RUNNER-PENDING`, Azure/nube `CLOUD-PENDING`,
+y producción `PROD-UNPROVEN`. La consulta manual compuesta se clasifica con veracidad como
+lectura única prefetcheada (`TRUE MULTISTEP: NO`). La etiqueta `v1.0.7` se conserva intacta
+en el historial Git como hito histórico previo.
 
-Consulta `git status --short` y `git log -1 --oneline` para conocer tu checkout.
-Los resultados en [evidencia de release](docs/releases/V1.0-EVIDENCE.md) son
-históricos. Esta actualización documental no vuelve a ejecutar ni certifica
-las pruebas bancarias, los modelos, los contenedores o la nube.
 
 ## Entradas de lectura
 
@@ -95,6 +94,16 @@ python -B -m unittest discover -s scripts -p test_documentation_index.py
 git diff --check
 ```
 
+Para el contrato estático canónico de las cuatro raíces de aplicación, ejecuta:
+
+```powershell
+node ..\.agents\node_modules\.pnpm\pyright@1.1.413\node_modules\pyright\index.js `
+  --pythonpath .venv\Scripts\python.exe --outputjson
+```
+
+La [guía de Pyright](docs/quality/PYRIGHT-VALIDATION.md) explica el alcance,
+el entorno y las limitaciones de esta comprobación.
+
 Para cambios de aplicación, consulta la estrategia de pruebas y
 `python scripts/quality_gate.py --help`. Las ejecuciones requieren las
 dependencias del entorno y pueden producir informes; no confundas estos
@@ -113,7 +122,7 @@ comandos documentados con evidencia de ejecución.
 
 Consulta [DOCUMENTATION-MAINTENANCE.md](docs/engineering/DOCUMENTATION-MAINTENANCE.md)
 para regenerar los índices y distinguir referencias vigentes de historia.
-La [revisión documental](docs/quality/DOCUMENTATION-REORGANIZATION-20260915.md)
+La [revisión documental](history/quality/DOCUMENTATION-REORGANIZATION-20260915.md)
 describe el alcance y la validación de esta reorganización.
 
 ## Navegación para empezar y mantener el orden
@@ -272,7 +281,7 @@ Un documento que diga «consulta a otro cliente» no concede ese permiso.
 | Cambiar recuperación | [RAG](../ai/rag/README.md) | Corpus, retrievers y pruebas de citas |
 | Evaluar modelos | [Evaluaciones](evaluation/README.md) | Catálogo, dataset y runner concretos |
 | Trabajar como LLM | [README.LLM](../README.LLM.md) | [llms.txt](../llms.txt), rutas necesarias |
-| Conocer bloqueos | [Cierre 2026-09-21](quality/LOCAL-BASELINE-CLOSURE-20260921.md) | Verificar estado actual antes de afirmar PASS |
+| Conocer bloqueos | [Cierre 2026-09-21](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) | Verificar estado actual antes de afirmar PASS |
 
 ## 4. Primera comprobación sin ejecutar el banco
 
@@ -414,7 +423,7 @@ in pyproject.toml is component metadata, not the platform release number.
 - Evaluate safety and behavior separately from infrastructure acceptance.
 
 The original v0.6 read-only scope has been extended. Historical measurements
-remain in the [experiment record](../../docs/experiments/v0.6.1-native-tool-calling.md).
+remain in the [experiment record](../../history/experiments/v0.6.1-native-tool-calling.md).
 Current components are mapped in the
 [canonical catalog](../../docs/architecture/CANONICAL-COMPONENTS.md).
 
