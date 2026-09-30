@@ -12,6 +12,7 @@ el checkout actual, comunicar la diferencia y conservar el histórico.
 
 - [KUBERNETES-TROUBLESHOOTING](KUBERNETES-TROUBLESHOOTING.md)
 - [Production Configuration, Secrets & Identity Audit Prompt](production-configuration-secrets-identity-audit-prompt.md) — reusable LLM prompt for a read-only, evidence-based cloud-readiness discovery; planning only.
+- [Production Configuration, Secrets & Identity Audit Results](production-configuration-secrets-identity-audit.md) — completed evidence-based read-only audit; cloud work remains pending.
 
 ## Mantenimiento
 
