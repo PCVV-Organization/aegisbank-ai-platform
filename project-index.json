@@ -227,6 +227,10 @@
       "category": "architecture-reference"
     },
     {
+      "path": "docs/architecture/CLOUD-CONFIGURATION-IDENTITY.md",
+      "category": "architecture-reference"
+    },
+    {
       "path": "docs/architecture/CONTAINER-PLATFORM-DECISION.md",
       "category": "architecture-reference"
     },
@@ -445,6 +449,10 @@
     {
       "path": "docs/learning/V1.0-MASTERS-NOTES.md",
       "category": "learning-reference"
+    },
+    {
+      "path": "docs/operations/AZURE-STAGING-RUNBOOK.md",
+      "category": "operations-reference"
     },
     {
       "path": "docs/operations/KUBERNETES-TROUBLESHOOTING.md",

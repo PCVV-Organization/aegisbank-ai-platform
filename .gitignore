@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+# .env.local is the only supported developer dotenv filename; it stays ignored.
 functions/**/local.settings.json
 *.pem
 *.key
