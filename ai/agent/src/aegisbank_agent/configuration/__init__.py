@@ -41,7 +41,13 @@ from .config import (
     set_default_provider,
     snapshot_for_audit,
 )
-from .environment import EnvironmentSelectionError, RuntimeEnvironment, resolve_runtime_environment
+from .environment import (
+    EnvironmentSelectionError,
+    RuntimeEnvironment,
+    load_local_dotenv,
+    resolve_runtime_environment,
+    validate_runtime_configuration,
+)
 from .secrets import (
     AzureKeyVaultSecretProvider,
     KeyVaultReferenceResolver,
@@ -84,10 +90,12 @@ __all__ = [
     "coerce_json",
     "get_default_provider",
     "get_default_secret_provider",
+    "load_local_dotenv",
     "reset_default_provider",
     "reset_default_secret_provider",
     "set_default_provider",
     "set_default_secret_provider",
     "snapshot_for_audit",
     "resolve_runtime_environment",
+    "validate_runtime_configuration",
 ]

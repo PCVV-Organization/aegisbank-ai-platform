@@ -81,6 +81,37 @@ _LOCAL_ONLY_KEYS = (
     "AEGISBANK_PGVECTOR_URL",
 )
 
+_KNOWN_EMULATOR_KEYS = {
+    "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+}
+
+
+def load_local_dotenv(base_dir: str | None = None) -> bool:
+    """Load a developer .env.local file for a local workflow only.
+
+    CRITICAL INVARIANT:
+    In cloud environments (staging or production), this function is an absolute NO-OP
+    and NEVER loads any developer dotenv file.
+    """
+    from pathlib import Path
+
+    env = resolve_runtime_environment()
+    if env.is_cloud:
+        return False
+
+    search_root = Path(base_dir) if base_dir else Path.cwd()
+    candidates = [search_root / ".env.local"]
+    for candidate in candidates:
+        if candidate.is_file():
+            try:
+                from dotenv import load_dotenv
+
+                load_dotenv(candidate, override=False)
+                return True
+            except ImportError:
+                pass
+    return False
+
 
 def validate_runtime_configuration(
     environment: RuntimeEnvironment,
@@ -88,7 +119,7 @@ def validate_runtime_configuration(
 ) -> None:
     """Fail closed for cloud selections that still point at local infrastructure.
 
-    The error identifies only unsafe keys.  It never includes a value because a
+    The error identifies only unsafe keys. It never includes a value because a
     connection string or endpoint can itself be sensitive operational metadata.
     """
     import os
@@ -97,16 +128,61 @@ def validate_runtime_configuration(
         return
     source = os.environ if values is None else values
     problems: list[str] = []
+
     if _is_enabled(source.get("AEGISBANK_USE_APPCONFIG_EMULATOR")):
         problems.append("AEGISBANK_USE_APPCONFIG_EMULATOR")
+
     connection_string = source.get("AEGISBANK_SERVICEBUS_CONN_STR", "")
-    if "usedevelopmentemulator=true" in connection_string.lower():
+    lowered_conn = connection_string.lower()
+    if (
+        "usedevelopmentemulator=true" in lowered_conn
+        or "sb://127.0.0.1" in lowered_conn
+        or "sb://localhost" in lowered_conn
+    ):
         problems.append("AEGISBANK_SERVICEBUS_CONN_STR")
+
     for key in _LOCAL_ONLY_KEYS:
-        if is_local_endpoint(source.get(key)):
+        val = source.get(key)
+        if val and is_local_endpoint(val):
             problems.append(key)
-    if environment is RuntimeEnvironment.PRODUCTION and not source.get("AZURE_APPCONFIG_ENDPOINT"):
-        problems.append("AZURE_APPCONFIG_ENDPOINT")
+
+    cosmos_key = source.get("COSMOS_KEY", "")
+    if cosmos_key and cosmos_key in _KNOWN_EMULATOR_KEYS:
+        problems.append("COSMOS_KEY")
+
+    cosmos_endpoint = source.get("COSMOS_ENDPOINT", "")
+    if cosmos_endpoint and (":8081" in cosmos_endpoint or is_local_endpoint(cosmos_endpoint)):
+        problems.append("COSMOS_ENDPOINT")
+
+    pg_url = source.get("AEGISBANK_PGVECTOR_URL", "")
+    if pg_url and ("aegis_password" in pg_url or is_local_endpoint(pg_url)):
+        problems.append("AEGISBANK_PGVECTOR_URL")
+
+    if _is_enabled(source.get("TEST_AUTH_BYPASS")) or _is_enabled(
+        source.get("AEGISBANK_TEST_AUTH_BYPASS")
+    ):
+        problems.append("TEST_AUTH_BYPASS")
+
+    if environment is RuntimeEnvironment.PRODUCTION:
+        if _is_enabled(source.get("DEBUG")) or _is_enabled(source.get("AEGISBANK_DEBUG")):
+            problems.append("DEBUG")
+
+        appconfig_ep = source.get("AZURE_APPCONFIG_ENDPOINT", "")
+        if not appconfig_ep or not appconfig_ep.startswith("https://"):
+            problems.append("AZURE_APPCONFIG_ENDPOINT")
+
+        kv_url = source.get("AZURE_KEY_VAULT_URL", "")
+        if not kv_url or not kv_url.startswith("https://"):
+            problems.append("AZURE_KEY_VAULT_URL")
+    else:
+        appconfig_ep = source.get("AZURE_APPCONFIG_ENDPOINT", "")
+        if appconfig_ep and not appconfig_ep.startswith("https://"):
+            problems.append("AZURE_APPCONFIG_ENDPOINT")
+
+        kv_url = source.get("AZURE_KEY_VAULT_URL", "")
+        if kv_url and not kv_url.startswith("https://"):
+            problems.append("AZURE_KEY_VAULT_URL")
+
     if problems:
         raise EnvironmentSelectionError(
             "Cloud environment rejects local, emulator, or missing bootstrap settings: "

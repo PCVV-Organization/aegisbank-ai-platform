@@ -1,0 +1,77 @@
+# ==============================================================================
+# AegisBank Docker Build Ignore Rules
+# ==============================================================================
+# Prevents local credentials, environments, caches, and test artifacts
+# from being copied into container image build contexts.
+
+# Version control & host tooling
+.git
+.gitignore
+.gitattributes
+.github
+.codex
+.opencode
+.ai-env
+
+# Local environments & secrets (CRITICAL)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cer
+*.crt
+*.pfx
+*.p12
+
+# Coordination & SessionGuard state
+.coordination
+.coordination/**
+
+# Virtual environments
+.venv
+.venv*
+venv
+env
+
+# Python build & cache artifacts
+__pycache__
+*.py[cod]
+*$py.class
+*.egg-info
+dist
+build
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+coverage.xml
+htmlcov
+.tox
+
+# Database files & local persistence
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+services/mock-core-banking/data/local/*.db
+
+# Scratch, smoke & logs
+.smoke
+.smoke/**
+mlruns
+artifacts
+reports
+*.log
+
+# OS & Editor files
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+Desktop.ini

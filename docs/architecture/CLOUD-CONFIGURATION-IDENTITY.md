@@ -1,102 +1,90 @@
-# Configuración cloud e identidad de workload
+# Configuración Cloud, Identidad de Workload y Fronteras de Despliegue
 
-> **Estado:** `AZURE_DEPLOYMENT_PARTIALLY_PREPARED` · `CLOUD_UNVALIDATED`.
-> La aplicación sigue siendo un laboratorio bancario sintético, no un banco real.
+> **Estado:** `AZURE_DEPLOYMENT_PREPARED` · `CLOUD_UNVALIDATED`.
+> **Misión:** AegisBank AI Platform es un laboratorio educativo de banca con IA seguro y reproducible; no es un banco comercial ni procesa transacciones financieras reales.
 
-## Decisión operativa
+---
 
-La frontera canónica es `aegisbank_agent.configuration`. Se mantiene el contrato
-existente `ConfigurationProvider` para valores no secretos y `SecretProvider`
-para secretos inevitables. Ningún runtime local requiere Azure.
+## 1. Decisión Operativa y Modelo de Doble Vía (Local-First vs Cloud)
+
+La frontera canónica de configuración reside en `aegisbank_agent.configuration`. Se preserva de forma estricta e inquebrantable el entorno local existente:
 
 ```text
-local / test / development
-  proceso -> .env.local opcional -> emuladores o proveedores sintéticos
-
-staging / production
-  bootstrap mínimo -> Managed Identity -> App Configuration -> Key Vault references
+LOCAL (SQLite / Foundry Local / Redis local / pgvector Docker / emuladores)
+  │
+  │ MISMOS CONTRATOS, INTERFACES Y COMPORTAMIENTO DETERMINISTA
+  ▼
+PRODUCTION (Managed Identity / App Configuration / Key Vault / Servicios Gestionados Azure)
 ```
 
-`AEGISBANK_ENV` acepta `local`, `test`, `development`, `staging` y
-`production`. Los valores históricos `container` y `kubernetes-local` se
-conservan como alias explícitos de `local` para no romper Compose ni Kubernetes
-de laboratorio. Cualquier otro valor falla, nunca se interpreta silenciosamente
-como local.
+### Precedencia de Configuración
 
-## Precedencia y clasificación
+- **LOCAL:**
+  `Overrides explícitos de test > Variables de proceso > .env.local opcional (desarrollo) > Proveedor local / Emuladores`
+- **AZURE (Staging / Producción):**
+  `Bootstrap mínimo de contenedor > Azure App Configuration (vía Entra ID) > Referencias Key Vault para secretos > Constantes de código`
 
-| Clase | Ejemplos | Regla |
-| --- | --- | --- |
-| `BOOTSTRAP_ENV` | `AEGISBANK_ENV`, `AZURE_APPCONFIG_ENDPOINT`, `AZURE_KEY_VAULT_URL` | Solo localiza la fuente de configuración y no contiene secretos. |
-| `APP_CONFIGURATION` | límites del Agent, timeout, URLs no secretas, nombres de colas y modelos | Se lee con `DefaultAzureCredential` y label del entorno. |
-| `KEY_VAULT` | credencial externa inevitable | Se resuelve con `AzureKeyVaultSecretProvider`; nunca se registra el valor. |
-| `MANAGED_IDENTITY_ELIMINATES_SECRET` | App Configuration, Key Vault, Service Bus, Cosmos | Usar token Entra antes que connection string o key. |
-| `LOCAL_ONLY` | Foundry Local, SQLite, emuladores Service Bus/Cosmos/App Config | Prohibido en staging y producción. |
-| `CODE_CONSTANT` | formatos de eventos, defaults no sensibles | No debe transportar configuración por entorno. |
+`AEGISBANK_ENV` acepta exclusivamente: `local`, `test`, `development`, `staging`, `production` (y los alias históricos locales `container` y `kubernetes-local`). Cualquier valor desconocido o inválido **falla cerrado** de forma inmediata (`EnvironmentSelectionError`).
 
-En cloud, el proveedor carga primero valores sin label y después el label del
-entorno: la capa específica reemplaza el valor común. App Configuration usa
-`DefaultAzureCredential` y usa la misma credencial para referencias de Key
-Vault. El refresh es dirigido por llamadas al proveedor; no se creó un hilo de
-background.
+---
 
-## Guardias de producción
+## 2. Tabla de Verdad de Capacidades: LOCAL vs AZURE TARGET
 
-`validate_runtime_configuration` rechaza en staging/producción emulador de App
-Configuration, Service Bus Emulator, endpoints loopback de dependencias externas
-y bootstrap incompleto de producción. Los errores muestran solo el nombre de la
-clave, nunca su valor. `SecretProvider` no puede degradar a secretos sintéticos
-en cloud: requiere `AZURE_KEY_VAULT_URL` HTTPS.
+Cada celda cloud se clasifica rigurosamente de forma individual sin afirmaciones genéricas ni prematuras:
 
-`.env.local` es la única convención dotenv soportada para desarrollo. Está
-ignorado. Los procesos cloud no lo cargan; no existe ni se requiere
-`.env.production`.
+| Capacidad | LOCAL (Preservado 100%) | AZURE TARGET | Estado Cloud | Límite Técnico Antes de Despliegue Real |
+| --- | --- | --- | --- | --- |
+| **LLM Inferencia** | Foundry Local (`http://127.0.0.1:5272/v1`, `phi-4-mini`) | Azure AI Foundry / Azure OpenAI (`AzureFoundryProvider`) | `PASSWORDLESS_ADAPTER_READY` | Requiere recurso Azure OpenAI aprovisionado y RBAC `Cognitive Services OpenAI User`. |
+| **Core Banking** | FastAPI mock local con SQLite embebido | Frontera externa / Microservicio hospedado | `DOCUMENTED_ONLY` | En staging se mantiene el mock aislado. El Agent nunca accede directamente a la BD de Core Banking. |
+| **RAG Embeddings / Vector** | PostgreSQL + pgvector Docker (`vector(32)`, HNSW) | Azure Database for PostgreSQL Flexible Server | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Conexión actual vía psycopg DSN. Autenticación Entra token para PostgreSQL requiere prueba cloud. |
+| **Caché & Vector Search** | Docker Redis local (standalone) | Azure Managed Redis | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Redis local preservado. Autenticación Entra para Redis requiere configuración específica de Azure Managed Redis. |
+| **Mensajería & Eventos** | Azure Service Bus Emulator local (AMQP) | Azure Service Bus Namespace | `PASSWORDLESS_ADAPTER_READY` | `AzureServiceBusMessageBus` implementa `DefaultAzureCredential` passwordless cuando se provee el namespace. |
+| **Almacenamiento NoSQL** | Azure Cosmos DB Emulator (puerto 8081) | Azure Cosmos DB NoSQL | `PASSWORDLESS_ADAPTER_READY` | `CosmosRepository` implementa `DefaultAzureCredential` passwordless en entornos cloud. |
+| **Configuración No Secreta** | App Configuration Emulator / Env fallback | Azure App Configuration (con label) | `PASSWORDLESS_IMPLEMENTED` | `AppConfigurationCloudProvider` con `DefaultAzureCredential` e hidratación sin label + label del entorno. |
+| **Secretos Inevitables** | `LocalSyntheticSecretProvider` (in-memory) | Azure Key Vault (`AzureKeyVaultSecretProvider`) | `PASSWORDLESS_IMPLEMENTED` | `KeyVaultReferenceResolver` resuelve referencias `@Microsoft.KeyVault(...)` usando `DefaultAzureCredential`. |
+| **Identidad / Autenticación** | Confianza local de red / synthetic | User-Assigned Managed Identity (`Microsoft Entra ID`) | `PASSWORDLESS_IMPLEMENTED` | Declarada en Bicep con roles de privilegio mínimo asignados a la identidad del workload. |
+| **Telemetría & Trazas** | OpenTelemetry In-Memory / Consola local | Azure Monitor / Application Insights | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Instrumentación OTel neutra y W3C traceparent listos. Exporter Azure Monitor requiere validación en staging. |
 
-## Matriz passwordless
+---
 
-| Dependencia | Estado de código | Límite antes de staging |
-| --- | --- | --- |
-| App Configuration | `PASSWORDLESS_IMPLEMENTED` | Asignar `App Configuration Data Reader`. |
-| Key Vault | `PASSWORDLESS_IMPLEMENTED` | Asignar `Key Vault Secrets User`; probar referencias y rotación. |
-| Service Bus | `PASSWORDLESS_ADAPTER_READY` | Configurar namespace y `Azure Service Bus Data Sender/Receiver` según el flujo. |
-| Cosmos DB NoSQL | `PASSWORDLESS_ADAPTER_READY` | Conceder rol de datos mínimo y probar particiones/TTL/change feed. |
-| PostgreSQL | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | El checkout usa DSN/psycopg, sin adaptador de token Entra seguro. |
-| Redis | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | El checkout usa URL redis; validar soporte del servicio y cliente elegido. |
-| Foundry/LLM cloud | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Solo existe Foundry Local; falta provider cloud separado y prueba de deployment. |
-| Azure Monitor | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Solo existe telemetría in-memory. |
+## 3. Política Estricta de Secretos y `.env`
 
-El Core Banking local sigue siendo un mock con SQLite. El Agent no obtiene acceso
-directo a su base de datos: cualquier integración cloud debe mantener el contrato
-HTTP, propiedad de recursos, trazas y aprobación humana para escrituras.
+1. **Sin `.env.production`:** Queda categóricamente prohibido crear o requerir archivos `.env.production` en el repositorio o en contenedores cloud.
+2. **`.env.local` solo para Desarrollo:** Es la única convención dotenv permitida para desarrolladores locales. Está listada en `.gitignore` y `.dockerignore`.
+3. **Guardia Fail-Closed:** `load_local_dotenv()` solo considera `.env.local` cuando el proceso ya está en un entorno local. En `staging` y `production` no carga archivos. `foundry_local.py` tampoco carga dotenv al importarse.
+4. **Validación de Producción (`validate_runtime_configuration`):**
+   - Rechaza emuladores de App Configuration, Service Bus y Cosmos.
+   - Rechaza endpoints loopback (`127.0.0.1`, `localhost`).
+   - Rechaza claves por defecto de emulador.
+   - Rechaza flags de `DEBUG` o bypass de autenticación.
+   - Exige endpoints HTTPS válidos para App Configuration y Key Vault.
+   - **Nunca imprime valores de secretos o endpoints en los mensajes de error.**
 
-## RBAC mínimo previsto
+---
 
-| Principal | Scope | Rol |
-| --- | --- | --- |
-| Identidad asignada de workload | App Configuration del entorno | App Configuration Data Reader |
-| Identidad asignada de workload | Key Vault del entorno | Key Vault Secrets User |
-| Identidad de Agent/Functions | Namespace o entidad Service Bus | Data Sender/Receiver mínimo por flujo |
-| Identidad de Agent/Functions | Cosmos DB NoSQL | Rol de datos mínimo definido por operación |
+## 4. Infraestructura Declarativa (IaC) y CI/CD OIDC
 
-Las asignaciones de Service Bus y Cosmos no se codifican todavía porque sus
-recursos, topología y permisos de consumidor no están aprobados ni validados.
+1. **Plantilla Bicep:** [`deploy/azure/main.bicep`](../../deploy/azure/main.bicep) define la fundación completa de identidad y configuración:
+   - Identidad gestionada asignada por usuario.
+   - Almacén de Azure App Configuration con autenticación local desactivada (`disableLocalAuth: true`).
+   - Azure Key Vault con autorización RBAC estricta (`enableRbacAuthorization: true`) y purge protection.
+   - Asignaciones de roles de mínimo privilegio:
+     - `App Configuration Data Reader` (`516239f1-63e1-4d78-a4de-a74fb236a071`)
+     - `Key Vault Secrets User` (`4633458b-17de-408a-b874-0445c86b69ea`)
+2. **Parámetros de Despliegue:**
+   - [`deploy/azure/parameters.staging.json`](../../deploy/azure/parameters.staging.json)
+   - [`deploy/azure/parameters.production.json`](../../deploy/azure/parameters.production.json)
+   (Ambos declarativos, sin secretos ni valores sensibles).
+3. **Validación Estática Local:**
+   ```powershell
+   az bicep build --file deploy/azure/main.bicep --stdout > $null
+   ```
+4. **CI/CD OIDC:** Pipeline de GitHub Actions ([`deploy-staging.yml`](../../.github/workflows/deploy-staging.yml)) configurado con `azure/login@v2` para federación OIDC passwordless (sin `AZURE_CLIENT_SECRET`).
 
-## Infraestructura declarativa y CI
+---
 
-[`deploy/azure/main.bicep`](../../deploy/azure/main.bicep) prepara una identidad
-asignada, App Configuration con autenticación local deshabilitada, Key Vault con
-RBAC y protección contra purge, y dos asignaciones RBAC. No aprovisiona Container
-Apps, datos, colas ni modelos. El workflow
-[`azure-validate.yml`](../../.github/workflows/azure-validate.yml) solo compila
-Bicep; declara `id-token: write` para un workflow de despliegue futuro aprobado,
-pero no inicia sesión, no crea recursos y no consulta secretos.
+## 5. Documentación de Operaciones Asociada
 
-## Evidencia local requerida
-
-```powershell
-az bicep build --file deploy/azure/main.bicep --stdout > $null
-.\.venv\Scripts\python.exe -m pytest -c ai/agent/pyproject.toml ai/agent/tests/unit/configuration ai/agent/tests/unit/reliability/test_azure_identity_adapters.py -q
-```
-
-La compilación no reemplaza una ejecución contra Azure. Antes de desplegar a
-staging se debe revisar [el runbook](../operations/AZURE-STAGING-RUNBOOK.md).
+- [Matriz de Privilegio Mínimo RBAC](../operations/RBAC-LEAST-PRIVILEGE-MATRIX.md)
+- [Runbook y Contrato de Aceptación Staging](../operations/STAGING-ACCEPTANCE-RUNBOOK.md)
+- [Runbook de Operaciones y Promoción a Producción](../operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md)

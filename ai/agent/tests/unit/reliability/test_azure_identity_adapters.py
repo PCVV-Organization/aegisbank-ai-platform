@@ -47,3 +47,17 @@ def test_cosmos_uses_injected_credential_in_cloud(monkeypatch) -> None:
     )
     assert repository._get_client() is not None
     assert captured["credential"] is credential
+
+
+def test_service_bus_rejects_a_client_without_a_connection_target(monkeypatch) -> None:
+    monkeypatch.setenv("AEGISBANK_ENV", "local")
+    monkeypatch.delenv("AEGISBANK_SERVICEBUS_NAMESPACE", raising=False)
+    monkeypatch.delenv("AEGISBANK_SERVICEBUS_CONN_STR", raising=False)
+
+    adapter = AzureServiceBusMessageBus(connection_string="")
+    adapter.connection_string = None
+
+    import pytest
+
+    with pytest.raises(RuntimeError, match="requires either"):
+        adapter._get_client()

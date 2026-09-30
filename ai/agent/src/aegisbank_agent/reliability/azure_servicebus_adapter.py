@@ -69,8 +69,12 @@ class AzureServiceBusMessageBus(MessageBus):
                     fully_qualified_namespace=self.fully_qualified_namespace,
                     credential=self.credential,
                 )
-            else:
+            elif self.connection_string:
                 self._client = ServiceBusClient.from_connection_string(self.connection_string)
+            else:
+                raise RuntimeError(
+                    "ServiceBusClient requires either fully_qualified_namespace or connection_string"
+                )
         return self._client
 
     def close(self) -> None:

@@ -11,10 +11,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, cast
 
+from aegisbank_rag.azure_foundry import create_azure_openai_client, resolve_azure_endpoint
 from aegisbank_rag.foundry_local import DEFAULT_MODEL_ALIAS, resolve_foundry_base_url
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolUnionParam
 
+from .configuration.environment import load_local_dotenv, resolve_runtime_environment
 from .constants import DEFAULT_MAX_TOOL_ROUNDS, SYSTEM_PROMPT_PATH
 from .hitl import ApprovalRequest, HITLApprovalManager
 from .knowledge_routing import (
@@ -183,15 +185,25 @@ class AgentOrchestrator:
             self._client = client
             self._base_url = base_url or "custom"
         else:
-            self._base_url = base_url or resolve_foundry_base_url()
+            load_local_dotenv()
+            env = resolve_runtime_environment()
             timeout = float(os.getenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", "45"))
             retries = int(os.getenv("AEGISBANK_FOUNDRY_MAX_RETRIES", "2"))
-            self._client = OpenAI(
-                base_url=self._base_url,
-                api_key=_PLACEHOLDER_API_KEY,
-                timeout=timeout,
-                max_retries=retries,
-            )
+            if env.is_cloud:
+                self._base_url = resolve_azure_endpoint(base_url)
+                self._client = create_azure_openai_client(
+                    endpoint=self._base_url,
+                    timeout=timeout,
+                    max_retries=retries,
+                )
+            else:
+                self._base_url = base_url or resolve_foundry_base_url()
+                self._client = OpenAI(
+                    base_url=self._base_url,
+                    api_key=_PLACEHOLDER_API_KEY,
+                    timeout=timeout,
+                    max_retries=retries,
+                )
 
     @property
     def model_name(self) -> str:

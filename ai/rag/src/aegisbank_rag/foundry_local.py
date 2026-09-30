@@ -18,14 +18,6 @@ BASE_URL_ENV: str = "AEGISBANK_FOUNDRY_LOCAL_BASE_URL"
 _PLACEHOLDER_API_KEY: str = "none"
 
 
-try:
-    from dotenv import load_dotenv
-
-    load_dotenv()
-except ImportError:
-    pass
-
-
 class ChatCompletionsAPI(Protocol):
     def create(self, *, model: str, messages: list[dict[str, str]]) -> Any: ...
 

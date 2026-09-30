@@ -156,3 +156,22 @@ def test_agent_uses_tool_choice_auto_for_unconstrained_queries() -> None:
     call_kwargs = mock_client.chat.completions.create.call_args
     assert call_kwargs is not None
     assert call_kwargs.kwargs.get("tool_choice") == "auto"
+
+
+def test_agent_cloud_client_uses_shared_azure_factory(monkeypatch) -> None:
+    fake_client = MagicMock()
+    factory = MagicMock(return_value=fake_client)
+    monkeypatch.setenv("AEGISBANK_ENV", "staging")
+    monkeypatch.setenv("AZURE_OPENAI_ENDPOINT", "https://aegisbank-ai.cognitiveservices.azure.com")
+    monkeypatch.setattr("aegisbank_agent.agent.load_local_dotenv", lambda: False)
+    monkeypatch.setattr("aegisbank_agent.agent.create_azure_openai_client", factory)
+
+    orchestrator = AgentOrchestrator(registry=ToolRegistry())
+
+    assert orchestrator._client is fake_client
+    assert orchestrator._base_url == "https://aegisbank-ai.cognitiveservices.azure.com"
+    factory.assert_called_once_with(
+        endpoint="https://aegisbank-ai.cognitiveservices.azure.com",
+        timeout=45.0,
+        max_retries=2,
+    )
