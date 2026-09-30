@@ -182,7 +182,7 @@ class AgentOrchestrator:
             self._base_url = base_url or "custom"
         else:
             self._base_url = base_url or resolve_foundry_base_url()
-            timeout = float(os.getenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", "30"))
+            timeout = float(os.getenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", "45"))
             retries = int(os.getenv("AEGISBANK_FOUNDRY_MAX_RETRIES", "2"))
             self._client = OpenAI(
                 base_url=self._base_url,

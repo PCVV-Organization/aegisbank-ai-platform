@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 from mock_core_banking.persistence.database import Database
 
+import aegisbank_agent.agent as agent_module
 from aegisbank_agent.agent import AgentOrchestrator
 from aegisbank_agent.observability.audit import AuditLogger
 from aegisbank_agent.observability.metrics import OperationalMetrics
@@ -400,6 +401,32 @@ def test_fake_tool_claim_without_tools_is_intercepted() -> None:
     assert result.success is False
     assert "FALSE_TOOL_EXECUTION_CLAIM" in (result.error or "")
     assert "No pude consultar la información verificada" in result.answer
+
+
+def test_foundry_client_uses_bounded_configured_timeout_and_retries(monkeypatch) -> None:
+    """The local client leaves enough time for normal CPU/GPU inference."""
+    fake_openai = MagicMock()
+    monkeypatch.setattr(agent_module, "OpenAI", fake_openai)
+    monkeypatch.delenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", raising=False)
+    monkeypatch.delenv("AEGISBANK_FOUNDRY_MAX_RETRIES", raising=False)
+
+    AgentOrchestrator(base_url="http://127.0.0.1:51747/v1")
+
+    assert fake_openai.call_args.kwargs["timeout"] == 45.0
+    assert fake_openai.call_args.kwargs["max_retries"] == 2
+
+
+def test_foundry_client_honors_local_timeout_override(monkeypatch) -> None:
+    """An operator can lower or raise the bounded local-client timeout explicitly."""
+    fake_openai = MagicMock()
+    monkeypatch.setattr(agent_module, "OpenAI", fake_openai)
+    monkeypatch.setenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", "60")
+    monkeypatch.setenv("AEGISBANK_FOUNDRY_MAX_RETRIES", "1")
+
+    AgentOrchestrator(base_url="http://127.0.0.1:51747/v1")
+
+    assert fake_openai.call_args.kwargs["timeout"] == 60.0
+    assert fake_openai.call_args.kwargs["max_retries"] == 1
 
 
 def test_foundry_timeout_returns_safe_error_without_hallucination() -> None:
