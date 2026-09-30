@@ -455,6 +455,10 @@
       "category": "operations-reference"
     },
     {
+      "path": "docs/operations/production-configuration-secrets-identity-audit-prompt.md",
+      "category": "operations-reference"
+    },
+    {
       "path": "docs/operations/runbooks/README.md",
       "category": "operations-reference"
     },
