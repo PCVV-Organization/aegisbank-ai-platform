@@ -114,6 +114,24 @@ def test_my_loan_statuses_are_returned_in_second_person_without_llm(in_memory_db
     mock_client.chat.completions.create.assert_not_called()
 
 
+def test_my_loan_balances_and_statuses_are_returned_without_llm(in_memory_db: Database) -> None:
+    """The requested pending balance accompanies every authorized loan status."""
+    registry = ToolRegistry([GetMyLoansTool(in_memory_db)])
+    mock_client = MagicMock()
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+
+    result = orchestrator.run(
+        "¿Qué saldos pendientes y estados tienen mis préstamos?", customer_id="CUST-0001"
+    )
+
+    assert result.success is True
+    assert result.rounds == 0
+    assert "Tus préstamos, sus saldos pendientes y estados:" in result.answer
+    assert "LOAN-0001: saldo pendiente S/ 2800.00. Estado: DELINQUENT." in result.answer
+    assert "LOAN-0002: saldo pendiente S/ 1750.00. Estado: ACTIVE." in result.answer
+    mock_client.chat.completions.create.assert_not_called()
+
+
 def test_case_b_next_installment_executes_get_next_installment(in_memory_db: Database) -> None:
     metrics = OperationalMetrics()
     registry = ToolRegistry(

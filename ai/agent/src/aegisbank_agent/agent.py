@@ -296,18 +296,30 @@ class AgentOrchestrator:
         )
 
     @staticmethod
-    def _format_my_loan_statuses_answer(data: dict[str, Any]) -> str:
-        """Render a direct second-person status summary from authorized loan data."""
+    def _format_my_loan_statuses_answer(
+        data: dict[str, Any], *, include_balances: bool = False
+    ) -> str:
+        """Render authorized loan statuses and requested pending balances in second person."""
         loans = data.get("loans", []) if isinstance(data, dict) else []
         if not isinstance(loans, list) or not loans:
             return "No tienes préstamos registrados en este momento."
-        lines = ["Tus préstamos y sus estados:"]
+        lines = [
+            "Tus préstamos, sus saldos pendientes y estados:"
+            if include_balances
+            else "Tus préstamos y sus estados:"
+        ]
         for loan in loans:
             if not isinstance(loan, dict):
                 continue
             loan_id = str(loan.get("loan_id", "préstamo sin identificador"))
             status = str(loan.get("status", "sin estado disponible"))
-            lines.append(f"- {loan_id}: {status}.")
+            if include_balances:
+                balance = format_currency(
+                    loan.get("outstanding_balance"), str(loan.get("currency", ""))
+                )
+                lines.append(f"- {loan_id}: saldo pendiente {balance}. Estado: {status}.")
+            else:
+                lines.append(f"- {loan_id}: {status}.")
         return "\n".join(lines)
 
     @staticmethod
@@ -538,7 +550,13 @@ class AgentOrchestrator:
                 loans = (account_result.data or {}).get("loans", [])
                 if asks_my_loan_statuses(user_message):
                     return AgentExecutionResult(
-                        answer=self._format_my_loan_statuses_answer(account_result.data or {}),
+                        answer=self._format_my_loan_statuses_answer(
+                            account_result.data or {},
+                            include_balances=any(
+                                term in user_message.casefold()
+                                for term in ("saldo", "debo", "deuda", "monto")
+                            ),
+                        ),
                         customer_id=customer_id,
                         tool_calls=executed_records,
                         rounds=0,
