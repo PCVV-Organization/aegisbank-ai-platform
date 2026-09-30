@@ -62,9 +62,9 @@ class AzureServiceBusMessageBus(MessageBus):
         if self._client is None:
             if self.fully_qualified_namespace is not None and self.connection_string is None:
                 if self.credential is None:
-                    from azure.identity import DefaultAzureCredential
+                    from ..configuration.identity import resolve_azure_credential
 
-                    self.credential = DefaultAzureCredential()
+                    self.credential = resolve_azure_credential()
                 self._client = ServiceBusClient(
                     fully_qualified_namespace=self.fully_qualified_namespace,
                     credential=self.credential,

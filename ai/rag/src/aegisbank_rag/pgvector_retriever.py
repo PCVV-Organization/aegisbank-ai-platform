@@ -35,6 +35,7 @@ class PgVectorRetriever(Retriever):
     )
     embedding_model: EmbeddingModel = field(default_factory=LocalDenseEmbeddingModel)
     table_name: str = "rag_chunks"
+    connection_factory: Any = None
 
     def __post_init__(self) -> None:
         if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", self.table_name):
@@ -42,6 +43,10 @@ class PgVectorRetriever(Retriever):
 
     def _get_connection(self) -> psycopg.Connection:
         """Establish a psycopg connection with pgvector type registration."""
+        if self.connection_factory is not None:
+            conn = self.connection_factory()
+            register_vector(conn)
+            return conn
         if not self.connection_string.strip():
             raise RuntimeError("AEGISBANK_PGVECTOR_URL is required for PostgreSQL access")
         conn = psycopg.connect(self.connection_string)

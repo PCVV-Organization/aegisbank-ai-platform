@@ -43,9 +43,9 @@ class CosmosRepository:
             self.endpoint = os.getenv("COSMOS_ENDPOINT", DEFAULT_COSMOS_ENDPOINT)
         if self.credential is None:
             if environment.is_cloud:
-                from azure.identity import DefaultAzureCredential
+                from .configuration.identity import resolve_azure_credential
 
-                self.credential = DefaultAzureCredential()
+                self.credential = resolve_azure_credential(environment)
             else:
                 self.credential = os.getenv("COSMOS_KEY", DEFAULT_COSMOS_KEY)
         self._client: CosmosClient | None = None

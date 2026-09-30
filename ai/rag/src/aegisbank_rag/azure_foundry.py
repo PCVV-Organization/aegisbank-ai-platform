@@ -49,12 +49,29 @@ def create_azure_openai_client(
     also use an explicitly configured developer credential during an approved
     cloud integration test; no static API key is accepted by this boundary.
     """
-    from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+    from azure.identity import (
+        DefaultAzureCredential,
+        ManagedIdentityCredential,
+        get_bearer_token_provider,
+    )
     from openai import AzureOpenAI
 
     resolved_endpoint = resolve_azure_endpoint(endpoint)
+    if credential is None:
+        env = os.getenv("AEGISBANK_ENV", "").strip().lower()
+        if env in {"production", "staging"}:
+            client_id = os.getenv("AZURE_CLIENT_ID")
+            cred = (
+                ManagedIdentityCredential(client_id=client_id)
+                if client_id
+                else ManagedIdentityCredential()
+            )
+        else:
+            cred = DefaultAzureCredential()
+    else:
+        cred = credential
     token_provider = get_bearer_token_provider(
-        credential or DefaultAzureCredential(),
+        cred,
         "https://cognitiveservices.azure.com/.default",
     )
     return AzureOpenAI(
