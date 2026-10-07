@@ -20,6 +20,7 @@ el checkout actual, comunicar la diferencia y conservar el histórico.
 - [EVENT-GRID-CLOUD-DESIGN](EVENT-GRID-CLOUD-DESIGN.md)
 - [EVENT-GRID-VS-SERVICE-BUS](EVENT-GRID-VS-SERVICE-BUS.md)
 - [REDIS-CACHE-POLICY](REDIS-CACHE-POLICY.md)
+- [SEMANTIC-ROUTING](SEMANTIC-ROUTING.md) — límites entre comprensión semántica y política determinista
 
 ## Mantenimiento
 

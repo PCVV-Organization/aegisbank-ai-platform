@@ -239,14 +239,28 @@ def asks_my_loan_statuses(query: str) -> bool:
 
 
 def has_explicit_loan_detail_intent(query: str) -> bool:
-    """Recognize only explicit, low-ambiguity requests for loan details.
+    """Recognize only explicit, low-ambiguity requests for loan details or inspections.
 
-    Natural-language questions with a loan ID are intentionally *not* classified
-    here. They receive the bounded read-only tool set and the LLM proposes the
-    appropriate tool; deterministic authorization remains downstream.
+    Natural-language questions with a loan ID (e.g. asking when or how to pay)
+    are intentionally *not* classified here. They receive the bounded read-only
+    tool set and the LLM proposes the appropriate tool; deterministic
+    authorization remains downstream.
     """
     normalized = _normalize(query)
-    return any(term in normalized for term in ("detalle", "saldo", "estado", "informacion"))
+    detail_terms = (
+        "detalle",
+        "saldo",
+        "monto",
+        "estado",
+        "info",
+        "informacion",
+        "mostrar",
+        "muestrame",
+        "consultar",
+        "consulta",
+        "ver",
+    )
+    return any(term in normalized for term in detail_terms)
 
 
 def asks_for_payment_dates(query: str) -> bool:
@@ -347,11 +361,20 @@ def account_tool_allowlist(query: str) -> list[str]:
     tools: list[str] = []
 
     if loan_id is not None:
-        # Keep the zero-round optimization only for an explicit details request.
-        # Every other loan-ID question is linguistically ambiguous, so expose a
-        # bounded READ-only proposal set to the LLM. Policy, ownership, schemas,
+        # Keep the zero-round optimization only for explicit details or ownership confirmation.
+        # If the query also asks about installments or payment dates, or is ambiguous, expose
+        # the bounded READ-only proposal set to the LLM. Policy, ownership, schemas,
         # HITL/HOTL, and execution remain deterministic downstream.
-        if has_explicit_loan_detail_intent(query):
+        is_detail_or_ownership = has_explicit_loan_detail_intent(query) or asks_loan_ownership(
+            query
+        )
+        has_installment_intent = (
+            "cuota" in normalized
+            or "proxima cuota" in normalized
+            or "cuotas" in normalized
+            or asks_for_payment_dates(query)
+        )
+        if is_detail_or_ownership and not has_installment_intent:
             return ["get_loan_details"]
         return ["get_loan_details", "get_next_installment"]
 
