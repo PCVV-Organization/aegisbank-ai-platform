@@ -5,6 +5,15 @@
 
 ---
 
+## Contrato de entrega: Local-first antes de Azure
+
+El orden de entrega es obligatorio: **local reproducible → contrato cloud versionado → staging autorizado → evidencia de aceptación**. Ninguna configuración, imagen, plantilla Bicep o workflow declara por sí mismo una ejecución cloud satisfactoria.
+
+- El entorno local es la referencia de desarrollo, regresión y depuración con datos sintéticos.
+- Azure reutiliza los mismos contratos de aplicación; solo reemplaza adaptadores de infraestructura.
+- Staging exige autorización explícita para aprovisionar recursos y evidencia de sus pruebas.
+- Producción solo puede promover el artefacto inmutable aceptado en staging.
+
 ## 1. Decisión Operativa y Modelo de Doble Vía (Local-First vs Cloud)
 
 La frontera canónica de configuración reside en `aegisbank_agent.configuration`. Se preserva de forma estricta e inquebrantable el entorno local existente:

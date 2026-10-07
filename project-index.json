@@ -263,6 +263,10 @@
       "category": "architecture-reference"
     },
     {
+      "path": "docs/architecture/SEMANTIC-ROUTING.md",
+      "category": "architecture-reference"
+    },
+    {
       "path": "docs/architecture/adr/ADR-001-modular-monolith-first.md",
       "category": "historical-architecture-decision"
     },
