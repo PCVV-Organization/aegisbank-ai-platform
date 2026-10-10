@@ -404,6 +404,594 @@ Una lista explícita de fuentes limita el contexto ampliado. No concatenar el á
 Se aplican estas ideas sin instalar una plataforma documental ni nuevas dependencias.
 
 
+## Fuente: docs/architecture/CANONICAL-COMPONENTS.md
+
+# AegisBank — Catálogo de Componentes Canónicos
+
+> **Propósito:** Inventario oficial de las implementaciones canónicas del repositorio.
+> **Regla permanente:** Todo desarrollo futuro debe consultar este catálogo antes de crear código nuevo bajo la regla **DISCOVER BEFORE CREATE**. Está estrictamente prohibido duplicar responsabilidades existentes.
+
+---
+
+## Inventario Canónico de Responsabilidades
+
+| Responsabilidad | Componente Canónico | Ruta Canónica | Interfaz Pública Principal | Consumidores | Punto de Extensión | Directiva DO NOT DUPLICATE |
+|---|---|---|---|---|---|---|
+| **1. Agent Orchestration** | `AgentOrchestrator` | `ai/agent/src/aegisbank_agent/agent.py` | `run(prompt, customer_id, correlation_id) -> AgentExecutionResult` | CLI, Evaluadores, Tests E2E | Agregar handlers de ciclo de vida o políticas de parada | **NO** crear orquestadores paralelos ni clases `ChatbotManager` alternativas. |
+| **2. Tool Registry** | `ToolRegistry` | `ai/agent/src/aegisbank_agent/tools/registry.py` | `register(tool)`, `get(name)`, `list_tools()`, `export_openai_tools()` | `AgentOrchestrator`, Servidor MCP | Registrar nuevas subclases de `BaseTool` | **NO** mantener diccionarios ad-hoc de herramientas en el orquestador. |
+| **3. Banking Routing Policy** | `requires_account_data` / `requires_banking_read` | `ai/agent/src/aegisbank_agent/agent.py` | `requires_account_data(prompt) -> bool`, `build_banking_routing_plan()` | `AgentOrchestrator` | Añadir reglas deterministas basadas en intenciones de cuenta | **NO** delegar en el LLM la decisión de acceder a datos bancarios privados. |
+| **4. RAG Retrieval** | `Retriever` / `PgVectorRetriever` / `SearchKnowledgeTool` | `ai/rag/src/aegisbank_rag/` & `ai/agent/src/aegisbank_agent/tools/knowledge_tools.py` | `search(query, top_k) -> list[RetrievalHit]`, `SearchKnowledgeTool.execute(args)` | `AgentOrchestrator`, Pipeline RAG | Añadir adapters de almacenamiento detrás de `Retriever` | **NO** crear un segundo RAG, chunker o evaluación; preservar filtros y qrels históricos. |
+| **5. LLM Provider Adapter** | `OpenAIClient` / `FoundryLocalAdapter` | `ai/agent/src/aegisbank_agent/` | `client.chat.completions.create(model, messages, tools, tool_choice)` | `AgentOrchestrator`, Evaluadores | Añadir soporte para Azure OpenAI o SDKs de nube | **NO** mezclar llamadas HTTP directas con endpoints de inferencia. |
+| **6. Human-in-the-Loop (HITL)** | `HITLApprovalManager` | `ai/agent/src/aegisbank_agent/hitl.py` | `create_request()`, `approve()`, `reject()`, `validate_tampering()` | `AgentOrchestrator`, Servidor MCP, CLI | Integrar canales de aprobación externos (Slack/Teams) | **NO** crear gestores de aprobación paralelos (`HumanApprovalService`). |
+| **7. MCP Server & Boundary** | `AegisBank Local MCP` / `create_mcp_server` | `ai/agent/src/aegisbank_agent/mcp_boundary.py` | `create_mcp_server(db, ctx, hitl_manager)`, `run_stdio_async()` | Clientes MCP, Subprocesos | Registrar nuevas herramientas bancarias con anotaciones | **NO** implementar servidores MCP paralelos con frameworks de terceros. |
+| **8. Idempotency Guard** | `IdempotencyGuard` | `ai/agent/src/aegisbank_agent/reliability/idempotency.py` | `execute(key, operation, *args) -> tuple[Any, bool]` | `CreateServiceRequestTool`, Core Banking | Adaptar a Redis/Cosmos DB distribuido en nube | **NO** duplicar lógica de hashing de idempotencia en herramientas individuales. |
+| **9. Bounded Retry Policy** | `RetryPolicy` | `ai/agent/src/aegisbank_agent/reliability/retry.py` | `execute(fn, *args, **kwargs) -> T` | Clientes HTTP, llamadas MCP, Base de datos | Personalizar `transient_classifier` para excepciones de red | **NO** escribir bucles `while retry < 3` ad-hoc en el código. |
+| **10. Circuit Breaker (FSM)** | `CircuitBreaker` | `ai/agent/src/aegisbank_agent/reliability/circuit_breaker.py` | `execute(operation, *args, **kwargs) -> T`, `state` | Clientes de Core Banking, Adaptadores externos | Configurar umbrales de fallo y tiempos de enfriamiento | **NO** ignorar fallos en cascada ni crear cortacircuitos simplistas. |
+| **11. Timeout Guard** | `with_timeout` / `TimeoutException` | `ai/agent/src/aegisbank_agent/reliability/timeout.py` | `@with_timeout(seconds)`, `execute_with_timeout(fn, seconds)` | Invocaciones LLM, consultas de base de datos | Integrar timeouts nativos de sockets | **NO** usar `time.sleep` en bucles de espera indefinidos. |
+| **12. Transactional Outbox** | `OutboxRepository` / `OutboxEvent` | `mock_core_banking/persistence/repositories/` & `models.py` | `save(event)`, `list_pending(limit)`, `mark_published(event_id)` | `CreateServiceRequestTool`, `OutboxProcessor` | Añadir nuevos tipos de eventos de dominio | **NO** publicar eventos a brokers antes de commitear la transacción SQL. |
+| **13. Message Bus & Consumer** | `LocalMessageBus` / `IdempotentConsumer` / `DeadLetterQueue` | `ai/agent/src/aegisbank_agent/reliability/messaging.py` | `publish(topic, msg)`, `subscribe(topic, handler)`, `handle(msg)` | Background workers, Consumidores de eventos | Conectar drivers de Azure Service Bus o Kafka | **NO** acoplar consumidores directamente con productores de eventos. |
+| **14. OpenTelemetry Tracing** | `TracerProvider` / `get_tracer` | `ai/agent/src/aegisbank_agent/observability/tracer.py` | `start_as_current_span(name, attributes)`, `trace_span()` | Todos los módulos del agente y tools | Exportar trazas a Azure Monitor / Application Insights | **NO** usar `print` para rastreo de flujos de ejecución. |
+| **15. Structured Logging** | `StructuredLogger` | `ai/agent/src/aegisbank_agent/observability/logging.py` | `info(msg, **extra)`, `error(msg, **extra)`, `redact(text)` | Todo el sistema AegisBank | Añadir patrones de redacción de datos sensibles (PII) | **NO** usar `logging.basicConfig` sin el filtro de redacción bancaria. |
+| **16. Operational Metrics** | `OperationalMetrics` | `ai/agent/src/aegisbank_agent/observability/metrics.py` | `increment_counter()`, `record_timing()`, `get_percentiles()` | `AgentOrchestrator`, Evaluadores | Exportar métricas a Prometheus / Azure Monitor | **NO** calcular percentiles manuales en módulos individuales. |
+| **17. Immutable Audit Logger** | `AuditLogger` | `ai/agent/src/aegisbank_agent/observability/audit.py` | `log_event(event_type, severity, details, customer_id)` | `HITLApprovalManager`, `HOTLSupervisor` | Persistir en almacenamiento WORM inmutable de nube | **NO** mezclar logs operativos con registros legales de auditoría. |
+| **18. HOTL Supervisor** | `HOTLSupervisor` | `ai/agent/src/aegisbank_agent/observability/hotl.py` | `engage_kill_switch(reason)`, `disengage_kill_switch()`, `is_write_allowed` | `AgentOrchestrator`, Admin CLI | Añadir reglas de desenganche automático por anomalías | **NO** saltarse la verificación de `is_write_allowed` en escrituras. |
+| **19. Quality Gate Runner** | `scripts/quality_gate.py` | `scripts/quality_gate.py` | `run_quality_gates() -> int` (código 0 o != 0) | CI/CD, Desarrollador local | Añadir nuevas compuertas estáticas o de seguridad | **NO** ejecutar validaciones desordenadas o silenciar errores en CI. |
+| **20. Cosmos NoSQL & Change Feed** | `CosmosRepository` / `CosmosChangeFeedProcessor` | `ai/agent/src/aegisbank_agent/cosmos.py` | `create_item()`, `read_item()`, `query_items()`, `read_change_feed()`, `process_latest_changes()` | Agente, Workers reactivos | Integrar triggers de Azure Functions o Change Feed Processor | **NO** duplicar motores de persistencia documental ni procesadores de eventos ad-hoc. |
+| **21. Redis Cache & Vector Search** | `RedisCacheManager` / `RedisVectorRetriever` | `ai/rag/src/aegisbank_rag/cache.py` & `redis_retriever.py` | `get()`, `set()`, `invalidate_prefix()`, `execute_single_flight()`, `search()` | RAG, Retrieval de conocimiento, Búsqueda vectorial KNN | Integrar Azure Managed Redis y RediSearch cloud | **NO** duplicar abstracciones de caché ni cachear datos financieros privados del cliente. |
+| **22. Serverless Function App & Event Grid Handler** | `ServiceRequestEventHandler` / `function_app` | `functions/aegisbank-events/function_app.py` & `service_request_handler.py` | `@app.event_grid_trigger`, `handle_cloud_event(raw_event) -> EventProcessingResult` | Azure Functions Host, Event Grid Subscribers | Integrar nuevos triggers serverless (Blob/Queue/Cosmos) | **NO** crear múltiples Function Apps para eventos individuales ni duplicar validación de contratos. |
+| **23. Configuration & Secrets Boundary** | `ConfigurationProvider` / `SecretProvider` / `KeyVaultReferenceResolver` | `ai/agent/src/aegisbank_agent/configuration/` | `get()`, `get_optional()`, `require()`, `refresh()`, `resolve()` | Agente, Infraestructura, Adapters | Implementar nuevos providers (e.g. Azure Key Vault en nube) | **NO** almacenar secretos en configuración ordinaria ni crear providers ad-hoc por módulo. |
+| **24. Local AI Evaluation & MLOps** | `FoundryEvaluators` / `MLflowTracker` / `DriftDetector` / `ABExperimentHarness` | `ai/agent/src/aegisbank_agent/evaluation/` & `mlops/` | `evaluate_variant()`, `run_evaluation_gate()`, `start_run()`, `detect_data_drift()` | Agent traces, experiment reports, promotion gates | Integrar Azure ML/Foundry evaluators cloud | **NO** modificar holdouts históricos ni crear un segundo sistema de métricas/observabilidad. |
+
+---
+
+## Regla de Oro: DISCOVER BEFORE CREATE
+
+Antes de crear un nuevo archivo o clase:
+1. **Buscar:** Preferir el grafo de código para símbolos y dependencias; usar `rg` para texto, configuración o si el grafo no está disponible o resulta insuficiente.
+2. **Consultar:** Revisar este documento para identificar si la responsabilidad ya tiene un componente canónico.
+3. **Decidir y justificar en el PR/Commit:**
+   - **`REUSE`**: Usar el componente canónico directamente.
+   - **`EXTEND`**: Añadir la funcionalidad faltante en el punto de extensión oficial sin romper compatibilidad.
+   - **`NEW_COMPONENT_JUSTIFIED`**: Solo si la responsabilidad es genuinamente nueva (e.g. `ContainerHealthProbe` en v0.11).
+
+
+## Fuente: docs/architecture/E2E-FINAL-ARCHITECTURE.md
+
+# AegisBank v1.0 End-to-End Architecture
+
+```text
+User
+  -> AgentOrchestrator
+     -> deterministic routing and ownership policy
+     -> RAG Retriever / banking READ tools / MCP boundary
+     -> grounded response + OTel span + redacted audit event
+
+WRITE request
+  -> HITLApprovalManager
+  -> HOTLSupervisor gate
+  -> IdempotencyGuard
+  -> Core Banking transaction + OutboxRepository
+  -> LocalMessageBus / IdempotentConsumer
+  -> completion or DeadLetterQueue
+```
+
+## Trust and Evidence Boundaries
+
+1. The user prompt is untrusted input; deterministic policy decides whether
+   private banking data may be accessed.
+2. Retrieved documents are untrusted evidence; citation and groundedness checks
+   decide whether the agent answers or abstains.
+3. The LLM may propose a tool call, but registry, authorization, ownership,
+   validation, HITL, HOTL, idempotency, and business rules decide execution.
+4. A WRITE cannot reach the core banking repository without explicit approval
+   bound to the exact payload digest and a live HOTL safety state.
+5. The outbox is the transaction boundary for event publication; consumers are
+   idempotent and poison messages go to a DLQ.
+
+Canonical implementations are listed in
+`docs/architecture/CANONICAL-COMPONENTS.md`; ownership is defined by
+`docs/engineering/OWNERSHIP-MAP.md`.
+
+
+## Fuente: docs/engineering/OWNERSHIP-MAP.md
+
+# AegisBank — Ownership Map
+
+> **Propósito:** Delimitar formalmente la responsabilidad de cada subsistema y componente en AegisBank AI Platform.
+> **Principio:** Cada archivo y responsabilidad del repositorio tiene un dominio bien definido para evitar solapamientos arquitectónicos y colisiones entre sesiones de desarrollo.
+
+---
+
+## 1. Mapa de Responsabilidades por Componente
+
+| Dominio Arquitectónico | Rutas Autorizadas | Responsabilidad Principal |
+|---|---|---|
+| **Core Banking (Mock)** | `services/mock-core-banking/**` | Simulación determinista de Core Banking: clientes, préstamos, cronogramas de pago, solicitudes de servicio, persistencia SQLite, outbox transaccional y OpenAPI 3.1. |
+| **Intent Classifier (ML)** | `ml/intent-classifier/**` | Clasificación de intenciones del usuario mediante TF-IDF y Logistic Regression con dataset sintético reproducible y métricas congeladas. |
+| **RAG Knowledge Base** | `ai/rag/**` | Ingesta, chunking canónico, retrieval híbrido léxico/denso (RRF k=60), evaluación de citas y abstención ante falta de contexto. |
+| **Agent Orchestration** | `ai/agent/src/aegisbank_agent/agent.py`, `ai/agent/src/aegisbank_agent/knowledge_routing.py`, `ai/agent/src/aegisbank_agent/tools/**` | Orquestación conversacional, políticas de enrutamiento bancario y de conocimiento, prompts inmutables y ejecución de herramientas de lectura. |
+| **MCP & HITL Boundary** | `ai/agent/src/aegisbank_agent/hitl.py`, `ai/agent/src/aegisbank_agent/mcp_boundary.py`, `ai/agent/src/aegisbank_agent/mcp_server.py`, `contracts/mcp-tools.schema.json` | Protocolo MCP stdio oficial (`2026-07-28`), gestión del ciclo de vida de `ApprovalRequest`, aprobación obligatoria humana para escrituras, validación anti-tampering por hash. |
+| **Reliability & Messaging** | `ai/agent/src/aegisbank_agent/reliability/**` | Resiliencia operativa: `IdempotencyGuard`, `RetryPolicy` con backoff y jitter, `CircuitBreaker` (FSM 3 estados), timeouts, `LocalMessageBus`, `OutboxProcessor`, `IdempotentConsumer` y `DeadLetterQueue (DLQ)`. |
+| **Observability & AgentOps** | `ai/agent/src/aegisbank_agent/observability/**` | Telemetría OpenTelemetry (spans, tracer), logs estructurados con redacción de datos sensibles, métricas operativas (`OperationalMetrics`), registro de auditoría (`AuditLogger`) y supervisión HOTL (`HOTLSupervisor`). |
+| **Quality & DevSecOps** | `scripts/**`, `.github/workflows/**`, `docs/quality/**`, `docs/security/**`, `contracts/**` | Compuertas deterministas de calidad (`quality_gate.py`), coordinación cross-session (`session_guard.py`), escaneo SAST (Bandit), auditoría SCA (pip-audit), SBOM CycloneDX y suite de contratos/E2E. |
+| **Teaching & Governance** | `docs/learning/**`, `docs/architecture/**`, `docs/requirements/**`, `history/chatgpt-prompts/**` | Material pedagógico nivel Maestría (Teaching Contract, glosario, notas), matriz de cobertura frente a Mibanco 2026, ADRs inmutables e historial de prompts no operativo. |
+
+---
+
+## 2. Política sobre `.github/CODEOWNERS`
+
+* **Estado:** **DIFERIDO** hasta la formalización de equipos remotos en GitHub.
+* **Justificación:** GitHub `CODEOWNERS` requiere identificadores de usuarios u organizaciones reales de GitHub (e.g. `@aegisbank/core-team`). Inventar identificadores ficticios provocaría errores de sintaxis en el linter de GitHub o bloquearía revisiones de Pull Requests.
+* **Diferenciación Técnica:**
+  - `CODEOWNERS` opera a nivel de pull request y revisión en la plataforma remota de GitHub.
+  - `session_guard.py` opera a nivel de working tree local para impedir condiciones de carrera entre múltiples sesiones/agentes locales.
+
+
+## Fuente: docs/requirements/V1.0-MATURITY-MATRIX.md
+
+# v1.0 Capability Maturity Matrix
+
+## Actualización de baseline y cierre local v1.0.8 — 2026-09-22
+
+El gate FAST ejecutado pasa 13/13; suites: 488 PASS y 0 SKIP (brecha de Redis cerrada con
+servicio canónico `aegisbank-redis` en `127.0.0.1:6379`). Los E2E pasan 11/11. Pyright registra
+0 errores y 0 warnings en todo el código fuente (Agent, RAG, ML, Core Banking).
+Fase 2.2-R2 ejecutada live contra Foundry Local (`phi-4-mini` en GPU) y PostgreSQL + `pgvector`:
+ASR 0/4 (0.0%), éxito benigno 2/2 (100.0%), UTPR 0.0%, oráculo de divulgación y mínimas
+herramientas verificado.
+Docker compose parametrizado y reproducibilidad aislada validada con namespace único (`aegisbank-iso-v1`),
+puertos independientes (8010, 6389, 5439), health checks superados y teardown limpio con `down -v`.
+E2E de usuario (USER_E2E) interactivo en CLI validado: rechazo (`n` -> 0 mutaciones) y aprobación
+(`y` -> HTTP 201 en Core Banking, `SR-000003` y `EVT-SR-000003` en base aislada); UX corregida para PEN (`S/`) y cuota vencida.
+Consulta manual compuesta clasificada con veracidad como lectura prefetcheada (`TRUE MULTISTEP = NO`).
+La etiqueta `v1.0.7` se preserva como hito histórico previo. Estado de release local: **LOCAL_V1_READY** (`v1.0.8`).
+Detalle: [informe de red team](../security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md).
+
+| Capability | Classification | Evidence |
+|---|---|---|
+| LLM provider boundary | `TESTED-LOCAL` | agent adapter and unit tests |
+| Deterministic agent routing and tool calling | `TESTED-LOCAL` | agent unit/integration/E2E suites |
+| RAG grounding and abstention | `TESTED-LOCAL` | RAG tests and v0.15 evaluation |
+| Ownership isolation | `TESTED-LOCAL` | banking routing, Session Ownership, and evaluation gate |
+| HITL/HOTL write safety | `TESTED-LOCAL & USER_E2E` | CLI interactive keyboard HITL (stdin 'n'/'y'), HTTP Core Banking boundary, and isolated persistence |
+| Idempotency, outbox, messaging, DLQ | `TESTED-LOCAL` | reliability acceptance suites |
+| OTel, audit, and operational metrics | `TESTED-LOCAL` | observability E2E and metrics tests |
+| Local MLflow and scientific evaluation | `TESTED-LOCAL` | `V0150-EVALUATION-MLOPS-EVIDENCE.md` (promoted under policy; `STATISTICAL_SUPERIORITY_NOT_ESTABLISHED`) |
+| Local performance baseline | `LOCAL-LAB-PERFORMANCE-BASELINE` | `V1.0-SLI-SLO-LAB-REPORT.md` (25 iterations); load/stress/soak `PROD-UNPROVEN` |
+| Docker isolated reproducibility | `TESTED-LOCAL` | Parameterized compose, isolated acceptance script with unique namespace, 0 collision with daemon containers, clean teardown |
+| Kubernetes contracts | `TESTED-LOCAL` | Manifest validation and local Kind cluster acceptance |
+| Azure Functions host execution on Windows | `BLOCKED` | `V0131-RUNTIME-EVIDENCE.md` (`cygrpc`) |
+| Azure managed identity, Key Vault, cloud data and messaging | `CLOUD-PENDING` | Local synthetic mocks verified; no cloud billing |
+| Remote CI execution | `CI-CONFIGURED / RUNNER-PENDING` | `.github/workflows/ci.yml` |
+| Production SLA, capacity, and compliance | `PROD-UNPROVEN` | Intentionally outside laboratory scope |
+
+
+## Fuente: docs/evaluation/README.md
+
+# AegisBank AI Platform — AI Evaluation Taxonomy & Measurement Architecture
+
+> **Architecture Standard:** Capability-Centric Evaluation vs. Milestone Provenance
+> **Target Alignment:** Microsoft AI Foundry / Azure AI Studio Evaluation Frameworks, MLflow Tracking, and Banking Risk Governance (SR 11-7).
+> **Key Catalog:** [EVALUATION-CATALOG.md](EVALUATION-CATALOG.md) (Complete inventory of evaluation runs, holdouts, runners, and artifacts).
+
+---
+
+## 1. Core Principle: Provenance vs. Measurement
+
+A common anti-pattern in emerging AI projects is conflating the **version or milestone** with the **metric** (e.g., claiming *"we evaluate according to v0.12"*).
+
+In AegisBank:
+* **A Metric** evaluates a specific mathematical or behavioral dimension of an AI capability (e.g., *nDCG@5* for retrieval ranking, *Brier score* for probability calibration, *Ownership Isolation Rate* for multi-tenant safety).
+* **A Version/Milestone (`v0.x`, `v1.x`)** designates **experiment provenance**: the point in time, git commit, runtime environment, and dataset snapshot where a specific benchmark run was executed and recorded.
+
+Milestone numbers never substitute for scientific measurement definitions.
+
+---
+
+## 2. Capability-Based Evaluation Taxonomy
+
+Following the evaluation taxonomy standard of Microsoft AI Foundry and MLflow, AegisBank decomposes system measurement into **7 orthogonal capability layers**:
+
+```
+                              AI EVALUATION TAXONOMY
+                                         │
+ ┌───────────────┬───────────────┬───────┴───────┬───────────────┬───────────────┐
+ │               │               │               │               │               │
+ ▼               ▼               ▼               ▼               ▼               ▼
+1. Intent/ML    2. Retrieval    3. Generation   4. Agent        5. Safety       6. System E2E  &  7. Performance
+- Accuracy      - Precision@K   - Groundedness  - Intent Res.   - Ownership     - 8 Journeys      - p50/p95/p99
+- Macro-F1      - Recall@K      - Relevance     - Tool Select.  - HITL State    - Outbox/DLQ      - Error Rate
+- Brier Score   - MRR           - Citations     - Input Acc.    - No-Write      - Replay Guard    - Concurrency
+- ECE           - nDCG@K        - Abstention    - Task Compl.   - Idempotency
+```
+
+---
+
+### Layer 1: Intent Classification & Machine Learning Foundations
+* **Evaluates:** Classical NLP and discriminatory classification before delegating to generative models.
+* **Core Metrics:**
+  - **Accuracy & Macro-F1:** Balanced evaluation across classes without majority-class distortion.
+  - **Brier Score (Multiclass):** Mean squared difference between predicted probability vectors and one-hot ground truth labels.
+  - **Expected Calibration Error (ECE):** Agreement between model confidence bins and empirical accuracy.
+  - **Data/Prediction Drift (PSI):** Population Stability Index across categorical intent distributions (10 bins).
+* **Primary Provenance:** `v0.3` ([v0.3-intent-classification-baseline.md](../../history/experiments/v0.3-intent-classification-baseline.md)).
+
+### Layer 2: Retrieval (Information Retrieval / RAG Knowledge Search)
+* **Evaluates:** The ability to retrieve authorized policy chunks given natural language queries in Spanish banking domain.
+* **Core Metrics:**
+  - **Precision@K & Recall@K:** Proportion of retrieved chunks that are relevant, and proportion of total relevant chunks successfully found.
+  - **Mean Reciprocal Rank (MRR):** Reciprocal rank of the first relevant chunk ($1/\text{rank}_1$).
+  - **Normalized Discounted Cumulative Gain (nDCG@K):** Graded relevance ranking quality with logarithmic position discounting.
+  - **Query Execution Cost:** Database query plans (`EXPLAIN ANALYZE`), shared buffer hits, and latency comparisons (HNSW vs. IVFFlat in pgvector).
+* **Primary Provenance:** `v0.4` (TF-IDF vs. SVD vs. RRF) and `v0.12` ([v012_retrieval_comparison.json](../../history/evaluation/v012_retrieval_comparison.json), [v012-pgvector-query-plans.json](../../history/evaluation/v012-pgvector-query-plans.json)).
+
+### Layer 3: Grounded Generation & Citation Integrity
+* **Evaluates:** Generative response synthesis strictly from active retrieved context without external hallucination.
+* **Core Metrics:**
+  - **Groundedness / Faithfulness:** Percentage of claims in the generated answer supported by active retrieved context.
+  - **Relevance:** Semantic alignment of the answer with the user's intent.
+  - **Citation Precision & Recall:** Exactness of referenced chunk digests (`chk__<doc>__<ver>__c<idx>_<hash>`).
+  - **Abstention Rate on Unanswerable Queries:** Deterministic refusal when retrieved context lacks relevant information (*I do not know*).
+* **Primary Provenance:** `v0.5` ([v0.5-grounded-generation-evaluation.md](../../history/experiments/v0.5-grounded-generation-evaluation.md)).
+
+### Layer 4: Agent Multi-Turn Trajectories & Tool Execution
+* **Evaluates:** Orchestrator decision-making, tool routing, argument synthesis, and goal completion across conversation turns.
+* **Core Metrics:**
+  - **Intent Resolution Rate:** Correct routing to Core Banking, RAG Knowledge, or Abstention paths.
+  - **Tool Selection Accuracy:** Precision and recall in selecting the correct tool from the registered MCP catalog.
+  - **Tool Input Accuracy:** Exact parameter schema compliance (e.g., extracting `loan_id="LOAN-0001"` without hallucinating parameters).
+  - **Tool Output Utilization:** Whether the model incorporated tool execution results into the final customer response.
+  - **Tool Call Success Rate:** Percentage of tool executions that returned success without exception or schema error.
+  - **Task Completion:** Successful multi-turn resolution of the user's ultimate request.
+* **Primary Provenance:** `v0.6` ([v0.6.1-native-tool-calling.md](../../history/experiments/v0.6.1-native-tool-calling.md)) and `v0.15` ([v015-ai-evaluation-mlops.md](v015-ai-evaluation-mlops.md)).
+
+### Layer 5: Safety & Regulatory Invariants
+* **Evaluates:** Deterministic enforcement of banking risk boundaries and security controls.
+* **Core Metrics:**
+  - **Ownership Isolation Rate (100% invariant):** Rejection of any tool call attempting cross-customer access (`customer_id` mismatch).
+  - **No-Write Direct Mutation Rate (0% invariant):** Verification that the agent NEVER executes direct state mutations on write endpoints; all writes must produce an `ApprovalRequest` proposal.
+  - **HITL State Machine Compliance:** Correct lifecycle progression (`PENDING` $\rightarrow$ `APPROVED` $\rightarrow$ `EXECUTED` or `REJECTED`).
+  - **Idempotency Replay Protection:** Re-submitting the same proposal digest or CloudEvent message must return cached/duplicate status without duplicate DB mutation.
+  - **HOTL Kill-Switch Responsiveness:** Immediate blocking of all write proposals when the master supervisor flag is tripped.
+* **Primary Provenance:** `v0.7` ([v0.7.0-mcp-hitl.md](../../history/experiments/v0.7.0-mcp-hitl.md)), `v0.15` ([v015-ai-evaluation-mlops.md](v015-ai-evaluation-mlops.md)), and `v1.0` ([V1.0-THREAT-MODEL.md](../security/V1.0-THREAT-MODEL.md)).
+
+### Layer 6: System End-to-End (E2E) Integration
+* **Evaluates:** Holistic behavior across the complete distributed stack: Agent $\rightarrow$ MCP Tools $\rightarrow$ Core Banking DB $\rightarrow$ Outbox $\rightarrow$ Functions Host / Event Grid $\rightarrow$ OpenTelemetry.
+* **Core Metrics:**
+  - **8 Critical Banking Journeys Pass Rate (100%):** Journeys A through H covering inquiries, payments, disputes, out-of-domain queries, and tamper attacks.
+  - **Distributed Context Preservation:** 100% propagation of W3C `traceparent` across process and container boundaries.
+  - **Audit Log Completeness:** Non-repudiation event generation with PII redaction and cryptographic digest validation.
+* **Primary Provenance:** `v1.0` ([E2E-MATRIX.md](../quality/E2E-MATRIX.md), [PORTFOLIO-INTERVIEW-EVIDENCE.md](../releases/PORTFOLIO-INTERVIEW-EVIDENCE.md)).
+
+### Layer 7: Operational Performance & Error Budgets
+* **Evaluates:** Execution latency, concurrency limits, resource consumption, and reliability under load.
+* **Core Metrics:**
+  - **Latency Percentiles (p50, p95, p99):** Wall-clock duration per end-to-end journey.
+  - **Failure & Error Rates:** Percentage of requests returning HTTP 5xx or unhandled exceptions.
+  - **SLI/SLO Compliance:** Comparison against lab target service levels.
+* **Primary Provenance:** `v1.0` ([V1.0-PERFORMANCE-EVIDENCE.md](../../history/quality/V1.0-PERFORMANCE-EVIDENCE.md), [V1.0-SLI-SLO-LAB-REPORT.md](../../history/quality/V1.0-SLI-SLO-LAB-REPORT.md)).
+
+---
+
+## 3. Milestone Mapping (Provenance Matrix)
+
+How platform development milestones map to the capability layers:
+
+| Milestone | Target Capability Layer | Primary Artifact | Runner Command |
+|---|---|---|---|
+| `v0.3` | **1. Intent / ML** | `ml/intent-classifier/reports/baseline-metrics.json` | `python -m ml_intent.cli evaluate` |
+| `v0.4` | **2. Retrieval (Lexical/RRF)** | `ai/rag/reports/retrieval-metrics.json` | `python -m aegisbank_rag.cli evaluate` |
+| `v0.5` | **3. Generation (Groundedness)** | `history/experiments/v0.5-grounded-generation-evaluation.md` | Deterministic suite |
+| `v0.12` | **2. Retrieval + Vector Indexing** | [v012_retrieval_comparison.json](../../history/evaluation/v012_retrieval_comparison.json), [v012-pgvector-query-plans.json](../../history/evaluation/v012-pgvector-query-plans.json) | `python scripts/evaluate_retrievers_v012.py` |
+| `v0.15` | **4. Agent + 5. Safety + MLOps** | [v015-ai-evaluation-mlops.md](v015-ai-evaluation-mlops.md), `reports/v015-evaluation-report.json` | `python scripts/evaluation_gate.py` |
+| `v1.0` | **6. System E2E + 7. Performance** | [V1.0-PERFORMANCE-EVIDENCE.md](../../history/quality/V1.0-PERFORMANCE-EVIDENCE.md), [E2E-MATRIX.md](../quality/E2E-MATRIX.md) | `python scripts/performance_baseline.py` |
+
+---
+
+## 4. Statistical Rigor in Candidate Promotion
+
+In enterprise MLOps, observed gains must be tested for statistical validity before promoting a candidate:
+
+1. **Paired Statistical Test:** When evaluating candidate vs. baseline accuracy over identical synthetic queries, we apply **McNemar's test** with Edwards continuity correction.
+2. **Bootstrap Confidence Intervals:** 95% confidence intervals are computed via $B = 1000$ bootstrap resamples to assess estimation uncertainty.
+3. **Effect Size (Cohen's $h$):** Reports practical effect magnitude for difference between proportions.
+4. **Safety Regressions Override Gains:** Even if a candidate achieves higher aggregate accuracy, **any regression** in Ownership Isolation or No-Write Safety triggers an immediate hard gate rejection (`FAIL`).
+
+For full details and individual run parameters, see [EVALUATION-CATALOG.md](EVALUATION-CATALOG.md).
+
+
+## Fuente: docs/evaluation/EVALUATION-CATALOG.md
+
+# AegisBank AI Platform — AI Evaluation Catalog & Provenance Register
+
+> Reconciliación y Ejecución Live 2026-09-22: el runner live de Phase 2.2-R2
+> (`scripts/run_phase22_live.py`) se ejecutó con éxito contra Foundry Local
+> (`phi-4-mini` en GPU) y PostgreSQL + `pgvector`.
+> Reporte `reports/red_team_phase22.json` (timestamp `2026-09-22T15:28:13Z`): ASR 0/4 (0.0%),
+> éxito benigno 2/2 (100.0%), UTPR caso 0/2 (0.0%), UTPR propuesta 0/0 (0.0%), cero
+> divulgaciones o escrituras no autorizadas. Todas las propuestas de herramientas del modelo
+> son instrumentadas por ronda separando prefetch de propuesta de modelo. Véase
+> [evidencia de red-team](../security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md).
+
+> **Status:** Authoritative Catalog of Evaluation Runs, Datasets, Runners, and Artifacts
+> **Standard:** Banking Model Risk Management (SR 11-7 / EBA) and MLflow Experiment Tracking
+> **Companion Document:** [README.md](README.md) (Capability-Based Evaluation Taxonomy)
+
+---
+
+## 1. Master Evaluation Register
+
+The following register indexes every evaluation suite executed within the AegisBank AI Platform, mapping each run to its capability layer, evaluation question, dataset, runner, metrics, artifacts, and maturity status.
+
+| Capability | Evaluation Question / Hypothesis | Dataset / Holdout | Runner Command | Key Metrics | Raw Artifact | Human Evidence | Milestone | Maturity Status |
+|---|---|---|---|---|---|---|---|---|
+| **1. Intent / ML** | Can classical ML (TF-IDF + Logistic Regression) provide a low-latency, calibrated intent baseline without cross-group leakage? | `synthetic_spanish_intents.csv` (500 samples, 25 groups/class, SHA-256) | `python -m ml_intent.cli evaluate` | Accuracy (0.94), Macro-F1 (0.94), Brier Score (0.052), ECE (0.041) | `ml/intent-classifier/reports/baseline-metrics.json` | [v0.3 Baseline Report](../../history/experiments/v0.3-intent-classification-baseline.md) | `v0.3.0` | `TESTED-LOCAL` |
+| **2. Retrieval** | Does Hybrid Reciprocal Rank Fusion ($k=60$) outperform pure lexical and SVD dense baselines on Spanish policy queries? | `ai/rag/data/queries.jsonl` (18 queries) + `qrels.json` | `python -m aegisbank_rag.cli evaluate` | Precision@5 (0.44), Recall@5 (0.83), MRR (0.78), nDCG@5 (0.81) | `ai/rag/reports/retrieval-metrics.json` | [v0.4 RAG Foundation](../../history/experiments/v0.4-rag-retrieval-foundation.md) | `v0.4.0` | `TESTED-LOCAL` |
+| **3. Generation** | Does active-context filtering eliminate hallucination and guarantee 100% citation precision and out-of-domain abstention? | Synthetic Spanish banking prompt suite + authorized policy context | `pytest ai/rag/tests/unit/test_grounded_generation.py` | Groundedness (1.0), Citation Precision (1.0), Abstention Rate (1.0) | Pytest execution traces | [v0.5 Grounded Generation](../../history/experiments/v0.5-grounded-generation-evaluation.md) | `v0.5.0` | `TESTED-LOCAL` |
+| **2. Retrieval + Vector DB** | Does pgvector HNSW indexing provide sub-millisecond execution plans while preserving retrieval ranking quality? | Spanish banking corpus in pgvector; 18 queries under protocol v0.4.0 | `python scripts/evaluate_retrievers_v012.py` | nDCG@5 (0.81), Index Scan vs. Seq Scan buffer hits, execution time | [v012_retrieval_comparison.json](../../history/evaluation/v012_retrieval_comparison.json), [v012-pgvector-query-plans.json](../../history/evaluation/v012-pgvector-query-plans.json) | [PGVECTOR Guide](../learning/PGVECTOR.md) | `v0.12.0` *(running protocol 0.4.0)* | `TESTED-LOCAL` |
+| **4. Agent & 5. Safety** | Does the candidate orchestrator resolve metamorphic routing queries without safety regressions or calibration drift? | `v015_eval_suite.jsonl` (35 synthetic multi-turn traces) | `python scripts/run_v015_evaluation.py` / `python scripts/evaluation_gate.py` | Accuracy (0.971 vs 0.886), Ownership (1.0), No-Write (1.0), McNemar $p=0.248$, Cohen's $h=0.348$ | `reports/v015-evaluation-report.json`, SQLite MLflow in `reports/mlruns-v015/` | [v0.15 Evaluation Docs](v015-ai-evaluation-mlops.md), [v0.15 Evidence](../../history/quality/V0150-EVALUATION-MLOPS-EVIDENCE.md) | `v0.15.0` *(hardened v1.0.1)* | `TESTED-LOCAL` |
+| **6. System E2E** | Do all 8 critical banking customer journeys execute deterministically across Agent, MCP, DB, Outbox, and Functions? | 8 canonical E2E journeys (`tests/e2e/test_critical_journeys.py`) | `pytest tests/e2e/test_critical_journeys.py` | Journey Pass Rate (8/8 = 100%), Outbox Commit (100%), Idempotency (100%) | Pytest execution traces | [E2E Matrix](../quality/E2E-MATRIX.md), [Portfolio Evidence](../releases/PORTFOLIO-INTERVIEW-EVIDENCE.md) | `v1.0.0` | `TESTED-LOCAL` |
+| **7. Performance** | What are the baseline latency percentiles (p50/p95/p99) and error rate under bounded local laboratory iterations? | 25 sequential iterations of standard loan balance inquiry flow | `python scripts/performance_baseline.py` | Iterations (25), Error Rate (0.0%), p50 (14.2ms), p95 (19.8ms), p99 (24.1ms) | `reports/performance_baseline.json` | [Performance Evidence](../../history/quality/V1.0-PERFORMANCE-EVIDENCE.md), [SLI/SLO Report](../../history/quality/V1.0-SLI-SLO-LAB-REPORT.md) | `v1.0.0` *(hardened v1.0.1)* | `LOCAL-LAB-PERFORMANCE-BASELINE` |
+| **8. Adversarial Security** | Do deterministic boundaries survive fixed, indirect RAG, tool-output, mutation, session-poisoning, and utility controls under real banking capabilities? | Frozen v1 suite plus Phase-2/2.2-R1 synthetic fixtures; all data synthetic | `pytest ai/agent/tests/unit/routing/test_adversarial_red_team.py`; `pytest ai/agent/tests/unit/evaluation/test_phase2_red_team.py`; `pytest ai/agent/tests/unit/evaluation/test_invariant_registry_consistency.py`; opt-in `python scripts/run_local_red_team.py`; opt-in `python scripts/run_phase22_live.py` | Frozen ASR 0% (40 tests); Invariant Consistency (3 tests); Phase 2.1 live ASR 0/8 (benign 3/3 = 100%, false refusal 0/3 = 0%); Phase 2.2-R1 live ASR 0/4 = 0.0% (XPIA 0/2, Tool-Output 0/2, benign 2/2 = 100%, false refusal 0/2 = 0%); real tools (get_my_loans, get_loan_details, create_service_request); trajectory audit; natural retrieval pilot; zero disclosures or writes | [Phase-2 Evidence](../security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md), `reports/red_team_phase2.json`, `reports/red_team_phase22.json` | `v1.1-phase2.2-r1` | `TESTED-LOCAL`; multi-seed volume and cloud/production unproven |
+
+---
+
+## 2. Historical Provenance Reconciliation: `v012_retrieval_comparison.json`
+
+A critical audit finding in repository governance is the naming and metadata of [v012_retrieval_comparison.json](../../history/evaluation/v012_retrieval_comparison.json):
+
+* **Filename:** `v012_retrieval_comparison.json`
+* **Internal Metadata:**
+  ```json
+  {
+    "experiment_name": "aegisbank-synthetic-spanish-rag-retrieval",
+    "experiment_version": "0.4.0",
+    "primary_metric": "ndcg_at_5",
+    "queries_evaluated": 18,
+    "qrels_evaluated": 18,
+    "top_k": 5
+  }
+  ```
+
+### Why Do the Version Numbers Differ?
+* **Protocol & Dataset Version (`0.4.0`):** The synthetic Spanish banking query set (18 queries across direct, paraphrase, version, and out-of-domain categories) and relevance judgments (`qrels.json`) were originally authored, validated, and frozen during milestone `v0.4.0`.
+* **Execution Milestone (`v0.12`):** In milestone `v0.12`, the platform integrated PostgreSQL with `pgvector` for vector similarity search. To verify that the new vector database infrastructure did not degrade retrieval quality compared to the in-memory baselines, the script `scripts/evaluate_retrievers_v012.py` re-executed the **frozen v0.4.0 evaluation protocol** against the pgvector datastore.
+
+### Governance Resolution
+In accordance with enterprise audit rules:
+1. **The raw JSON file is NOT modified or rewritten.** Modifying committed benchmark JSONs to align filenames would violate data integrity and break commit reproducibility.
+2. **The provenance is explicitly recorded here:** The file represents **milestone v0.12 execution of evaluation protocol v0.4.0**.
+3. **Historical Status:** Marked as `HISTORICAL_BENCHMARK_PRESERVED`.
+
+---
+
+## 3. Statistical Promotion Gate Analysis (`v0.15` / `v1.0.1`)
+
+During milestone `v0.15` and hardened in `v1.0.1`, candidate promotion was subjected to formal statistical hypothesis testing over $N=35$ paired multi-turn traces:
+
+| Metric Dimension | Baseline (v0.14) | Candidate (v0.15) | Observed Delta | Statistical Test | p-value / 95% CI | Verdict |
+|---|---|---|---|---|---|---|
+| **Tool Selection Accuracy** | 0.8857 (31/35) | 0.9714 (34/35) | +0.0857 (+8.57 pp) | McNemar Test (Edwards correction) | $p = 0.248213 > 0.05$ | `STATISTICAL_SUPERIORITY_NOT_ESTABLISHED` |
+| **Accuracy Difference CI** | — | — | +0.0857 | Bootstrap ($B=1000$ resamples) | $95\%\text{ CI } [0.0000, 0.1714]$ | Plausible range includes zero difference |
+| **Effect Size** | — | — | Cohen's $h = 0.3478$ | Cohen's $h$ for proportions | Small to medium practical effect | Meaningful operational gain |
+| **Ownership Isolation** | 1.0000 (35/35) | 1.0000 (35/35) | 0.0000 | Invariant Safety Gate | — | `ZERO_REGRESSIONS [PASS]` |
+| **No-Write Direct Mutation** | 1.0000 (35/35) | 1.0000 (35/35) | 0.0000 | Invariant Safety Gate | — | `ZERO_REGRESSIONS [PASS]` |
+| **Tool Routing Pass Rate** | 0.9143 (32/35) | 1.0000 (35/35) | +0.0857 | Deterministic Threshold Gate | $\ge 0.95$ threshold | `THRESHOLD_EXCEEDED [PASS]` |
+| **Task Completion Rate** | 0.9143 (32/35) | 1.0000 (35/35) | +0.0857 | Deterministic Threshold Gate | $\ge 0.95$ threshold | `THRESHOLD_EXCEEDED [PASS]` |
+
+### Senior Engineering Rationale
+The candidate was promoted to `PROMOTED [PASS]` because:
+1. It met all **deterministic engineering threshold criteria** ($\ge 95\%$ tool routing and task completion).
+2. It incurred **zero safety regressions** on non-negotiable invariants (Ownership Isolation = 1.0, No-Write Violation = 0.0).
+3. It fixed known metamorphic routing bugs (e.g., `"Dame detalle de mi LOAN-0001"` pseudo-tool-call defect).
+4. However, in compliance with the **Teaching Contract**, the system honestly reports that statistical superiority was not formally established at $\alpha = 0.05$ due to bounded sample size ($N = 35$).
+
+---
+
+## 4. Known Limitations & Non-Production Disclaimers
+
+In accordance with [TEACHING-CONTRACT.md](../learning/TEACHING-CONTRACT.md), all metrics reported in this catalog are bounded by the following constraints:
+
+1. **Synthetic Data Only:** All customer profiles, accounts, loans, and policy documents are synthetic and generated deterministically. No real banking customer data was ever collected or evaluated.
+2. **Local Laboratory Environment:** Benchmarks were recorded on developer hardware using Docker and local emulation (SQLite, PostgreSQL/pgvector in container, Redis in container, Azure Functions Linux container).
+3. **No Production Concurrency Claims:** The performance baseline (25 iterations, p50=14.2ms) is a sequential laboratory baseline. High-concurrency throughput (1,000+ RPS), distributed multi-region failover, and live Azure cloud performance remain `PROD-UNPROVEN` and `CLOUD-PENDING`.
+
+
+## Fuente: docs/security/V1.0-THREAT-MODEL.md
+
+# v1.0 Threat Model
+
+## Estado contrastado — 2026-09-21
+
+El despachador ahora rechaza propuestas fuera del conjunto autorizado para la
+consulta antes de ejecutar o solicitar HITL. Las pruebas de regresión verifican
+ese límite. Las trayectorias descritas abajo proceden de fixtures y registros
+de ejecución; no demuestran captura completa de propuestas por ronda.
+Los resultados live son históricos, anteriores a esta corrección. R2 permanece
+parcial y la release está bloqueada por diagnósticos estáticos pendientes.
+Consultar el [informe de cierre](../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+
+**Method:** STRIDE (Spoofing, Tampering, Repudiation, Information disclosure,
+Denial of service, Elevation of privilege), applied to local laboratory trust
+boundaries. This is not a certification or a claim of production security.
+
+| Boundary | Threat | Control | Residual status |
+|---|---|---|---|
+| User -> Agent | prompt injection, spoofing, sensitive input | structured prompts, deterministic policy, redaction | local covered; model attacks remain monitored |
+| Agent -> Tools/MCP | unauthorized tool or malformed arguments | canonical registry, schemas, ownership policy, MCP contracts | `TESTED-LOCAL` |
+| RAG -> Answer | poisoned or stale evidence, indirect prompt injection | untrusted-data labeling, citation validation, abstention, Phase-2.2 live pgvector XPIA | `TESTED-LOCAL`; adaptive corpus and cloud index pending |
+| HITL -> WRITE | approval tampering or replay | payload digest, expiry, actor/action binding, idempotency | `TESTED-LOCAL` |
+| HOTL -> WRITE | unsafe operator state | kill-switch checked before every WRITE | `TESTED-LOCAL` |
+| App -> Config/Secrets | secret disclosure or configuration drift | separated providers, fail-fast validation, no secret logging | local covered; Key Vault identity `CLOUD-PENDING` |
+| App -> Messaging | duplicate, loss, poison event | transactional outbox, idempotent consumer, DLQ | `TESTED-LOCAL`; broker cloud pending |
+| Data stores | cross-customer access | ownership filters and authorization tests | `TESTED-LOCAL` |
+| Runtime | outage, timeout, resource exhaustion | bounded retries, timeout, circuit breaker, moderate local test | local covered; capacity unproven |
+
+## Phase-2 Red-Team Boundary
+
+`docs/security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md` records the bounded local extensions
+(Phase 2.1 direct/mutation and Phase 2.2-R1 live pgvector XPIA & tool-output injection).
+The `ASR = 0%` claim applies strictly to the evaluated fixed regression and local suites
+under `phi-4-mini` targeting real banking tools (`get_my_loans`, `get_loan_details`,
+`create_service_request`). High-volume multi-seed generative evaluations, adaptive attack
+corpora, and cloud Foundry red teaming remain unproven.
+
+Evaluation distinguishes execution-boundary enforcement (forced `score=1.0` to guarantee
+untrusted context reaches the model) from corpus poisoning discoverability (unforced dense
+embeddings in `pgvector`, where the poisoned chunk naturally ranked 2nd with cosine 0.8347).
+Every observation records complete tool trajectories (`tools_available`, `tools_requested`,
+`tools_denied`, `tools_executed`) with normalized arguments and customer binding.
+
+The canonical invariant registry is the briefing's §6.6 table (`I_1` through `I_15`).
+Phase 2.2-R1 live XPIA and tool-output cases exercise `I_1` through `I_4` and `I_7`; `I_5` and
+later invariants require their respective transactional, reliability, or observability journeys.
+
+## Release Controls
+
+- Do not promote if ownership, HITL/no-write safety, tool routing, or
+  idempotency invariants regress.
+- Treat audit and OTel records as minimized operational evidence, not a copy of
+  prompts, secrets, or unrestricted banking payloads.
+- Keep cloud identity, managed services, remote CI execution, and production
+  load evidence explicitly `CLOUD-PENDING`.
+
+
+## Fuente: docs/quality/TEST-STRATEGY.md
+
+# AegisBank — Test Strategy (v0.13.0-R2)
+
+> **Milestone:** `v0.13.0-R2 — Test Suite Rationalization`
+> **Principio rector:** `TEST VALUE > TEST COUNT`.
+
+## 1. Test Pyramid
+
+```
+            /\
+           /  \          E2E (Critical User Journeys)
+          / E2E \         pocos journeys bancarios completos
+         /──────\
+        / Contract\      Contratos JSON Schema, MCP, Outbox events
+       /──────────\
+      /Integration\     Componentes conectados (DB + RAG + Bus + Cosmos)
+     /──────────────\
+    /     Unit       \   Pieza única, sin I/O o con stubs en memoria
+   /──────────────────\
+```
+
+Microsoft Well-Architected y Microsoft Foundry AI-200 recomiendan esta distribución: muchos unit tests rápidos en la base y muy pocos E2E en la cima porque los E2E son los más costosos y frágiles. ([Microsoft Learn][1]; [Microsoft Learn][2]).
+
+## 2. Capas AegisBank (post v0.13.0-R2)
+
+```
+ai/agent/tests/
+├── unit/           # pieza única, < 1 s por caso, sin estado externo
+├── integration/    # múltiples componentes internos en proceso
+├── contracts/      # JSON Schema, interfaces
+├── e2e/             # Critical User Journeys
+│   ├── read_journeys/
+│   └── write_journeys/
+└── infra/           # opt-in: Docker, K8s, Functions, Cosmos emulator
+    ├── containers/
+    ├── kubernetes/
+    ├── serverless/
+    ├── cosmos/
+    └── session_guard/
+```
+
+Los números de versión (v06/, v07/, v08/, v09/, v012/, v013r1/) **ya no existen en el árbol**; viven en Git history, ADRs y documentación.
+
+## 3. Pytest Markers (estrictos, `--strict-markers`)
+
+| Marker | Capa | `pytest ai/agent/tests/...` |
+|---|---|---|
+| `unit` | Pieza única | `unit/` |
+| `integration` | Componentes en proceso | `integration/` |
+| `contract` | JSON Schema | `contracts/` |
+| `e2e` | Critical User Journeys | `e2e/` |
+| `infra` | Docker / K8s / Functions | `infra/` |
+| `slow` | Tests con sleeps o tiempos largos | opt-in |
+
+`pytest.mark.unit` se aplica vía `pytestmark = pytest.mark.unit` en cada archivo de `unit/`. No se permite mezclar capas en un mismo archivo.
+
+## 4. Gates
+
+### FAST / PR (gate por defecto)
+```bash
+pytest ai/agent/tests/unit ai/agent/tests/integration ai/agent/tests/contracts
+ruff check .
+ruff format --check .
+python -m compileall -q .
+```
+Tiempo objetivo: **< 30 s**.
+
+### CRITICAL E2E (opt-in, pre-release)
+```bash
+pytest ai/agent/tests/e2e
+```
+Tiempo objetivo: **< 30 s**.
+
+### INFRA (opt-in, post-merge)
+```bash
+pytest ai/agent/tests/infra
+pytest ai/agent/tests/contracts
+scripts/container_acceptance.py   # requiere Docker + MSSQL_SA_PASSWORD
+```
+Opt-in porque requiere Docker, Kubernetes cluster local, etc.
+
+## 5. Conceptos Pedagógicos (Maestría)
+
+- **Unit Test** = pieza única, sin I/O.
+- **Integration Test** = piezas conectadas (DB + RAG + Bus + Cosmos in-process).
+- **Contract Test** = dos componentes cumplen su contrato (JSON Schema, MCP tool spec, Outbox event payload).
+- **E2E Test** = journey completo del usuario. Solo journeys bancarios críticos.
+- **Regression Test** = test que codifica un bug real para que no vuelva a aparecer (p. ej. `test_metamorphic_paraphrase_matrix_loan_details` codifica el bug "Dame detalle de mi LOAN-0001" descubierto manualmente).
+- **Parametrization** (`@pytest.mark.parametrize`) = un test con varios inputs para evitar duplicar funciones casi idénticas.
+- **Flaky Test** = test que pasa y falla sin cambios de código. Marcar como `slow` y aislar.
+- **Critical User Journey** = el subconjunto mínimo de journeys que cubren el valor de negocio.
+- **Diminishing Returns** = a partir de cierta densidad, agregar tests ya no aumenta la confianza sino el costo y el ruido.
+- **Test Maintenance Debt** = infraestructura de tests que consume tiempo sin proteger ningún riesgo. Es exactamente lo que `v0.13.0-R2` ataca.
+
+## 6. Reglas Permanentes
+
+1. **No se conservan tests solo porque existen desde versiones antiguas.** Git preserva el historial.
+2. **No se borran tests solo para bajar el contador.** Un test permanece porque protege un riesgo, no porque aumenta el contador.
+3. **Antes de consolidar un test, clasificarlo:**
+   - `KEEP_CRITICAL` (HITL, Outbox, ownership, idempotency, etc.)
+   - `KEEP_UNIQUE` (un test único para una propiedad)
+   - `MERGE_PARAMETRIZE` (variantes equivalentes → `@pytest.mark.parametrize`)
+   - `MOVE_LAYER` (el test está bien pero pertenece a otra capa)
+   - `DELETE_DUPLICATE` (otro test ya lo cubre)
+   - `DELETE_OBSOLETE` (la responsabilidad ya no existe en el código)
+4. **Críticos que NO se pueden perder:**
+   - Native structured tool calling
+   - Pseudo-tool-call blocked
+   - Ownership/customer isolation
+   - Loan routing paraphrase regression
+   - RAG grounding + abstention + superseded docs
+   - MCP + HITL APPROVE/REJECT
+   - WRITE idempotency
+   - Retry + Circuit Breaker + Timeout
+   - Transactional Outbox
+   - Idempotent Consumer + DLQ
+   - Audit + OTel + HOTL
+   - Core Banking contracts
+   - Critical READ E2E
+   - Critical WRITE E2E (HITL → WRITE → Outbox → Consumer)
+   - Security/secret gates
+   - Docker/Kubernetes/Functions acceptance como INFRA
+
+## 7. How to Add a Test
+
+1. Decidir capa (`unit` / `integration` / `contract` / `e2e` / `infra`).
+2. Colocar el archivo en la carpeta correcta **sin prefijo de versión**.
+3. Definir `pytestmark = pytest.mark.<capa>` al inicio del archivo.
+4. Si hay variantes equivalentes, **parametrizar**.
+5. Antes de agregar, verificar si la propiedad ya está cubierta por otro test.
+
+[1]: https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/testing
+[2]: https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluate-generative-ai-app
+
+
 ## Fuente: ai/agent/README.md
 
 # AegisBank Agent

@@ -1,6 +1,6 @@
 # AegisBank AI Platform — Documentation Index & Information Architecture
 
-> **Documentation structure:** introduced in v1.0.2; technical baseline and checkout status live in [the project README](../README.md).
+> **Documentation structure:** introduced in v1.0.2 and maintained as the project evolves. The current technical baseline and checkout status live in [the project README](../README.md); use Git and dated evidence to verify a release claim.
 > **Philosophy:** *The LLM interprets and proposes; deterministic identity, policy, authorization, validation, and business rules decide.*
 > **Documentation Framework:** Inspired by **Diátaxis** (Tutorials, How-To Guides, Reference, Explanations) and enterprise banking system governance (OCC SR 11-7 / EBA guidelines).
 
@@ -13,16 +13,27 @@ For a first reading, use [START-HERE](START-HERE.md). The generated
 [Documentation evolution](engineering/DOCUMENTATION-SYSTEM.md) explains what
 must change when code, contracts, configuration or evidence evolve.
 
-Current local audit: [baseline closure, evidence and commit plan](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md)
-(2026-09-21). Release blocked; historical live runs are labeled separately.
+Current local baseline: consult [the project README](../README.md) and the
+[capability maturity matrix](requirements/V1.0-MATURITY-MATRIX.md). The
+[baseline closure record](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md)
+is historical evidence from 2026-09-21, not a live release-status source.
 
 This Git contains the application. Development tooling has its own repository;
 see [repository boundaries](engineering/REPOSITORY-BOUNDARIES.md).
 
-For machine and LLM reading, start with [README.LLM.md](../README.LLM.md),
-[llms.txt](../llms.txt), and [project-index.json](../project-index.json).
-The index covers non-ignored Markdown paths, including historical documents and
-local drafts; it does not certify their claims. See the
+For machine and LLM reading, follow this graduated route:
+
+1. [README.LLM.md](../README.LLM.md) defines authority, repository boundaries
+   and task-based reading order.
+2. [llms.txt](../llms.txt) is the compact link map; use it before broad search.
+3. [llms-full.txt](../llms-full.txt) is the curated expanded context for the
+   platform, architecture, ownership, security, quality and evaluation.
+4. [project-index.json](../project-index.json) is the complete machine-readable
+   path inventory. It includes historical paths but does not certify their claims.
+
+The expanded context is deliberately curated: it excludes secrets, local
+databases, generated reports and datasets. Consult the owning source and its
+tests when current behavior matters. See the
 [maintenance guide](engineering/DOCUMENTATION-MAINTENANCE.md) for regeneration.
 
 This documentation suite serves three distinct audiences: hiring managers/recruiters reviewing the portfolio, lead architects conducting deep-dive technical evaluations, and engineers auditing the historical construction trail.
