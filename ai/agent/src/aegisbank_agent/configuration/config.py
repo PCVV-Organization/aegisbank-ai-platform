@@ -457,10 +457,10 @@ def build_default_provider() -> ConfigurationProvider:
     """
     environment = resolve_runtime_environment()
     if environment.is_cloud:
-        validate_runtime_configuration(environment)
-        endpoint = os.getenv("AZURE_APPCONFIG_ENDPOINT", "")
+        endpoint = os.getenv("AZURE_APPCONFIG_ENDPOINT", "").strip()
         if not endpoint:
             raise MissingConfigurationKey("AZURE_APPCONFIG_ENDPOINT")
+        validate_runtime_configuration(environment)
         label = os.getenv("AEGISBANK_CONFIG_LABEL", environment.value)
         from .identity import resolve_azure_credential
 

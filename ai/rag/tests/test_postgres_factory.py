@@ -25,7 +25,7 @@ def test_postgres_factory_local_dsn() -> None:
 
 def test_postgres_factory_entra_token() -> None:
     mock_token = MagicMock()
-    mock_token.token = "fake-entra-access-token"
+    mock_token.token = "mock-entra-access-token"
 
     mock_credential = MagicMock()
     mock_credential.get_token.return_value = mock_token
@@ -50,7 +50,7 @@ def test_postgres_factory_entra_token() -> None:
                 port=5432,
                 dbname="aegisbank_rag",
                 user="aegis_workload_identity",
-                password="fake-entra-access-token",
+                password="mock-entra-access-token",
                 sslmode="require",
             )
             mock_reg.assert_called_once_with(mock_conn)
