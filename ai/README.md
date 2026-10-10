@@ -1,28 +1,13 @@
-# IA de la aplicación
+# AI Components
 
-## Para qué existe
+AI-related code is organized by responsibility. The agent interprets requests and proposes bounded actions; deterministic policy and human approval govern consequential operations. Retrieval supplies context but does not authorize tool use. Classical ML experiments are maintained separately.
 
-agent coordina la consulta y sus permisos; rag recupera documentos y valida citas. El clasificador ML vive en ml/. Las herramientas del desarrollador viven en el repositorio ai-env, no aquí.
+## Components
 
-## Dónde mirar
+- [Agent](agent/README.md) — request orchestration, tools, and policy boundary
+- [Retrieval-augmented generation](rag/README.md) — document ingestion, retrieval, and grounded context
+- [Intent classifier](../ml/intent-classifier/src/aegisbank_intent_classifier/README.md) — separate ML experiment
 
-- [agent/README.md](agent/README.md)
-- [rag/README.md](rag/README.md)
+## Change guidance
 
-La [guía inicial](../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
-
-## Antes de cambiar
-
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
-
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Read [canonical components](../docs/architecture/CANONICAL-COMPONENTS.md) before adding a parallel implementation. Use synthetic data only and consult the project [AGENTS.md](../AGENTS.md) before code changes.

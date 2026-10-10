@@ -1,23 +1,26 @@
-# Mantenimiento de documentación y contexto para LLMs
+# Documentation and LLM Context Maintenance
 
-## Distribución
+## Artifact roles
 
-- README: propósito, estado y enlaces para personas.
-- README.LLM: resolución de raíz, autoridad, lectura por tarea y límites.
-- AGENTS: instrucciones de trabajo; no duplicar el catálogo técnico.
-- llms.txt: selección breve generada de puntos de entrada.
-- project-index.json: inventario generado para herramientas.
-- llms-full.txt: contenido de guías seleccionadas explícitamente, con fuente.
-- docs/DIRECTORY-MAP.md: inventario por carpeta y responsabilidad.
-- docs/navigation.json: fuentes permitidas del contexto ampliado y áreas.
-- docs/README: portal temático completo.
-- README de componente: uso local y alcance de ese módulo; fechar baselines antiguos.
-- Evidencia en docs/quality o docs/releases; salidas nuevas en reports.
-- ADRs y experimentos conservan su historia; no moverlos para ordenar visualmente.
+- `README.md`: product purpose, documented status, and entry points for people.
+- `README.LLM.md`: repository roots, authority, task-based retrieval, and limits.
+- `AGENTS.md`: development instructions; do not duplicate the technical catalog.
+- `llms.txt`: generated concise map of entry points.
+- `project-index.json`: generated path inventory for tools.
+- `llms-full.txt`: generated, explicitly selected guides with source labels.
+- `docs/DIRECTORY-MAP.md`: generated directory and file responsibilities.
+- `docs/navigation.json`: curated bundle sources and directory descriptions.
+- `docs/README.md`: thematic documentation portal.
+- Component README: local use and scope of that component; label old baselines
+  with their evidence dates.
+- Evidence belongs in quality or release documentation; new runtime output goes
+  in `reports/` according to the owning script.
+- ADRs and experiments preserve historical records; do not move them merely to
+  make the tree look tidy.
 
-## Actualización
+## Regenerate and validate
 
-Desde la raíz Git de la aplicación, con bloqueo de escritor adquirido:
+From the application Git root, after acquiring the writer lock:
 
 ```powershell
 python -B scripts/documentation_index.py --write
@@ -27,36 +30,40 @@ git diff --check
 git status --short
 ```
 
-El generador usa solo la biblioteca estándar de Python y Git. Obtiene las rutas
-Markdown versionadas y no ignoradas, excluye contexto local generado y privado,
-ordena el inventario y verifica los puntos de entrada y componentes.
-Los índices usan rutas; llms-full.txt incorpora únicamente las guías declaradas
-en docs/navigation.json. No lee secretos ni concatena datasets o informes.
+The generator uses only the Python standard library and Git. It obtains tracked
+and non-ignored Markdown paths, excludes local and private generated context,
+sorts the inventory, and validates entry points and components. The indexes
+store paths. `llms-full.txt` includes only the guides listed in
+`docs/navigation.json`; the generator does not read secrets, datasets, or
+reports.
 
-Las selecciones de entrada y categorías se mantienen en
-[scripts/documentation_index.py](../../scripts/documentation_index.py).
-Si añades, eliminas o cambias rutas o guías, regenera los cuatro derivados.
-`--check` es de solo lectura: detecta diferencias y termina con código distinto
-de cero ante índices obsoletos, rutas ausentes o enlaces locales rotos.
+Entry points and categories are defined in
+[`scripts/documentation_index.py`](../../scripts/documentation_index.py). If a
+path or guide changes, regenerate all four derived files. `--check` is
+read-only and fails on stale indexes, missing paths, or broken local inline
+file links.
 
-El control de enlaces cubre destinos locales de enlaces Markdown inline,
-incluidos directorios. No valida anclas, URLs remotas, HTML ni enlaces por
-referencia. Un PASS documental no demuestra comportamiento de la aplicación.
+The link checker covers local inline Markdown file targets, including
+directories. It does not validate anchors, remote URLs, HTML links, or
+reference-style links. A documentation PASS does not prove application
+behavior.
 
-## Vigencia
+## Evidence freshness
 
-El estado técnico se obtiene de Git y se resume en el README de la aplicación.
-No duplicar tablas de versiones en el workspace exterior. Mantener citas
-fechadas en los informes históricos y distinguir cambios sin commit de releases.
-No cambiar versiones de paquetes ni publicar tags para una limpieza documental.
+Use Git and dated evidence to establish technical status. Do not duplicate
+version tables across the outer workspace and application. Keep dates on
+historical results and distinguish uncommitted changes from releases. A
+documentation-only cleanup does not justify changing package versions or
+publishing tags.
 
-## Dos niveles del workspace
+## Separate workspace levels
 
-La carpeta exterior tiene un README y enlaces de acceso al repositorio interior.
-Sus instrucciones se mantienen en su AGENTS y contrato de orquestación.
-No copiar el entorno exterior dentro de la aplicación. El índice de aplicación
-usa rutas relativas y funciona en un clon independiente.
+The outer workspace has its own README and links to this application. Its
+instructions belong in its own `AGENTS.md` and orchestration contract. Do not
+copy ai-env tooling into the application. The application index uses relative
+paths and works in a standalone clone.
 
-Ai-env dispone de su propio generador independiente:
-`python -B .ai-env/build_docs.py --write` y después `--check` desde su raíz.
-El [sistema documental](DOCUMENTATION-SYSTEM.md) define la evolución por tipo de cambio.
+Ai-env has an independent generator: run
+`python -B .ai-env/build_docs.py --write`, then `--check` from the outer
+workspace root. The [documentation system](DOCUMENTATION-SYSTEM.md) defines
+what to update for each change type.

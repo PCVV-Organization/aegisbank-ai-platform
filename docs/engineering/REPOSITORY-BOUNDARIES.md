@@ -1,23 +1,24 @@
-# Repositorio de aplicación y entorno de desarrollo
+# Application and Development-Environment Repositories
 
-Este Git contiene la aplicación bancaria educativa AegisBank: código, contratos,
-pruebas, datos sintéticos y documentación del producto.
+This Git repository contains the AegisBank educational application: source
+code, contracts, tests, synthetic data, and product documentation.
 
-El repositorio separado `aegisbank-ai-platform-ai-env` contiene herramientas e
-instrucciones para desarrollar el producto. El agente de desarrollo utiliza
-ambos proyectos; el asistente bancario Aegis pertenece solo a esta aplicación.
+The separate `aegisbank-ai-platform-ai-env` repository contains developer
+tooling and instructions. The development agent may use both repositories;
+the Aegis banking assistant belongs only to this application repository.
 
-En el workspace local, esta aplicación está clonada en una subcarpeta de ai-env.
-La carpeta padre la ignora por completo en su Git. Cada repositorio tiene su
-propio historial y no hay submódulo ni gitlink.
+In the local workspace, this application is checked out beneath ai-env. The
+parent repository ignores the application checkout. Each repository has its
+own history and remote configuration; the application is not a submodule or
+gitlink.
 
-Esta aplicación puede clonarse sola y conserva sus instrucciones en AGENTS.md.
-Las instrucciones de ai-env no se presuponen cargadas automáticamente. Si el
-trabajo usa ese entorno, consultar sus reglas y su manifiesto de workspace.
+The application can be cloned independently and retains its own `AGENTS.md`.
+Instructions from ai-env are not assumed to load automatically. If work uses
+that environment, consult its rules and workspace manifest as well.
 
-Los cambios bancarios y su aprobación pertenecen a este repositorio. Los cambios
-en tooling y configuración del agente de desarrollo pertenecen a ai-env.
-Un cambio transversal se revisa en ambos y registra sus dependencias.
+Banking application changes belong here. Changes to developer tooling and
+configuration belong in ai-env. Review cross-repository changes in both
+repositories and record their dependencies.
 
-La separación no modifica el hito bancario, no crea recursos de nube y no
-convierte permisos del agente de desarrollo en autorización bancaria.
+This separation does not change banking milestones, create cloud resources, or
+turn developer-agent permissions into banking authorization.

@@ -1,27 +1,7 @@
-# Contratos de integración
+# Contracts
 
-## Para qué existe
+This directory contains machine-readable schemas for interfaces exchanged across components. Schemas define expected structure; they do not by themselves enforce authorization or prove runtime compatibility.
 
-JSON Schema fija las formas admitidas de eventos y fronteras MCP/datos. cloudevents separa el sobre de integración. Cambiar un esquema obliga a revisar su productor, consumidor y pruebas; no basta con que el JSON se pueda parsear.
+## Change guidance
 
-## Dónde mirar
-
-`bootstrap-manifest.schema.json`; `core-banking-openapi.schema.json`; `cosmos-event-item.schema.json`; `graph.schema.json`; `index.schema.json`; `manifest.schema.json`; `mcp-tools.schema.json`; `service-request-created.schema.json`; `session.schema.json`
-
-La [guía inicial](../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
-
-## Antes de cambiar
-
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
-
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+When changing a contract, identify every producer and consumer, update their tests, and validate the schema with the repository's documented command. Preserve backward compatibility or document the migration explicitly.

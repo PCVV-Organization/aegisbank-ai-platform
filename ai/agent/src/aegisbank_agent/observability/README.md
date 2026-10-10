@@ -1,27 +1,20 @@
-# observability
+# Observability Component
 
-## Para qué existe
+## Purpose
 
-Trazas, métricas, auditoría y supervisión HOTL. Modificar este componente exige revisar consumidores y su suite asociada; no crear una responsabilidad paralela.
+Owns traces, metrics, audit events, and human-on-the-loop (HOTL) supervision. Review consumers and tests before changing it; do not create parallel telemetry, audit, or supervision owners.
 
-## Dónde mirar
+## Source navigation
 
-`__init__.py`; `agentops.py`; `audit.py`; `context.py`; `hotl.py`; `logging.py`; `metrics.py`; `telemetry.py`; `tracer.py`
+- `__init__.py`, `agentops.py`, `audit.py`, `context.py`, `hotl.py`
+- `logging.py`, `metrics.py`, `telemetry.py`, `tracer.py`
+- [Start Here](../../../../../docs/START-HERE.md)
+- [Directory map](../../../../../docs/DIRECTORY-MAP.md)
 
-La [guía inicial](../../../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
+## Before changing this component
 
-## Antes de cambiar
+Identify inputs, outputs, and consumers. Review [canonical components](../../../../../docs/architecture/CANONICAL-COMPONENTS.md), use synthetic data, acquire SessionGuard as required by [AGENTS.md](../../../../../AGENTS.md), and run relevant checks from the [test strategy](../../../../../docs/quality/TEST-STRATEGY.md). Minimize and redact sensitive information in telemetry. Update tests and documentation with interface changes.
 
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
+## Limits
 
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Local telemetry does not prove a cloud exporter, complete audit durability, or certification. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.

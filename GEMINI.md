@@ -1,5 +1,10 @@
-# Instrucciones Gemini / Antigravity
+# Gemini / Antigravity Instructions
 
-Consulte [`AGENTS.md`](./AGENTS.md) como contrato único de instrucciones de la aplicación.
-La guía de contexto y componentes reside en [`README.LLM.md`](./README.LLM.md) y [`docs/architecture/CANONICAL-COMPONENTS.md`](./docs/architecture/CANONICAL-COMPONENTS.md).
-Toda modificación requiere adquirir previamente SessionGuard mediante `scripts/session_guard.py`.
+Use [`AGENTS.md`](AGENTS.md) as the single authoritative application
+instruction contract. Read [`README.LLM.md`](README.LLM.md) for project context
+and source selection, and consult the
+[`canonical component catalog`](docs/architecture/CANONICAL-COMPONENTS.md)
+before creating an implementation.
+
+Acquire and check SessionGuard before modifying files, following the exact
+workflow and allowed-path rules in `AGENTS.md`.

@@ -1,23 +1,18 @@
 # Runbooks
 
-Pasos de respuesta a incidentes, colas, dependencias y rollback. Identificar recursos propios antes de cualquier acción destructiva.
+Incident-response, queue, dependency, and rollback procedures. Identify the exact resources in scope before destructive actions.
 
-## Cómo usar esta carpeta
+## How to use this directory
 
-Primero definir la pregunta que se quiere resolver. Leer el documento pertinente,
-anotar su fecha/estado y seguir su referencia al código o evidencia. Si contradice
-el checkout actual, comunicar la diferencia y conservar el histórico.
+Verify the relevant procedure's prerequisites, environment, and authorization before execution. Documentation is not execution evidence.
 
-## Documentos
+## Documents
 
-- [dependency-outage](dependency-outage.md)
-- [dlq-and-kill-switch](dlq-and-kill-switch.md)
-- [incident-response](incident-response.md)
-- [rollback](rollback.md)
+- [Dependency outage](dependency-outage.md)
+- [Dead-letter queue and kill switch](dlq-and-kill-switch.md)
+- [Incident response](incident-response.md)
+- [Rollback](rollback.md)
 
-## Mantenimiento
+## Maintenance
 
-Añadir documentos nuevos a este índice; enlazar el reemplazo cuando cambie una
-decisión. Regenerar los índices de navegación desde la raíz de aplicación.
-Consultar [sistema documental](../../engineering/DOCUMENTATION-SYSTEM.md)
-y volver al [portal](../../README.md).
+Add new runbooks to this index and link replacements when decisions change. Regenerate navigation indexes from the application root. See the [documentation system](../../engineering/DOCUMENTATION-SYSTEM.md) and [project portal](../../README.md).

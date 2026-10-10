@@ -1,27 +1,21 @@
-# configuration
+# Configuration Component
 
-## Para qué existe
+## Purpose
 
-Configuración y frontera de secretos. Modificar este componente exige revisar consumidores y su suite asociada; no crear una responsabilidad paralela.
+Owns application configuration and the secret boundary. Review consumers and their tests before changing this component; do not create a parallel configuration owner.
 
-## Dónde mirar
+## Source navigation
 
-`__init__.py`; `config.py`; `secrets.py`
+- `__init__.py`
+- `config.py`
+- `secrets.py`
+- [Start Here](../../../../../docs/START-HERE.md) explains the application workflow.
+- [Directory map](../../../../../docs/DIRECTORY-MAP.md) describes repository areas.
 
-La [guía inicial](../../../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
+## Before changing this component
 
-## Antes de cambiar
+Identify inputs, outputs, and consumers. Review [canonical components](../../../../../docs/architecture/CANONICAL-COMPONENTS.md), use synthetic data, and acquire SessionGuard as required by [AGENTS.md](../../../../../AGENTS.md). Run the relevant checks from the [test strategy](../../../../../docs/quality/TEST-STRATEGY.md). Update tests and documentation in the same change when an interface changes.
 
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
+## Limits
 
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+This guide describes repository responsibilities; it is not certification or evidence of live execution. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.

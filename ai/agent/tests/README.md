@@ -1,27 +1,26 @@
-# Pruebas del agente
+# Agent Test Suite Guide
 
-## Para qué existe
+## Test layers
 
-unit aísla componentes; integration combina piezas; contracts verifica interfaces; e2e ejecuta journeys; infra requiere dependencias opt-in. conftest.py crea fixtures sintéticos. No sumar suites solapadas ni presentar SKIP como PASS.
+- `unit/` isolates individual component behavior.
+- `integration/` exercises connected components in process.
+- `contracts/` verifies tool, event, and persistence interfaces.
+- `e2e/` exercises complete read and explicitly approved-write journeys.
+- `infra/` contains opt-in tests requiring specific services or emulators.
 
-## Dónde mirar
+`conftest.py` provides synthetic fixtures. Do not add overlapping suites without a clear gap, and never report `SKIP` as `PASS`.
 
-`conftest.py`
+## Navigation
 
-La [guía inicial](../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
+- [Start Here](../../../docs/START-HERE.md)
+- [Directory map](../../../docs/DIRECTORY-MAP.md)
+- [Canonical components](../../../docs/architecture/CANONICAL-COMPONENTS.md)
+- [Test strategy](../../../docs/quality/TEST-STRATEGY.md)
 
-## Antes de cambiar
+## Before changing tests
 
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
+Identify the behavior and layer being tested. Use synthetic data, acquire SessionGuard as required by [AGENTS.md](../../../AGENTS.md), and run the narrow relevant suite before broader validation. When an interface changes, update tests and documentation together.
 
-## Límites
+## Evidence limits
 
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Test configuration is not execution evidence. Record the exact command, date, and result; consult the dated [local baseline record](../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical results and blockers.

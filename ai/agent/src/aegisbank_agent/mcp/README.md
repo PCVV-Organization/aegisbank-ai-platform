@@ -1,27 +1,20 @@
-# mcp
+# Application MCP Adapter
 
-## Para qué existe
+## Purpose
 
-Adaptación del protocolo MCP de la aplicación. Modificar este componente exige revisar consumidores y su suite asociada; no crear una responsabilidad paralela.
+Adapts the application to the Model Context Protocol (MCP). Review consumers and tests before changing it; do not create a parallel MCP boundary.
 
-## Dónde mirar
+## Source navigation
 
-`__init__.py`; `server.py`
+- `__init__.py`
+- `server.py`
+- [Start Here](../../../../../docs/START-HERE.md)
+- [Directory map](../../../../../docs/DIRECTORY-MAP.md)
 
-La [guía inicial](../../../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
+## Before changing this component
 
-## Antes de cambiar
+Identify inputs, outputs, and consumers. Review [canonical components](../../../../../docs/architecture/CANONICAL-COMPONENTS.md), use synthetic data, acquire SessionGuard as required by [AGENTS.md](../../../../../AGENTS.md), and run relevant checks from the [test strategy](../../../../../docs/quality/TEST-STRATEGY.md). Update tests and documentation with interface changes.
 
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
+## Limits
 
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+This adapter is an application integration, not proof of a production MCP deployment or security certification. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.

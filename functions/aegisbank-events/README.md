@@ -1,27 +1,12 @@
-# Procesador de eventos
+# AegisBank Events Function
 
-## Para qué existe
+This function app processes CloudEvents in the local/laboratory event workflow. It is not a substitute for the interactive agent's deterministic authorization or human approval requirements.
 
-function_app.py declara el trigger; cloud_event.py interpreta el sobre; service_request_handler.py procesa la solicitud con controles de duplicación. samples contiene un evento sintético. requirements.txt declara el entorno; local.settings.example.json es la plantilla, local.settings.json permanece privado.
+## Key files
 
-## Dónde mirar
+- `function_app.py` — function and trigger declarations
+- `cloud_event.py` — CloudEvent envelope parsing
+- `handler.py` — event handling and service coordination
+- `local.settings.example.json` — non-secret local configuration template
 
-`.gitignore`; `cloud_event.py`; `Dockerfile`; `function_app.py`; `host.json`; `local.settings.example.json`; `local.settings.json`; `requirements.txt`; `service_request_handler.py`
-
-La [guía inicial](../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
-
-## Antes de cambiar
-
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
-
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Use synthetic sample events only. Keep real local settings out of version control. Verify implementation and tests before making claims about delivery, deduplication, or runtime behavior.

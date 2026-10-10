@@ -1,60 +1,55 @@
-# AegisBank — Diseño de Particionamiento en Azure Cosmos DB NoSQL
+# Azure Cosmos DB NoSQL Partition-Key Design
 
-> **Propósito:** Justificación arquitectónica y análisis comparativo de claves de partición (*Partition Keys*) para el almacenamiento de documentos, estado y eventos de IA en Azure Cosmos DB.
-> **Hito:** v0.12.1 — Cosmos DB NoSQL Emulator + Change Feed.
+> **Purpose:** Record the partition-key rationale for document, state, and AI-event storage in Azure Cosmos DB.
+> **Historical milestone context:** v0.12.1 — Cosmos DB NoSQL Emulator + Change Feed. Validate service limits and current implementation against authoritative documentation and source before relying on this design.
 
----
+## 1. Partitioning Concepts
 
-## 1. Principios de Particionamiento en Azure Cosmos DB
+Azure Cosmos DB distributes containers across logical and physical partitions:
 
-Azure Cosmos DB escala horizontalmente dividiendo los contenedores en **particiones lógicas** y **particiones físicas**:
-1. **Partición Lógica (*Logical Partition*):** Conjunto de items que comparten el mismo valor de la clave de partición (`partitionKey`). Tiene un límite estricto de **20 GB** de almacenamiento por valor en Azure Cloud.
-2. **Partición Física (*Physical Partition*):** Unidad interna de cómputo y almacenamiento SSD administrada y autoescalada por Azure, que aloja una o más particiones lógicas.
+1. A **logical partition** groups items that share a partition-key value. The historical design cites a 20 GB per-logical-partition limit; verify current service limits before capacity planning.
+2. A **physical partition** is an Azure-managed compute and SSD-storage unit that hosts one or more logical partitions.
 
 ```mermaid
 graph TD
-    subgraph "Contenedor Cosmos DB: agent_events"
-        subgraph "Partición Física 1"
-            L1["Partición Lógica: /customer_id = 'CUST-001' (max 20GB)"]
-            L2["Partición Lógica: /customer_id = 'CUST-002' (max 20GB)"]
+    subgraph Cosmos DB container: agent_events
+        subgraph Physical partition 1
+            L1["Logical partition: /customer_id = 'CUST-001'"]
+            L2["Logical partition: /customer_id = 'CUST-002'"]
         end
-        subgraph "Partición Física 2"
-            L3["Partición Lógica: /customer_id = 'CUST-003' (max 20GB)"]
-            L4["Partición Lógica: /customer_id = 'CUST-004' (max 20GB)"]
+        subgraph Physical partition 2
+            L3["Logical partition: /customer_id = 'CUST-003'"]
+            L4["Logical partition: /customer_id = 'CUST-004'"]
         end
     end
 ```
 
----
+## 2. Candidate Comparison
 
-## 2. Análisis Comparativo de Candidatos a Clave de Partición
+The historical design compares candidates against assumed AegisBank access patterns:
 
-Evaluamos los tres candidatos principales según los patrones de acceso dominantes en AegisBank:
-
-| Criterio de Evaluación | Candidato A: `/customer_id` | Candidato B: `/topic` | Candidato C: `/document_id` |
+| Criterion | Candidate A: `/customer_id` | Candidate B: `/topic` | Candidate C: `/document_id` |
 |---|---|---|---|
-| **Cardinalidad** | **Alta** (miles/millones de clientes únicos). | **Baja** (5 a 10 tópicos fijos: `creditos`, `cuentas`, `reclamos`, etc.). | **Media** (cientos de documentos de conocimiento). |
-| **Distribución de Carga (Anti-Hot Partition)** | **Uniforme:** El volumen transaccional se distribuye equilibradamente entre clientes. | **Pésima:** El 80% del tráfico colapsaría en `creditos` y `reclamos` creando **Hot Partitions**. | **Irregular:** Algunos documentos se consultan 100x más que otros. |
-| **Point Reads Eficientes (`id` + `pk`)** | **Óptimo:** Invocaciones de lectura directa de estado (`read_item(id, partition_key="CUST-001")`). | **Inadecuado:** Requiere conocer el tópico del evento para point reads. | **Inadecuado:** No agrupa el contexto conversacional del cliente. |
-| **Aislamiento Multi-Tenant / PII** | **Excelente:** Todas las consultas del cliente se acotan a su partición lógica; previene fugas entre clientes. | **Nulo:** Mezcla datos de todos los clientes en la misma partición. | **Nulo:** No provee límites de aislamiento por cliente. |
-| **Consultas Dominantes (*In-Partition Queries*)** | `SELECT * FROM c WHERE c.customer_id = @cust AND c.timestamp >= @ts` | `SELECT * FROM c WHERE c.topic = @top` (Cross-customer). | `SELECT * FROM c WHERE c.document_id = @doc` |
-| **Decisión Arquitectónica** | **SELECCIONADO COMO CANÓNICO** | **DESCARTADO** | **DESCARTADO** |
+| Cardinality | High: potentially many unique customers. | Low: a small fixed topic set such as `creditos`, `cuentas`, and `reclamos`. | Medium: potentially hundreds of knowledge documents. |
+| Load distribution | Expected to distribute customer activity; validate skew with real workload evidence (synthetic in this project). | Potentially hot partitions if traffic concentrates in a few topics. | Potentially uneven when popular documents receive disproportionate reads. |
+| Point reads (`id` + partition key) | Direct lookup with known customer, e.g. `read_item(id, partition_key="CUST-001")`. | Requires knowing the event topic. | Does not group a customer's conversational context. |
+| Tenant/PII isolation | Scopes customer records to a customer partition; authorization is still required in application code. | Mixes customers under the same topic partition. | Does not provide a customer isolation boundary. |
+| Example in-partition query | `SELECT * FROM c WHERE c.customer_id = @cust AND c.timestamp >= @ts` | `SELECT * FROM c WHERE c.topic = @top` (cross-customer) | `SELECT * FROM c WHERE c.document_id = @doc` |
+| Recorded decision | **Selected as canonical** | Rejected | Rejected |
 
----
+## 3. Rationale for `/customer_id`
 
-## 3. Justificación de la Elección Canónica: `/customer_id`
+The historical decision favors `/customer_id` because:
 
-1. **Alineación con el 95%+ de los Patrones de Acceso:**
-   - El agente conversacional y las herramientas bancarias siempre operan en el contexto de una sesión de cliente autenticado (`customer_id`).
-   - Las consultas de historial, verificación de solicitudes de servicio y estado de interacciones se filtran naturalmente por `customer_id`.
-2. **Eficiencia en Costo y Rendimiento (Point Reads):**
-   - Conocer `id` y `customer_id` permite resolver lecturas atómicas de 1 RU sin escanear índices cross-partition.
-3. **Escalabilidad Horizontal Ilimitada:**
-   - Cada cliente dispone de su propia partición lógica de hasta 20 GB, evitando que un cliente de alta actividad degrade el rendimiento de los demás.
+1. Agent sessions and banking tools are expected to operate in an authenticated customer context; history, service-request status, and interaction state are naturally filtered by customer.
+2. Knowing both item `id` and `customer_id` enables a point read without a cross-partition query.
+3. Per-customer logical partitions provide a useful data-access boundary and reduce cross-tenant query risk.
 
----
+The partition key does **not** replace authentication, deterministic ownership checks, or authorization. Validate workload distribution, hot partitions, capacity, and current service limits before a production design.
 
-## 4. Estructura Documental Mínima Versionada
+## 4. Versioned Document Example
+
+The following synthetic event is an illustrative schema example, not a production record:
 
 ```json
 {

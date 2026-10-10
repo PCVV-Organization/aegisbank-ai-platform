@@ -1,27 +1,22 @@
-# tools
+# Application Tool Registry and Implementations
 
-## Para qué existe
+## Purpose
 
-Registro y ejecución de herramientas bancarias y conocimiento. Modificar este componente exige revisar consumidores y su suite asociada; no crear una responsabilidad paralela.
+Owns registration and execution of banking and knowledge tools. Tools expose bounded application capabilities; deterministic identity, ownership, validation, and policy checks—not the LLM—authorize operations.
 
-## Dónde mirar
+## Source navigation
 
-`banking_tools.py`; `base.py`; `knowledge_tools.py`; `registry.py`
+- `banking_tools.py`
+- `base.py`
+- `knowledge_tools.py`
+- `registry.py`
+- [Start Here](../../../../../docs/START-HERE.md)
+- [Directory map](../../../../../docs/DIRECTORY-MAP.md)
 
-La [guía inicial](../../../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
+## Before changing a tool
 
-## Antes de cambiar
+Identify inputs, outputs, callers, and side effects. Review [canonical components](../../../../../docs/architecture/CANONICAL-COMPONENTS.md), use synthetic data, acquire SessionGuard as required by [AGENTS.md](../../../../../AGENTS.md), and run relevant checks from the [test strategy](../../../../../docs/quality/TEST-STRATEGY.md). State-changing operations require explicit human approval. Update tool contracts, tests, and documentation in the same change.
 
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
+## Limits
 
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Tool registration does not itself authorize execution or prove a live integration. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.

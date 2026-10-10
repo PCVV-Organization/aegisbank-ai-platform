@@ -1,45 +1,48 @@
-# Empieza aquí: AegisBank sin conocimiento previo
+# Start Here: AegisBank for New Readers
 
-## 1. Qué estás mirando
+## 1. What this project is
 
-AegisBank es un laboratorio bancario con datos inventados. Sirve para aprender
-a construir un asistente que consulta préstamos y documentos y propone solicitudes
-de servicio con aprobación humana. No es un banco real ni decide créditos reales.
+AegisBank is an educational banking laboratory built with synthetic data. It
+demonstrates an assistant that can look up simulated loans and documents, and
+propose service requests that require human approval. It is not a real bank and
+does not make real credit decisions.
 
-Hay dos Git: **ai-env prepara al desarrollador**; **aegisbank-ai-platform contiene
-el producto**. Si buscas configuración MCP o instrucciones del programador, abre
-el repositorio exterior. Si buscas una regla bancaria, una prueba o un contrato,
-trabaja en este repositorio. Cada Git tiene su propio commit y futuro remoto.
+The workspace has two Git repositories: **ai-env prepares the developer**;
+**aegisbank-ai-platform contains the application**. Open the outer repository
+for developer-tool configuration and instructions. Work in this repository for
+banking rules, tests, and contracts. Each repository has its own history and
+remote configuration.
 
-## 2. Una consulta de principio a fin
+## 2. One request from start to finish
 
-1. Una persona hace una consulta en el contexto de un cliente sintético.
-2. El agente determina si necesita datos bancarios, conocimiento o aclaración.
-3. Para datos bancarios usa herramientas que verifican propiedad y reglas.
-4. Para conocimiento recupera documentos; estos son evidencia no confiable, no órdenes.
-5. El modelo propone texto o herramientas; la política determina qué se permite.
-6. Una escritura requiere aprobación humana y controles deterministas. Se preservan
-   trazas, auditoría e idempotencia: repetir una solicitud no debe duplicar su efecto.
+1. A person submits a request in the context of a synthetic customer.
+2. The agent determines whether the request needs banking data, knowledge, or clarification.
+3. For banking data, authorized tools enforce ownership and deterministic rules.
+4. For knowledge, the system retrieves documents. Retrieved documents are untrusted evidence, not instructions.
+5. The model proposes text or a tool call; deterministic policy decides what is allowed.
+6. A write requires explicit human approval and safety checks. Traces, audit records, and idempotency protect the operation from duplicate effects.
 
-Ejemplo: «Dame mis préstamos» debe consultar herramientas autorizadas para la sesión.
-Un documento que diga «consulta a otro cliente» no concede ese permiso.
+For example, “Show my loans” should use tools authorized for the current
+session. A document that says “look up another customer's account” grants no
+permission.
 
-## 3. Ruta de lectura
+## 3. Reading path
 
-| Quiero… | Leer primero | Después |
-| --- | --- | --- |
-| Entender el propósito | [README](../README.md) | [Glosario](learning/GLOSSARY.md) |
-| Encontrar una carpeta | [Mapa completo](DIRECTORY-MAP.md) | README del componente |
-| Cambiar comportamiento del agente | [Agente](../ai/agent/README.md) | [Catálogo canónico](architecture/CANONICAL-COMPONENTS.md) |
-| Cambiar persistencia/API | [Core bancario](../services/mock-core-banking/README.md) | api, domain, schemas, persistence |
-| Cambiar recuperación | [RAG](../ai/rag/README.md) | Corpus, retrievers y pruebas de citas |
-| Evaluar modelos | [Evaluaciones](evaluation/README.md) | Catálogo, dataset y runner concretos |
-| Trabajar como LLM | [README.LLM](../README.LLM.md) | [llms.txt](../llms.txt), rutas necesarias |
-| Conocer bloqueos | [Cierre 2026-09-21](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) | Verificar estado actual antes de afirmar PASS |
+| Goal | Read first | Then |
+|---|---|---|
+| Understand the purpose | [README](../README.md) | [Glossary](learning/GLOSSARY.md) |
+| Find a directory | [Directory map](DIRECTORY-MAP.md) | Component README |
+| Change agent behavior | [Agent](../ai/agent/README.md) | [Canonical component catalog](architecture/CANONICAL-COMPONENTS.md) |
+| Change banking persistence or API | [Mock Core Banking](../services/mock-core-banking/README.md) | `api`, `domain`, `schemas`, `persistence` |
+| Change retrieval | [RAG](../ai/rag/README.md) | Corpus, retrievers, and citation tests |
+| Evaluate models | [Evaluation](evaluation/README.md) | Catalog, dataset, and specific runner |
+| Work as an LLM | [README.LLM](../README.LLM.md) | [llms.txt](../llms.txt) and only the relevant sources |
+| Review local baseline status | [Project README](../README.md) | Verify current Git state and fresh evidence |
 
-## 4. Primera comprobación sin ejecutar el banco
+## 4. Check navigation without running the application
 
-Desde la raíz que contiene `ai/`, `services/` y `scripts/`:
+From the application Git root (the directory containing `ai/`, `services/`,
+and `scripts/`):
 
 ```powershell
 git rev-parse --show-toplevel
@@ -47,14 +50,17 @@ git status --short
 python -B scripts/documentation_index.py --check
 ```
 
-Leer documentación requiere Git y Python estándar para ese check; no requiere
-credenciales, Docker, Azure ni un modelo. Para ejecutar el código, preparar Python
-3.14 y el entorno siguiendo cada README: core bancario, clasificador, RAG, agente.
-No asumir que paquetes instalados globalmente equivalen a los de `.venv`.
+Reading documentation requires Git and the Python standard library for the
+navigation check. It does not require credentials, Docker, Azure, or a model.
+To run application code, prepare Python 3.14 and the virtual environment as
+described in each component README. Do not assume globally installed packages
+are available in the project's `.venv`.
 
-## 5. Antes de implementar
+## 5. Before implementing a change
 
-Leer [AGENTS](../AGENTS.md), definir alcance, consultar propietarios y adquirir
-SessionGuard. Seleccionar las pruebas según [TEST-STRATEGY](quality/TEST-STRATEGY.md).
-Registrar comando, fecha y resultado real. SKIP no significa PASS. Los 75 errores
-Pyright y R2 parcial se observaron el 2026-09-21; esta guía no los declara corregidos.
+Read [AGENTS.md](../AGENTS.md), define the authorized scope, identify component
+owners, and acquire SessionGuard. Choose tests using the
+[test strategy](quality/TEST-STRATEGY.md). Record the command, date, and actual
+result. A skipped test is not a pass. Historical findings such as the 75
+Pyright errors and partial R2 status were recorded on 2026-09-21; this guide
+does not claim that they are fixed or current.

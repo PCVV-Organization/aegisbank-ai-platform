@@ -149,11 +149,19 @@ service requests created through the API.
 
 ## Write Boundary
 
-`POST /api/v1/service-requests` is an internal mock-core capability. Its existence
-does not authorize a future agent to invoke it directly. Agent exposure remains
-blocked until `v0.6`, where deterministic authorization and explicit HITL approval
-will be introduced. Idempotency, retry, circuit breaker, and messaging remain
-deferred to `v0.7`.
+`POST /api/v1/service-requests` is a state-changing endpoint in the local mock
+service. This service does not authenticate or authorize callers and does not
+implement human approval. Do not expose it directly outside the controlled
+local laboratory. When called through the agent, the application agent's
+deterministic policy and explicit HITL approval boundary must authorize the
+operation before the request reaches this API.
+
+The statements above describe the current component boundary. Earlier milestone
+plans that deferred agent integration, idempotency, retries, or messaging are
+historical and do not describe the current platform. Consult the current
+[canonical component catalog](../../docs/architecture/CANONICAL-COMPONENTS.md),
+[maturity matrix](../../docs/requirements/V1.0-MATURITY-MATRIX.md), and source
+tests for current integration and reliability behavior.
 
 No fake approval mechanism is implemented in this service.
 

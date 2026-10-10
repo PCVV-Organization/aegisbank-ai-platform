@@ -1,70 +1,61 @@
-# AegisBank — Estándar de Seguridad de la Capa de Datos (Data Layer Security)
+# AegisBank Data-Layer Security Standard
 
-> **Propósito:** Políticas de seguridad, protección de datos y directivas de endurecimiento para sistemas gestores de bases de datos relacionales y vectoriales (PostgreSQL + pgvector local y futuro Azure Database for PostgreSQL).
-> **Hito:** v0.12.0 — PostgreSQL + pgvector Vector Data Foundation.
+> **Purpose:** Document security policies and hardening guidance for relational and vector data stores (local PostgreSQL + pgvector and the Azure Database for PostgreSQL target).
+> **Historical milestone context:** v0.12.0 — PostgreSQL + pgvector Vector Data Foundation. The implementation/status descriptions below are recorded design claims; verify current code, configuration, and evidence before relying on them.
 
----
-
-## 1. Principios Fundamentales de Seguridad en Bases de Datos Bancarias
+## 1. Database Security Principles
 
 ```mermaid
 graph TD
-    subgraph "Capas de Seguridad de Datos"
-        P1["1. Consultas Parametrizadas (Anti-SQLi)"]
-        P2["2. Mínimo Privilegio (Least Privilege)"]
-        P3["3. Gestión de Secretos y Cero Hardcoding"]
-        P4["4. Cifrado en Tránsito (TLS 1.3) y en Reposo (TDE)"]
-        P5["5. Respaldos Continuos y PITR (Point-In-Time Recovery)"]
-        P6["6. Seguridad a Nivel de Fila (Row-Level Security - RLS)"]
+    subgraph Data Security Layers
+        P1["1. Parameterized queries (anti-SQL injection)"]
+        P2["2. Least privilege"]
+        P3["3. Secret management; no hard-coded credentials"]
+        P4["4. Encryption in transit and at rest"]
+        P5["5. Backups and point-in-time recovery (PITR)"]
+        P6["6. Row-level security (RLS)"]
     end
 ```
 
----
+## 2. Recorded Control Matrix
 
-## 2. Matriz de Controles y Estado de Madurez
-
-| Control de Seguridad | Implementación Local (`LAB-COVERED` / `PROD-PARTIAL`) | Producción Cloud Azure (`AZURE-POSTGRESQL-CLOUD-PENDING`) | Estado de Madurez |
+| Control | Local implementation claim | Azure target claim | Recorded status |
 |---|---|---|---|
-| **Prevención de SQL Injection** | Consultas 100% parametrizadas mediante `psycopg` (`%(param)s::type`). Cero concatenación de cadenas SQL en queries de usuario. | Mismo estándar en código de aplicación; respaldado por Azure Database for PostgreSQL Query Store y Defender for Cloud. | `LAB-COVERED` |
-| **Mínimo Privilegio (*Least Privilege*)** | Usuario no-root (`aegisuser`) restringido a la base de datos `aegisbank_rag` y tabla `rag_chunks`. | Roles RBAC de PostgreSQL + Microsoft Entra ID (Azure AD) sin contraseñas estáticas compartidas. | `LAB-COVERED` / `CLOUD-PENDING` |
-| **Gestión de Secretos** | Contraseña inyectada dinámicamente vía variable de entorno `${POSTGRES_PASSWORD}` en Docker Compose. Cero credenciales en Git. | Azure Key Vault con Azure Managed Identity para autenticación passwordless. | `LAB-COVERED` / `CLOUD-PENDING` |
-| **Cifrado en Tránsito (*Encryption in Transit*)** | Conexión local en red bridge aislada `aegisbank-net` (localhost). | TLS 1.2/1.3 forzado por defecto con certificados de Microsoft CA. | `LAB-COVERED` / `CLOUD-PENDING` |
-| **Cifrado en Reposo (*Encryption at Rest*)** | Volumen local Docker `aegisbank-pgvector-data` protegido por permisos del host. | Transparent Data Encryption (TDE) con claves administradas por el cliente (Customer-Managed Keys - CMK). | `PROD-PARTIAL` / `CLOUD-PENDING` |
-| **Respaldos y PITR (*Point-In-Time Recovery*)** | Exportación de dumps lógicos (`pg_dump`) y backups de volumen. | Backups continuos automáticos de WAL (*Write-Ahead Logging*) con retención de 35 días y geo-redundancia. | `PROD-PARTIAL` / `CLOUD-PENDING` |
-| **Seguridad a Nivel de Fila (*Row-Level Security - RLS*)** | Filtrado determinista en consultas por columna `status` y `tenant/customer_id`. | Políticas nativas de PostgreSQL `CREATE POLICY` vinculadas al contexto de sesión de la aplicación. | `LAB-COVERED` / `CLOUD-PENDING` |
+| SQL injection prevention | `psycopg` parameterized queries (`%(param)s::type`); no user-query string concatenation. | Same application standard, with Azure Query Store and Defender for Cloud as additional services. | `LAB-COVERED` |
+| Least privilege | Non-root `aegisuser` limited to `aegisbank_rag` and `rag_chunks`. | PostgreSQL roles and Microsoft Entra ID; no shared static passwords. | `LAB-COVERED` / `CLOUD-PENDING` |
+| Secret management | Docker Compose injects `${POSTGRES_PASSWORD}`; no credentials in Git. | Azure Key Vault with Managed Identity. | `LAB-COVERED` / `CLOUD-PENDING` |
+| Encryption in transit | Local connection on isolated `aegisbank-net` bridge network. | TLS 1.2/1.3 with Microsoft CA certificates. | `LAB-COVERED` / `CLOUD-PENDING` |
+| Encryption at rest | Host permissions protect local Docker volume `aegisbank-pgvector-data`. | Transparent Data Encryption (TDE), optionally with customer-managed keys (CMK). | `PROD-PARTIAL` / `CLOUD-PENDING` |
+| Backups and PITR | Logical `pg_dump` exports and volume backups. | Continuous WAL backups, 35-day retention, and geo-redundancy. | `PROD-PARTIAL` / `CLOUD-PENDING` |
+| Row-level security | Deterministic query filters on `status` and `tenant/customer_id`. | PostgreSQL `CREATE POLICY` rules tied to application session context. | `LAB-COVERED` / `CLOUD-PENDING` |
 
----
+These status labels are not current execution evidence or a security certification.
 
-## 3. Prácticas Específicas de Hardening para Búsqueda Vectorial
+## 3. Vector Search Hardening
 
-1. **Aislamiento de Documentos Obsoletos (*Superseded Documents*):**
-   - Las consultas vectoriales deben obligatoriamente incluir la cláusula `WHERE status = 'active'`. La similitud semántica nunca anula la vigencia legal o bancaria de un documento.
-2. **Validación Estricta de Dimensión de Vectores:**
-   - La tabla `rag_chunks` restringe el tipo a `vector(32)`. Cualquier intento de insertar un vector con dimensión distinta es rechazado a nivel de motor de base de datos (`dimension mismatch`).
-3. **Parametrización del Operador de Distancia Coseno:**
-   - El vector de búsqueda se envía como parámetro de tipo binario/vector mediante `register_vector(conn)` y `%(query_vec)s::vector`, impidiendo inyecciones a través del vector.
+1. **Exclude superseded documents:** Vector queries should require `WHERE status = 'active'`. Semantic similarity does not determine whether a document is current or authoritative.
+2. **Validate vector dimensions:** The documented `rag_chunks` column uses `vector(32)`; the database rejects vectors with a different dimension.
+3. **Parameterize distance-search vectors:** The documented `register_vector(conn)` and `%(query_vec)s::vector` pattern passes vectors as parameters rather than interpolating them into SQL.
 
----
+Verify these constraints in current migrations, queries, and tests.
 
-## 4. Controles de Seguridad en Azure Cosmos DB NoSQL (v0.12.1)
+## 4. Azure Cosmos DB NoSQL (v0.12.1 Design)
 
-| Control de Seguridad Cosmos DB | Implementación Local (`LOCAL-COSMOS-COVERED`) | Producción Cloud Azure (`COSMOS-CLOUD-PENDING`) |
+| Control | Local emulator claim | Azure target claim |
 |---|---|---|
-| **Gestión de Llaves de Conexión** | Llave estándar de emulador local públicamente documentada por Microsoft. Cero secretos de producción en código o Git. | Autenticación con **Microsoft Entra ID (Azure AD)** y roles RBAC para Cosmos DB (`Cosmos DB Built-in Data Reader/Contributor`) sin llaves maestras estáticas. |
-| **Aislamiento por Clave de Partición** | Partición lógica estricta `/customer_id` que impide que consultas de un cliente lean accidentalmente datos de otro. | Mismo estándar lógico reforzado con Azure Policy y aislamiento de red en VNet / Private Endpoints. |
-| **Cifrado en Reposo y en Tránsito** | Contenedor local en red bridge `aegisbank-net`. | Cifrado en reposo automático de Microsoft con Customer-Managed Keys (CMK) en Azure Key Vault + TLS 1.3 forzado. |
-| **Procesamiento de Eventos (Change Feed)** | Consumidor idempotente con deduplicación por clave combinada `id:etag` para evitar dobles efectos ante reintentos. | Azure Functions con Cosmos DB Trigger o Change Feed Processor administrado con escalado automático y lease container. |
-| **Gobernanza de Datos y TTL** | Expiración automática determinista vía `default_ttl` en datos de sesión y telemetría efímera; prohibido en auditoría bancaria. | Políticas de retención continuas con Azure Cosmos DB Analytical Store (Synapse Link) y backups continuos (30 días PITR). |
+| Connection keys | Publicly documented emulator key only; no production secrets in code/Git. | Microsoft Entra ID and Cosmos DB data-plane RBAC instead of static master keys. |
+| Partition isolation | Logical `/customer_id` partition key. | Same logical boundary plus Azure Policy and VNet/Private Endpoint isolation. |
+| Encryption | Local container on `aegisbank-net`. | Microsoft-managed encryption at rest, optional CMK, and TLS 1.3. |
+| Change Feed | Idempotent consumer deduplicates on combined `id:etag`. | Cosmos DB Trigger or Change Feed Processor with leases and scaling. |
+| Retention/TTL | Deterministic `default_ttl` for session/ephemeral telemetry; never for banking audit. | Retention and continuous backups/PITR as configured for the target service. |
 
----
+## 5. Redis and RediSearch (v0.12.2 Design)
 
-## 5. Controles de Seguridad en Redis Cache y RediSearch (v0.12.2)
-
-| Control de Seguridad Redis | Implementación Local (`LOCAL-REDIS-COVERED`) | Producción Cloud Azure (`AZURE-MANAGED-REDIS-CLOUD-PENDING`) |
+| Control | Local design claim | Azure target claim |
 |---|---|---|
-| **Aislamiento de Datos Sensibles** | Prohibición estricta de almacenar saldos, cuotas, transacciones o PII en memoria. Solo se cachea conocimiento público y vectores del corpus. | Misma política reforzada con DLP (*Data Loss Prevention*) y reglas de redacción de logs. |
-| **Autenticación y Control de Acceso** | Conexión local en loopback / red bridge `aegisbank-net` sin exposición pública. | Autenticación con **Microsoft Entra ID (Azure AD)** y RBAC nativo en Azure Managed Redis; sin contraseñas estáticas en texto plano. |
-| **Cifrado en Tránsito y Reposo** | Contenedor local en red bridge `aegisbank-net`. | Cifrado en tránsito TLS 1.2/1.3 obligatorio + Cifrado en disco para persistencia RDB/AOF. |
-| **Protección contra Inundación (*Stampede Lock*)** | Bloqueo distribuido single-flight con token único y liberación atómica por script Lua (`RELEASE_LOCK_LUA`). | Bloqueos distribuidos administrados con Redlock o single-flight proxy en Container Apps / AKS. |
-| **Gestión de Memoria y Evicción** | Configuración de límites de memoria y política `noeviction` / `volatile-lru` controlada. | Dimensionamiento elástico con Azure Managed Redis (Tiers Memory Optimized / Compute Optimized) y monitoreo de métricas de memoria en Azure Monitor. |
-| **Cadena de Suministro del Runtime** | Docker Official Image `redis:8.10.1-trixie` fijada al digest observado `sha256:298e5b3bc566bade82f46ad5511777a4a07a294097ce16ada2f6a42be5239df5`; gate estático rechaza tags flotantes y prereleases. | Imágenes administradas, mantenimiento y vulnerabilidades deben validarse con evidencia del servicio Azure; el pin local no demuestra seguridad productiva. |
+| Sensitive data isolation | Do not cache balances, installments, transactions, or PII; cache only public knowledge and corpus vectors. | Same policy with data-loss-prevention and log-redaction controls. |
+| Authentication/access | Local loopback or `aegisbank-net`, not publicly exposed. | Microsoft Entra ID and Azure Managed Redis RBAC; no plaintext static passwords. |
+| Encryption | Local container on `aegisbank-net`. | TLS 1.2/1.3 and disk encryption for RDB/AOF persistence. |
+| Stampede protection | Single-flight lock with unique token and atomic Lua release (`RELEASE_LOCK_LUA`). | Managed distributed locking or single-flight proxy on Container Apps/AKS. |
+| Memory/eviction | Controlled memory limits and `noeviction` / `volatile-lru` policy. | Azure Managed Redis sizing and Azure Monitor metrics. |
+| Runtime supply chain | The historical record pins `redis:8.10.1-trixie` to an observed digest and rejects floating tags/prereleases. | Validate managed image maintenance and vulnerability posture with current Azure evidence; a local pin does not prove production security. |

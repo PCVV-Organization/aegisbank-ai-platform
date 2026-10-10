@@ -1,123 +1,86 @@
-# Event Grid vs Service Bus in AegisBank v0.13
+# Event Grid vs. Service Bus in AegisBank (v0.13 Design)
 
-> **Milestone:** `v0.13.0 — Azure Functions + Event Grid Local Serverless Foundation`
-> **Propósito:** Definir la separación formal de responsabilidades entre Azure Event Grid (serverless push notifications vía HTTP) y Azure Service Bus (brokered, durable, command-style messaging). Ambos coexisten en la arquitectura AegisBank; ninguno reemplaza al otro.
+> **Historical milestone context:** `v0.13.0 — Azure Functions + Event Grid Local Serverless Foundation`.
+> **Purpose:** Describe the intended separation between Azure Event Grid (serverless event push) and Azure Service Bus (durable brokered messaging). The design uses both; neither replaces the other.
+> **Source recency:** The comparison was recorded as reviewed against Microsoft Learn on 2026-09-02. Service capabilities and limits can change; revalidate against current Microsoft documentation before making architecture or deployment decisions.
+> **Execution status:** This design does not prove cloud deployment. Check the maturity matrix and current evidence.
 
----
+## 1. Recorded Service Comparison
 
-## 1. Comparativa Canónica (Microsoft Learn revisado 2026-09-02)
-
-| Dimensión | Azure Event Grid | Azure Service Bus |
+| Dimension | Azure Event Grid | Azure Service Bus |
 |---|---|---|
-| **Patrón arquitectónico** | Event notification / push-push HTTP | Brokered queue / topic-subscription |
-| **Transporte** | HTTP + CloudEvents 1.0 (recomendado) o Event Grid schema (legacy) | AMQP 1.0 + HTTP |
-| **Semántica de entrega** | **At-least-once**, **sin garantía de orden** | **At-least-once**, **FIFO con sesiones**, **duplicate detection** nativo |
-| **Modelo de consumo** | Push (webhook HTTPS) | Pull / push con settlement (`complete`, `abandon`, `dead-letter`) |
-| **Persistencia** | Sin cola persistente — los eventos se reintentan con backoff exponencial hasta TTL/DLQ | Mensajes persistidos en storage del broker hasta `complete` |
-| **Retención** | Reintentos 1–30 intentos, TTL 1–1440 min; DLQ a blob storage | Mensajes hasta expirar por TTL o completarse; DLQ integrada |
-| **Filtrado** | Tipos, `subject begins-with/ends-with`, advanced filters (números, strings, boolean) | SQL filters sobre `application_properties`; correlation filters |
-| **Casos de uso típicos** | Notificaciones reactivas, fan-out, integraciones SaaS, reactividad declarativa | Comandos transaccionales, orquestación de workflows, settlement |
-| **Estado Azure** | GA (Basic y Standard tiers) | GA (Basic, Standard, Premium) |
+| Architectural pattern | Event notification / HTTP push | Brokered queue or topic/subscription |
+| Transport | HTTP + CloudEvents 1.0 (recommended in the recorded design) or legacy Event Grid schema | AMQP 1.0 + HTTP |
+| Delivery semantics | At-least-once; no ordering guarantee in the recorded comparison | At-least-once; FIFO with sessions; native duplicate detection |
+| Consumption | Push to HTTPS webhook | Pull or push with settlement (`complete`, `abandon`, `dead-letter`) |
+| Persistence | No persistent queue; retry with exponential backoff until TTL/DLQ | Broker persists messages until completed or expired |
+| Retention (recorded) | 1–30 retries, 1–1440 minute TTL; Blob Storage DLQ | Message TTL and broker-integrated DLQ |
+| Filtering | Event types, subject prefix/suffix, advanced numeric/string/boolean filters | SQL filters on `application_properties`; correlation filters |
+| Typical use | Reactive notifications, fan-out, SaaS integration | Durable commands, workflow coordination, settlement |
+| Azure availability | Recorded as GA for Basic/Standard | Recorded as GA for Basic/Standard/Premium |
 
----
+Revalidate all product limits, tiers, and availability before implementation.
 
-## 2. Posición en AegisBank
+## 2. Intended AegisBank Placement
 
-```
-       +-------------------+
-       | HITL APPROVED     |
-       | (v0.7 contract)   |
-       +---------+---------+
-                 |
-                 v
-       +-------------------+
-       | create_service_   |
-       | request (v0.6)    |
-       +---------+---------+
-                 |
-                 v
-       +-------------------+
-       | SQL Transaction   | <-- Atomicidad con Outbox (v0.8)
-       | INSERT outbox     |
-       +---------+---------+
-                 |
-        +--------+--------+
-        |                 |
-        v                 v
-+------------------+   +----------------------+
-| OutboxProcessor  |   | CloudEvents Mapper   |
-| (v0.8 / v0.11)   |   | (v0.13 ADR-028)      |
-+--------+---------+   +----------+-----------+
-         |                        |
-         v                        v
-+------------------+   +----------------------+
-| LocalMessageBus  |   | HTTP POST a Azure    |
-| AzureServiceBus  |   | Event Grid (futuro)  |
-| Emulator adapter |   | (CloudEvents 1.0)    |
-+--------+---------+   +----------+-----------+
-         |                        |
-         v                        v
-+------------------+   +----------------------+
-| Durable consumer |   | Azure Function       |
-| Idempotent +     |   | (v0.13)              |
-| DLQ              |   | Idempotent + Audit   |
-+------------------+   +----------------------+
+```text
+HITL APPROVED
+    ↓
+create_service_request
+    ↓
+SQL transaction: service request + transactional outbox
+    ├── OutboxProcessor → LocalMessageBus / Azure Service Bus → durable idempotent consumer + DLQ
+    └── CloudEvents mapper → HTTPS Event Grid publish → Azure Function → idempotent audit handler
 ```
 
-| Responsabilidad | Owner canónico |
+| Responsibility | Intended owner |
 |---|---|
-| **Comandos transaccionales de larga vida** (HITL approvals, settlement, command queues) | Service Bus (v0.11) |
-| **DLQ de mensajes envenenados** | Service Bus DLQ (v0.8) |
-| **Notificación reactiva `ServiceRequestCreated` → function serverless** | **Event Grid (v0.13)** |
-| **Eventos `disparar-y-olvidar` para proyecciones / auditoría reactiva** | **Event Grid (v0.13)** |
-| **Reintentos con backoff exponencial y entrega al menos una vez** | **Event Grid nativo (1–30 intentos)** |
-| **FIFO estricto y sesiones** | Service Bus (sin reemplazo) |
-| **Fan-out masivo (>5 consumers)** | **Event Grid topic + suscripciones múltiples** |
+| Durable transactional commands (HITL approvals, settlement, command queues) | Service Bus |
+| Broker dead-letter queue for poisoned messages | Service Bus DLQ |
+| Reactive `ServiceRequestCreated` notification to a serverless function | Event Grid |
+| Fire-and-forget projection/audit notifications | Event Grid |
+| Managed at-least-once retries for HTTP event delivery | Event Grid (verify current limits) |
+| Strict FIFO ordering and sessions | Service Bus |
+| High fan-out to multiple filtered subscribers | Event Grid topic |
 
----
+## 3. Selection Guide
 
-## 3. Reglas de Selección (cuándo usar uno u otro)
-
-| Si necesitas… | Usa |
+| Requirement | Prefer |
 |---|---|
-| Garantía de orden estricta (FIFO) entre eventos del mismo `aggregate_id` | Service Bus con `sessions` |
-| Settlement manual (`complete` / `abandon` / `dead-letter`) por handler | Service Bus |
-| Push HTTP nativo a un webhook HTTPS sin acoplar al SDK del broker | Event Grid |
-| Suscripciones múltiples al mismo evento con filtros independientes | Event Grid topic |
-| Reintentos administrados por la nube sin lógica de reintentos en el handler | Event Grid |
-| Integración SaaS / system topic (`Microsoft.Storage.BlobCreated`, etc.) | Event Grid |
-| Cola durable con mensajes persistidos por días | Service Bus |
-| Dead-letter integrado en el broker con semántica `dead-letter` | Service Bus |
-| Mensajes > 1 MB | Service Bus (Event Grid ≤ 1 MB por evento) |
+| Strict ordering per `aggregate_id` | Service Bus sessions |
+| Handler-controlled settlement (`complete` / `abandon` / `dead-letter`) | Service Bus |
+| Native HTTPS push without coupling to a broker SDK | Event Grid |
+| Multiple subscriptions with independent filters | Event Grid topic |
+| Cloud-managed delivery retry | Event Grid |
+| SaaS/system-topic integration (for example, `Microsoft.Storage.BlobCreated`) | Event Grid |
+| Durable message storage for days | Service Bus |
+| Broker-integrated dead-letter semantics | Service Bus |
+| Messages larger than the recorded 1 MB Event Grid limit | Service Bus; verify current limits |
 
----
+## 4. Recorded AegisBank Maturity
 
-## 4. Estado de Madurez en AegisBank
-
-| Capacidad | Estado local | Estado cloud Azure |
+| Capability | Recorded local status | Cloud status |
 |---|---|---|
-| **Service Bus Emulator (AMQP)** | `LAB-COVERED` (v0.11) | `CLOUD-PENDING` (Namespace Estándar/Premium) |
-| **Adapter `AzureServiceBusMessageBus`** | `LAB-COVERED` (v0.11) | Mismo adapter con token Entra ID |
-| **Event Grid service** | `EVENT_GRID_SERVICE_EMULATED = NO` | Microsoft no publica emulador oficial; el runtime del servicio solo es cloud (Basic/Standard) |
-| **Event Grid handler local (Azure Function v2)** | `EVENT_GRID_HANDLER_LOCAL = COVERED` (v0.13) | Mismo handler, Function App deployada |
-| **CloudEvents 1.0 envelope** | `LAB-COVERED` (v0.13, schema estricto) | Idéntico en cloud |
+| Service Bus Emulator (AMQP) | `LAB-COVERED` (v0.11) | `CLOUD-PENDING` |
+| `AzureServiceBusMessageBus` adapter | `LAB-COVERED` (v0.11) | Same adapter with Entra token is intended |
+| Event Grid service emulation | `EVENT_GRID_SERVICE_EMULATED = NO` | No official emulator was recorded; service runtime is cloud-hosted |
+| Local Event Grid handler (Azure Functions v2) | `EVENT_GRID_HANDLER_LOCAL = COVERED` (v0.13) | Function App deployment is not evidenced here |
+| CloudEvents 1.0 envelope | `LAB-COVERED` (v0.13; strict schema) | Same envelope intended in cloud |
 
----
+These are historical status statements, not fresh test results.
 
-## 5. Razones para no reemplazar Service Bus
+## 5. Why Service Bus Is Not Replaced
 
-1. Service Bus ya implementa FIFO con sesiones, duplicate detection nativo y settlement manual; **Event Grid no garantiza orden**.
-2. Service Bus tiene DLQ integrada en el broker; **Event Grid usa blob storage como DLQ**, lo que requiere un consumer adicional para procesarla.
-3. Service Bus permite sesiones y transacciones (`transactional client`); **Event Grid es estrictamente at-least-once sin settlement**.
-4. El modelo de `ServiceRequestCreated` en AegisBank es **dual**: necesita (a) notificación reactiva fan-out → Event Grid, y (b) command queue durable con settlement → Service Bus. Ambos siguen siendo válidos.
+1. Service Bus supports sessions/FIFO, native duplicate detection, and manual settlement; Event Grid does not provide the same ordering/settlement contract.
+2. Service Bus has a broker-integrated DLQ; the recorded Event Grid design uses Blob Storage and requires additional processing.
+3. Service Bus supports sessions and transactions; the recorded Event Grid model is at-least-once without broker settlement.
+4. `ServiceRequestCreated` has two intended consumers: reactive fan-out through Event Grid and durable command processing through Service Bus.
 
----
+## 6. Recorded Design Decision
 
-## 6. Decisión final
+The design retains both transports and treats the transactional outbox as the publication source. An `OutboxProcessor` routes events by `event_type`:
 
-**AegisBank mantiene ambos** canales. El **Outbox transaccional canónico** (v0.8) es la única fuente de publicación; un **OutboxProcessor** reparte cada evento a los dos transportes según su `event_type`. Para `ServiceRequestCreated`:
+- **Event Grid** → Azure Function for a thin, idempotent, auditable reactive handler.
+- **Service Bus** → existing durable consumers, with no intended replacement.
 
-- **Event Grid** → Azure Function serverless (v0.13) — handler fino, idempotente, auditable.
-- **Service Bus** → consumers durables existentes (v0.8 / v0.11) — sin cambios.
-
-Ningún handler, bus, outbox, audit logger o metrics framework paralelo se introduce. Toda duplicación `NEW TRUE_DUPLICATION = 0`.
+Do not add parallel handlers, buses, outboxes, audit loggers, or metrics frameworks without reviewing [canonical components](CANONICAL-COMPONENTS.md) and documenting a justified architecture change. Verify this design against the current source before implementation.

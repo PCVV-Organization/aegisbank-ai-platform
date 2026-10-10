@@ -1,21 +1,16 @@
-# Releases históricas
+# Historical Releases
 
-Evidencias de entregas y presentación. Confirmar releases con Git y tags; el título de un documento no demuestra una publicación.
+Delivery evidence and presentation artifacts. Verify releases through Git history and tags; a document title alone does not prove publication.
 
-## Cómo usar esta carpeta
+## How to use this directory
 
-Primero definir la pregunta que se quiere resolver. Leer el documento pertinente,
-anotar su fecha/estado y seguir su referencia al código o evidencia. Si contradice
-el checkout actual, comunicar la diferencia y conservar el histórico.
+Read the relevant record and check its date, status, and evidence. If it conflicts with the current checkout, report the discrepancy and preserve the historical record.
 
-## Documentos
+## Documents
 
-- [PORTFOLIO-INTERVIEW-EVIDENCE](PORTFOLIO-INTERVIEW-EVIDENCE.md)
-- [V1.0-EVIDENCE](V1.0-EVIDENCE.md)
+- [Portfolio interview evidence](PORTFOLIO-INTERVIEW-EVIDENCE.md)
+- [Version 1.0 evidence](V1.0-EVIDENCE.md)
 
-## Mantenimiento
+## Maintenance
 
-Añadir documentos nuevos a este índice; enlazar el reemplazo cuando cambie una
-decisión. Regenerar los índices de navegación desde la raíz de aplicación.
-Consultar [sistema documental](../engineering/DOCUMENTATION-SYSTEM.md)
-y volver al [portal](../README.md).
+Add new records to this index and link replacements when decisions change. Regenerate navigation indexes from the application root. See the [documentation system](../engineering/DOCUMENTATION-SYSTEM.md) and [project portal](../README.md).

@@ -1,21 +1,20 @@
-# Runbook de promoción a Azure staging
+# Azure Staging Promotion Runbook
 
-> **Estado:** `READY-FOR-REVIEW` · no ejecutado contra Azure.
+> **Status:** `READY-FOR-REVIEW`; not executed against Azure.
+>
+> This runbook describes a gated procedure. It does not authorize provisioning or deployment. The project requires explicit approval before creating paid Azure resources or deploying.
 
-## Precondiciones
+## Preconditions
 
-1. La rama y la imagen inmutable fueron revisadas y las validaciones locales están
-   verdes con la `.venv` del repositorio.
-2. Existe un grupo de recursos aislado de staging y una identidad asignada al
-   workload. No reutilizar recursos, stores ni vaults de producción.
-3. Un responsable de plataforma prepara la federated credential GitHub OIDC y las
-   asignaciones RBAC de la matriz de arquitectura. No crear credenciales cliente.
-4. App Configuration contiene solo configuración no secreta por label `staging`.
-   Key Vault contiene únicamente secretos que no puedan eliminarse mediante Entra.
-5. Se completó una revisión humana de endpoints, redes privadas, ingress, límites
-   de cómputo, retención, alertas, backups y el contrato de Core Banking.
+1. Review the branch and immutable image; all local validations must pass in the repository virtual environment.
+2. Use an isolated staging resource group and workload identity. Do not reuse production resources, stores, or vaults.
+3. A platform owner prepares the GitHub OIDC federated credential and RBAC assignments from the architecture matrix. Do not create client secrets.
+4. App Configuration contains non-secret settings under the `staging` label. Key Vault contains only secrets that cannot be eliminated through Entra ID.
+5. Complete human review of endpoints, private networking, ingress, compute limits, retention, alerts, backups, and the Core Banking contract.
 
-## Validación antes de desplegar
+## Pre-deployment Validation
+
+Run from the application Git root:
 
 ```powershell
 Set-Location C:\aegisbank-ai-platform-ai-env\aegisbank-ai-platform
@@ -24,37 +23,23 @@ az bicep build --file deploy/azure/main.bicep --stdout > $null
 & .\.venv\Scripts\python.exe scripts\quality_gate.py --fast
 ```
 
-El último comando depende de que la `.venv` tenga todos los paquetes editables
-instalados. Si falla por un módulo ausente, corregir el entorno de pruebas antes
-de interpretar el fallo como evidencia de aplicación.
+The final command requires all editable packages to be installed in `.venv`. If it fails because a module is missing, repair the test environment before interpreting the failure as application evidence.
 
-## Promoción controlada
+## Controlled Promotion
 
-1. Revisar manualmente el plan de IaC con el scope de staging correcto.
-2. Desplegar primero la fundación y verificar desde logs redacted que
-   `AEGISBANK_ENV=staging` selecciona App Configuration, Key Vault, Service Bus
-   y Cosmos sin connection strings ni endpoints loopback.
-3. Ejecutar solo journeys sintéticos de lectura y un journey de escritura que
-   solicite y reciba aprobación humana explícita.
-4. Verificar autorización de propietario, correlación, timeout, RAG con citas y
-   ausencia de secretos en logs, auditoría y telemetría.
-5. Registrar versiones de imagen, Bicep, configuración label y evidencia en un
-   informe fechado. No actualizar el estado a cloud-validado sin esa evidencia.
+1. Manually review the infrastructure-as-code plan with the correct staging scope.
+2. Deploy the foundation only after approval. Verify redacted logs show `AEGISBANK_ENV=staging` selecting App Configuration, Key Vault, Service Bus, and Cosmos without connection strings or loopback endpoints.
+3. Run synthetic read journeys and one write journey that requests and receives explicit human approval.
+4. Verify ownership authorization, correlation, timeout behavior, cited RAG responses, and absence of secrets in logs, audit records, and telemetry.
+5. Record image and Bicep versions, configuration label, and evidence in a dated report. Do not mark cloud validation complete without that evidence.
 
 ## Rollback
 
-1. Detener la promoción y bloquear nuevas escrituras de negocio con el control
-   HITL existente.
-2. Revertir la revisión de aplicación o imagen al digest anterior probado; no
-   modificar secretos para ocultar un fallo.
-3. Restaurar la configuración no secreta con una revisión aprobada de App
-   Configuration y mantener auditoría de quién autorizó el rollback.
-4. Si hay riesgo de exposición, revocar permisos de la identidad y rotar el
-   secreto afectado en Key Vault. Documentar el incidente sin copiar secretos.
+1. Stop promotion and block new business writes using the existing HITL control.
+2. Revert the application revision or image to the previously tested digest. Do not alter secrets to conceal a failure.
+3. Restore non-secret configuration from an approved App Configuration revision and retain an audit record of who authorized the rollback.
+4. If exposure is suspected, revoke the identity's permissions and rotate the affected Key Vault secret. Document the incident without copying secrets.
 
-## Límites explícitos
+## Explicit Limitations
 
-No existe despliegue cloud ejecutado, modelo Foundry cloud, autenticación de
-servicio Core Banking real, migración de datos, prueba de carga, SLA, multi-región
-ni certificación regulatoria. AegisBank conserva datos sintéticos y no procesa
-dinero real.
+This document does not prove a cloud deployment, cloud Foundry model, real Core Banking service authentication, data migration, load test, SLA, multi-region operation, or regulatory certification. AegisBank uses synthetic data and does not process real money.

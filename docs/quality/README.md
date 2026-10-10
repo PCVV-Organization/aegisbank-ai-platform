@@ -1,24 +1,18 @@
-# Calidad y evidencia
+# Quality and Evidence
 
-Estrategia y guías actuales de pruebas. PASS, SKIP y BLOCKED siempre requieren
-un comando y una fecha observables.
+Current testing strategy and guidance. PASS, SKIP, and BLOCKED claims require an observable command and date.
 
-## Cómo usar esta carpeta
+## How to use this directory
 
-Primero definir la pregunta y leer la guía pertinente. Para informes fechados,
-consultar el [archivo histórico](../../history/quality/); no sustituye el estado
-actual del checkout.
+Read the relevant guide first. Dated reports are historical evidence and do not replace the current checkout state; see [quality history](../../history/quality/).
 
-## Documentos
+## Documents
 
-- [E2E-MATRIX](E2E-MATRIX.md)
-- [PYRIGHT-VALIDATION](PYRIGHT-VALIDATION.md)
-- [TEST-STRATEGY](TEST-STRATEGY.md)
-- [TEST-SUITE-RATIONALIZATION](TEST-SUITE-RATIONALIZATION.md)
+- [End-to-end matrix](E2E-MATRIX.md)
+- [Pyright validation](PYRIGHT-VALIDATION.md)
+- [Test strategy](TEST-STRATEGY.md)
+- [Test-suite rationalization](TEST-SUITE-RATIONALIZATION.md)
 
-## Mantenimiento
+## Maintenance
 
-Añadir solo guías vigentes a este índice. Trasladar evidencia fechada a
-`history/quality/` y regenerar los índices de navegación desde la raíz de aplicación.
-Consultar [sistema documental](../engineering/DOCUMENTATION-SYSTEM.md)
-y volver al [portal](../README.md).
+Index current guidance only. Keep dated evidence in `history/quality/` and regenerate navigation indexes from the application root. See the [documentation system](../engineering/DOCUMENTATION-SYSTEM.md) and [project portal](../README.md).

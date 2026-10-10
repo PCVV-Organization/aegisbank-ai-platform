@@ -1,27 +1,21 @@
-# mlops
+# MLOps Component
 
-## Para qué existe
+## Purpose
 
-Registro de experimentos y detección de drift. Modificar este componente exige revisar consumidores y su suite asociada; no crear una responsabilidad paralela.
+Owns experiment tracking and drift detection. Review consumers and tests before changing it; do not create a parallel experiment or drift owner.
 
-## Dónde mirar
+## Source navigation
 
-`__init__.py`; `drift.py`; `tracker.py`
+- `__init__.py`
+- `drift.py`
+- `tracker.py`
+- [Start Here](../../../../../docs/START-HERE.md)
+- [Directory map](../../../../../docs/DIRECTORY-MAP.md)
 
-La [guía inicial](../../../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
+## Before changing this component
 
-## Antes de cambiar
+Identify inputs, outputs, and consumers. Review [canonical components](../../../../../docs/architecture/CANONICAL-COMPONENTS.md), use synthetic data, acquire SessionGuard as required by [AGENTS.md](../../../../../AGENTS.md), and run relevant checks from the [test strategy](../../../../../docs/quality/TEST-STRATEGY.md). Update tests and documentation with interface changes.
 
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
+## Limits
 
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Local experiment tracking or drift checks do not prove cloud monitoring or production model quality. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.

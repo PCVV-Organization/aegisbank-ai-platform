@@ -1,27 +1,15 @@
-# Servicios
+# Services
 
-## Para qué existe
+Application services contain bounded runtime responsibilities. `mock-core-banking` is a synthetic local service; it is not a real banking system. The LLM is hosted and orchestrated elsewhere.
 
-mock-core-banking contiene el dominio, HTTP y persistencia sintéticos. El LLM no vive dentro de este servicio. No añadir servicios nuevos sin una decisión de arquitectura.
+## Components
 
-## Dónde mirar
+- [Mock Core Banking](mock-core-banking/README.md) — local HTTP API and synthetic banking records
 
-- [mock-core-banking/README.md](mock-core-banking/README.md)
+## Change guidance
 
-La [guía inicial](../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
+Before changing a service, identify its inputs, outputs, consumers, and tests. Check [canonical components](../docs/architecture/CANONICAL-COMPONENTS.md), follow the application [AGENTS.md](../AGENTS.md) and SessionGuard workflow, and use synthetic data only. Update interface documentation and tests with contract changes.
 
-## Antes de cambiar
+## Evidence boundary
 
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
-
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+This directory describes repository responsibilities, not certification or live execution. Check the [project README](../README.md) and [maturity matrix](../docs/requirements/V1.0-MATURITY-MATRIX.md) for recorded status.

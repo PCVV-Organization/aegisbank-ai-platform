@@ -1,26 +1,21 @@
-# Aprendizaje
+# Learning
 
-Explicaciones y glosario para aprender los conceptos. Volver al código y pruebas para comprobar cómo se implementan aquí.
+Explanations and glossary for learning project concepts. Verify implementation details against code and tests.
 
-## Cómo usar esta carpeta
+## How to use this directory
 
-Primero definir la pregunta que se quiere resolver. Leer el documento pertinente,
-anotar su fecha/estado y seguir su referencia al código o evidencia. Si contradice
-el checkout actual, comunicar la diferencia y conservar el histórico.
+Use the relevant guide for concepts, then check the current source and tests. Historical or versioned teaching notes may describe a past state.
 
-## Documentos
+## Documents
 
-- [AZURE-FUNCTIONS-TRIGGERS-BINDINGS](AZURE-FUNCTIONS-TRIGGERS-BINDINGS.md)
-- [CONTAINERS-SERVICE-BUS](CONTAINERS-SERVICE-BUS.md)
-- [GLOSSARY](GLOSSARY.md)
-- [MASTERS-NOTES](MASTERS-NOTES.md)
-- [PGVECTOR](PGVECTOR.md)
-- [TEACHING-CONTRACT](TEACHING-CONTRACT.md)
-- [V1.0-MASTERS-NOTES](V1.0-MASTERS-NOTES.md)
+- [Azure Functions triggers and bindings](AZURE-FUNCTIONS-TRIGGERS-BINDINGS.md)
+- [Containers and Service Bus](CONTAINERS-SERVICE-BUS.md)
+- [Glossary](GLOSSARY.md)
+- [Master notes](MASTERS-NOTES.md)
+- [pgvector](PGVECTOR.md)
+- [Teaching contract](TEACHING-CONTRACT.md)
+- [Version 1.0 master notes](V1.0-MASTERS-NOTES.md)
 
-## Mantenimiento
+## Maintenance
 
-Añadir documentos nuevos a este índice; enlazar el reemplazo cuando cambie una
-decisión. Regenerar los índices de navegación desde la raíz de aplicación.
-Consultar [sistema documental](../engineering/DOCUMENTATION-SYSTEM.md)
-y volver al [portal](../README.md).
+Add new documents to this index and link replacements when decisions change. Regenerate navigation indexes from the application root. See the [documentation system](../engineering/DOCUMENTATION-SYSTEM.md) and [project portal](../README.md).

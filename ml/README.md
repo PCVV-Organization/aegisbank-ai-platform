@@ -1,27 +1,11 @@
-# Aprendizaje automático clásico
+# Machine Learning
 
-## Para qué existe
+Classical ML experiments are separate from the LLM agent and its deterministic policy layer. A model prediction is not authorization, identity verification, or a credit decision.
 
-El experimento intent-classifier transforma consultas sintéticas en etiquetas de intención y evalúa calidad/calibración. No es entrenamiento del LLM ni un sistema real de decisión crediticia.
+## Components
 
-## Dónde mirar
+- [Intent classifier](intent-classifier/src/aegisbank_intent_classifier/README.md) — bounded intent-classification experiment
 
-- [intent-classifier/README.md](intent-classifier/README.md)
+## Change guidance
 
-La [guía inicial](../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
-
-## Antes de cambiar
-
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
-
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Use synthetic, reproducible data. Keep training, development, and held-out evaluation data separate; do not tune against holdouts. Report measured results and limitations. See the project [README](../README.md), [maturity matrix](../docs/requirements/V1.0-MATURITY-MATRIX.md), and [evaluation catalog](../docs/evaluation/EVALUATION-CATALOG.md).

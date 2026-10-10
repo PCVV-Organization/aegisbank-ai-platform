@@ -1,13 +1,13 @@
 # AegisBank AI Platform — AI Evaluation Catalog & Provenance Register
 
-> Reconciliación y Ejecución Live 2026-09-22: el runner live de Phase 2.2-R2
-> (`scripts/run_phase22_live.py`) se ejecutó con éxito contra Foundry Local
-> (`phi-4-mini` en GPU) y PostgreSQL + `pgvector`.
-> Reporte `reports/red_team_phase22.json` (timestamp `2026-09-22T15:28:13Z`): ASR 0/4 (0.0%),
-> éxito benigno 2/2 (100.0%), UTPR caso 0/2 (0.0%), UTPR propuesta 0/0 (0.0%), cero
-> divulgaciones o escrituras no autorizadas. Todas las propuestas de herramientas del modelo
-> son instrumentadas por ronda separando prefetch de propuesta de modelo. Véase
-> [evidencia de red-team](../security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md).
+> Phase 2.2-R2 live run recorded on 2026-09-22: `scripts/run_phase22_live.py`
+> completed against Foundry Local (`phi-4-mini` on GPU) and PostgreSQL with
+> `pgvector`. The report `reports/red_team_phase22.json` (timestamp
+> `2026-09-22T15:28:13Z`) recorded ASR 0/4 (0.0%), benign success 2/2 (100.0%),
+> case UTPR 0/2 (0.0%), proposal UTPR 0/0 (0.0%), and no unauthorized
+> disclosures or writes. Model tool proposals were instrumented per round,
+> separately from prefetch. See the [red-team evidence](../security/PHASE2-LOCAL-RED-TEAM-EVIDENCE.md).
+> These are dated results, not a run performed in the current session.
 
 > **Status:** Authoritative Catalog of Evaluation Runs, Datasets, Runners, and Artifacts
 > **Standard:** Banking Model Risk Management (SR 11-7 / EBA) and MLflow Experiment Tracking

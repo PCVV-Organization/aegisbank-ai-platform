@@ -1,30 +1,25 @@
-# Arquitectura
+# Architecture
 
-Entender componentes, flujo y límites de confianza. Consultar CANONICAL-COMPONENTS antes de crear una implementación paralela.
+Understand components, workflows, and trust boundaries. Read `CANONICAL-COMPONENTS.md` before creating a parallel implementation.
 
-## Cómo usar esta carpeta
+## How to use this directory
 
-Primero definir la pregunta que se quiere resolver. Leer el documento pertinente,
-anotar su fecha/estado y seguir su referencia al código o evidencia. Si contradice
-el checkout actual, comunicar la diferencia y conservar el histórico.
+Define the question, read the relevant document, note its date and status, and follow its links to code or evidence. If a document conflicts with the current checkout, report the discrepancy and preserve the historical record.
 
-## Documentos
+## Documents
 
-- [ARCHITECTURE-INTEGRITY-REPORT](ARCHITECTURE-INTEGRITY-REPORT.md)
-- [CANONICAL-COMPONENTS](CANONICAL-COMPONENTS.md)
-- [CONTAINER-PLATFORM-DECISION](CONTAINER-PLATFORM-DECISION.md)
-- [CLOUD-CONFIGURATION-IDENTITY](CLOUD-CONFIGURATION-IDENTITY.md) — contrato Local-first y preparación Azure
-- [CONVERSATIONAL-RELEVANCE](CONVERSATIONAL-RELEVANCE.md)
-- [COSMOS-PARTITION-DESIGN](COSMOS-PARTITION-DESIGN.md)
-- [E2E-FINAL-ARCHITECTURE](E2E-FINAL-ARCHITECTURE.md)
-- [EVENT-GRID-CLOUD-DESIGN](EVENT-GRID-CLOUD-DESIGN.md)
-- [EVENT-GRID-VS-SERVICE-BUS](EVENT-GRID-VS-SERVICE-BUS.md)
-- [REDIS-CACHE-POLICY](REDIS-CACHE-POLICY.md)
-- [SEMANTIC-ROUTING](SEMANTIC-ROUTING.md) — límites entre comprensión semántica y política determinista
+- [Architecture integrity report](ARCHITECTURE-INTEGRITY-REPORT.md)
+- [Canonical components](CANONICAL-COMPONENTS.md)
+- [Container platform decision](CONTAINER-PLATFORM-DECISION.md)
+- [Cloud configuration and identity](CLOUD-CONFIGURATION-IDENTITY.md) — local-first contract and Azure preparation
+- [Conversational relevance](CONVERSATIONAL-RELEVANCE.md)
+- [Cosmos partition design](COSMOS-PARTITION-DESIGN.md)
+- [End-to-end architecture](E2E-FINAL-ARCHITECTURE.md)
+- [Event Grid cloud design](EVENT-GRID-CLOUD-DESIGN.md)
+- [Event Grid vs. Service Bus](EVENT-GRID-VS-SERVICE-BUS.md)
+- [Redis cache policy](REDIS-CACHE-POLICY.md)
+- [Semantic routing](SEMANTIC-ROUTING.md) — boundary between semantic understanding and deterministic policy
 
-## Mantenimiento
+## Maintenance
 
-Añadir documentos nuevos a este índice; enlazar el reemplazo cuando cambie una
-decisión. Regenerar los índices de navegación desde la raíz de aplicación.
-Consultar [sistema documental](../engineering/DOCUMENTATION-SYSTEM.md)
-y volver al [portal](../README.md).
+Add new documents to this index and link replacements when decisions change. Regenerate navigation indexes from the application root. See the [documentation system](../engineering/DOCUMENTATION-SYSTEM.md) and return to the [project portal](../README.md).

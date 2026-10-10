@@ -1,28 +1,12 @@
-# Configuración de despliegue
+# Deployment Artifacts
 
-## Para qué existe
+Deployment files describe reproducible local or laboratory configuration. Their presence does not prove that a service was deployed or accepted.
 
-local contiene Compose y emuladores; kubernetes contiene manifiestos de laboratorio. La presencia de YAML no demuestra un despliegue. Seguir local, Docker, CI y finalmente nube autorizada.
+## Areas
 
-## Dónde mirar
+- `local/` — local development and container configuration
+- [Kubernetes](kubernetes/README.md) — laboratory manifests
 
-- [local/README.md](local/README.md)
-- [kubernetes/README.md](kubernetes/README.md)
+## Promotion boundary
 
-La [guía inicial](../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
-
-## Antes de cambiar
-
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
-
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Follow the approved order: local, Docker, CI, then cloud only after explicit approval. Do not infer permission to run `kubectl apply`, provision Azure resources, or deploy from these documents. Verify current evidence in the [project README](../README.md) and [maturity matrix](../docs/requirements/V1.0-MATURITY-MATRIX.md).

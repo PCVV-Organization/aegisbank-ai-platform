@@ -1,43 +1,40 @@
-# AegisBank — Architecture Integrity & Code Duplication Report
+# Architecture Integrity and Code-Duplication Report
 
-> **Hito:** v0.10.1 — Architecture Integrity + Cross-Session Coordination
-> **Herramienta Auditora:** Pylint 4.0.8 (Checker: `R0801` / `duplicate-code`)
-> **Calificación General del Código:** **9.98 / 10**
-> **Evaluación de Deriva Arquitectónica:** 0 duplicaciones verdaderas de lógica de negocio (*0 TRUE_DUPLICATION*).
+> **Historical milestone:** v0.10.1 — Architecture Integrity + Cross-Session Coordination.
+> **Recorded tool:** Pylint 4.0.8 (`R0801` / `duplicate-code`).
+> **Recorded scores:** 9.98/10; zero findings classified as true business-logic duplication.
+>
+> This is a dated analysis snapshot, not a current scan. The scores and line references must not be reported as current without rerunning the checks.
 
----
+## 1. Recorded Pylint R0801 Findings
 
-## 1. Clasificación y Análisis de Hallazgos Pylint R0801
+| ID | Modules | Lines in recorded scan | Detected similarity | Classification | Recorded decision |
+|---|---|---:|---|---|---|
+| `DUP-001` | `aegisbank_rag.generation_evaluation` vs. `aegisbank_rag.retriever` | 139–150 / 67–78 | Mapping/instantiation of `RetrievalHit` dataclass fields. | `INTENTIONAL_SCHEMA_SIMILARITY` | Keep: separate generation-evaluation and live-retrieval domains map to the same canonical contract. |
+| `DUP-002` | `aegisbank_rag.dense_local` vs. `aegisbank_rag.lexical` | 61–70 / 42–51 | Sort by `cosine_similarity` and filter chunks with score > 0.0. | `INTENTIONAL_SCHEMA_SIMILARITY` | Keep: independent lexical and dense engines; abstraction was judged to add unnecessary coupling. |
+| `DUP-003` | `aegisbank_intent_classifier.constants` vs. `aegisbank_rag.lexical` | 45–55 / 13–24 | `TfidfVectorizer` hyperparameter dictionary (`ngram_range`, `min_df`, `norm`). | `INTENTIONAL_SCHEMA_SIMILARITY` | Keep: classifier and RAG packages use separate contracts; the classifier's synthetic v0.3 dataset contract was recorded as frozen. |
+| `DUP-004` | `aegisbank_rag.evaluation` vs. `aegisbank_rag.generation_evaluation` | 225–235 / 383–393 | Markdown report header rendering. | `TEST_FIXTURE_SIMILARITY` | Keep separate formatting for retrieval evaluation and generated-answer evaluation. |
+| `DUP-005` | `aegisbank_rag.evaluation` vs. `aegisbank_rag.generation_evaluation` | 218–224 / 376–382 | Indented JSON serialization of evaluation metrics. | `TEST_FIXTURE_SIMILARITY` | Keep standard artifact writing local; a shared helper was judged to reduce cohesion. |
+| `DUP-006` | `aegisbank_rag.context` vs. `aegisbank_rag.generation_evaluation` | 14–19 / 78–83 | Dataclass fields (`document_id`, `version`, `chunk_id`, `source`, `status`). | `INTENTIONAL_SCHEMA_SIMILARITY` | Keep canonical citation-context attributes. |
 
-| ID | Módulos Involucrados | Líneas Afectadas | Patrón Detectado | Clasificación | Decisión & Justificación |
-|---|---|---|---|---|---|
-| **DUP-001** | `aegisbank_rag.generation_evaluation` vs `aegisbank_rag.retriever` | 139-150 / 67-78 | Mapeo e instanciación de dataclass `RetrievalHit` con atributos de chunk. | `INTENTIONAL_SCHEMA_SIMILARITY` | **Mantener:** Son dominios separados (pipeline de evaluación de generación vs motor de recuperación en vivo). Mapean el mismo contrato canónico. |
-| **DUP-002** | `aegisbank_rag.dense_local` vs `aegisbank_rag.lexical` | 61-70 / 42-51 | Ordenamiento por `cosine_similarity` y filtrado de chunks con score > 0.0. | `INTENTIONAL_SCHEMA_SIMILARITY` | **Mantener:** Motores de similitud independientes (léxico vs denso) que operan sobre matrices de scikit-learn. Abstraerlos aumentaría acoplamiento innecesario. |
-| **DUP-003** | `aegisbank_intent_classifier.constants` vs `aegisbank_rag.lexical` | 45-55 / 13-24 | Diccionario de hiperparámetros de `TfidfVectorizer` (`ngram_range`, `min_df`, `norm`). | `INTENTIONAL_SCHEMA_SIMILARITY` | **Mantener:** `ml/intent-classifier` está congelado bajo contrato de dataset sintético v0.3. No se deben compartir constantes entre paquetes independientes. |
-| **DUP-004** | `aegisbank_rag.evaluation` vs `aegisbank_rag.generation_evaluation` | 225-235 / 383-393 | Renderizado de cabecera markdown para reportes de evaluación. | `TEST_FIXTURE_SIMILARITY` | **Mantener:** Formateadores de texto independientes para reportes de evaluación de retrieval vs evaluación de respuestas generadas. |
-| **DUP-005** | `aegisbank_rag.evaluation` vs `aegisbank_rag.generation_evaluation` | 218-224 / 376-382 | Serialización JSON con formato identado de métricas evaluativas. | `TEST_FIXTURE_SIMILARITY` | **Mantener:** Escritura estándar de artefactos en disco. Crear un "JsonHelper" violaría el principio de cohesión. |
-| **DUP-006** | `aegisbank_rag.context` vs `aegisbank_rag.generation_evaluation` | 14-19 / 78-83 | Declaración de campos de dataclass (`document_id`, `version`, `chunk_id`, `source`, `status`). | `INTENTIONAL_SCHEMA_SIMILARITY` | **Mantener:** Definición canónica de atributos para el contexto de citas documentales. |
+## 2. Recorded Architecture-Drift Review
 
----
+| Responsibility | Canonical implementation | Recorded decision | Recorded evidence |
+|---|---|---|---|
+| Agent orchestration | `AgentOrchestrator` (`ai/agent/src/aegisbank_agent/agent.py`) | `REUSE`; keep one source of truth. | No parallel orchestrator found in that scan. |
+| Tool registry | `ToolRegistry` (`ai/agent/src/aegisbank_agent/tools/registry.py`) | `REUSE`; central registry. | Exports OpenAI and MCP schemas without ad hoc dictionaries. |
+| Routing policy | `requires_account_data` / `requires_banking_read` | `REUSE`; retain deterministic rules. | Separated from stochastic inference in the recorded review. |
+| HITL | `HITLApprovalManager` (`ai/agent/src/aegisbank_agent/hitl.py`) | `REUSE`; one manager. | No `HumanApprovalService` duplicate was found in that scan. |
+| MCP boundary | `AegisBank Local MCP` (`ai/agent/src/aegisbank_agent/mcp_boundary.py`) | `REUSE`; retain stdio transport. | Report recorded `mcp==2.1.1`, protocol `2026-07-28`. |
+| Reliability | `RetryPolicy`, `CircuitBreaker`, `IdempotencyGuard` | `REUSE`; keep the `reliability` module. | Reported as reused by Core Banking and tool calls. |
+| Messaging/outbox/DLQ | `LocalMessageBus`, `OutboxProcessor`, `IdempotentConsumer` | `REUSE`; retain decoupled abstraction. | No direct connections outside the broker abstraction were reported. |
+| Observability/audit | `StructuredLogger`, `AuditLogger`, `TracerProvider`, `HOTLSupervisor` | `REUSE`; keep the `observability` module. | Central redaction and WORM logging were reported. |
 
-## 2. Auditoría de Deriva Arquitectónica (*Architecture Drift*)
+## 3. Recorded Conclusion
 
-| Responsabilidad | Implementación Canónica | Sospecha de Duplicación | Decisión | Acción | Evidencia |
-|---|---|---|---|---|---|
-| **Orquestación del Agente** | `AgentOrchestrator` (`ai/agent/src/aegisbank_agent/agent.py`) | Ninguna | `REUSE` | Mantener única fuente de verdad | 0 orquestadores paralelos encontrados. |
-| **Registro de Herramientas** | `ToolRegistry` (`ai/agent/src/aegisbank_agent/tools/registry.py`) | Ninguna | `REUSE` | Mantener registro central | Exporta esquemas OpenAI y MCP sin diccionarios ad-hoc. |
-| **Políticas de Enrutamiento** | `requires_account_data` / `requires_banking_read` | Ninguna | `REUSE` | Mantener reglas deterministas | Separado limpiamente de inferencia estocástica. |
-| **Gestión HITL** | `HITLApprovalManager` (`ai/agent/src/aegisbank_agent/hitl.py`) | Ninguna | `REUSE` | Mantener gestor único | Cero duplicaciones tipo `HumanApprovalService`. |
-| **Límite MCP** | `AegisBank Local MCP` (`ai/agent/src/aegisbank_agent/mcp_boundary.py`) | Ninguna | `REUSE` | Mantener transporte stdio | Servidor oficial `mcp==2.1.1` protocolo `2026-07-28`. |
-| **Resiliencia (Retry / CB / Idemp)** | `RetryPolicy`, `CircuitBreaker`, `IdempotencyGuard` | Ninguna | `REUSE` | Mantener módulo `reliability` | Reutilizado en Core Banking y llamadas de herramientas. |
-| **Mensajería / Outbox / DLQ** | `LocalMessageBus`, `OutboxProcessor`, `IdempotentConsumer` | Ninguna | `REUSE` | Mantener abstracción desacoplada | Cero conexiones directas sin pasar por broker. |
-| **Observabilidad / Auditoría** | `StructuredLogger`, `AuditLogger`, `TracerProvider`, `HOTLSupervisor` | Ninguna | `REUSE` | Mantener módulo `observability` | Redacción de secretos y registro WORM centralizado. |
+- True duplications: **0**.
+- Intentional schema similarities: **4**.
+- Test-fixture similarities: **2**.
+- Refactors required by that scan: **0**.
 
----
-
-## 3. Conclusión de la Auditoría
-
-* **TRUE DUPLICATIONS:** 0
-* **INTENTIONAL SCHEMA SIMILARITIES:** 4
-* **TEST FIXTURE SIMILARITIES:** 2
-* **REFACTORS REQUERIDOS:** 0 (el código mantiene alta cohesión y bajo acoplamiento sin introducir abstracciones prematuras ni *god objects*).
+These findings describe the v0.10.1 scan only. Inspect current source and rerun the relevant static analysis before using them to justify present-day architecture decisions.

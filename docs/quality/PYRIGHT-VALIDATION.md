@@ -1,34 +1,22 @@
-# Validación de tipos con Pyright
+# Pyright Type Validation
 
-## Propósito
+## Purpose
 
-`pyrightconfig.json` define el alcance canónico del análisis estático de la
-aplicación. Incluye las cuatro raíces que componen el monolito modular:
-orquestación del agente, RAG, clasificador de intenciones y Core Banking.
-No incluye artefactos, entornos virtuales, cachés, pruebas ni Functions, que
-tienen ciclos de ejecución y dependencias propios.
+`pyrightconfig.json` defines the canonical scope of application static analysis. It includes the four roots that make up the modular monolith: agent orchestration, RAG, intent classifier, and Core Banking. It excludes artifacts, virtual environments, caches, tests, and Functions, which have separate execution lifecycles and dependencies.
 
-La configuración usa el intérprete local `.venv/Scripts/python.exe` mediante
-`venvPath` y `venv`. No baja la severidad de diagnósticos ni usa supresiones.
-Las anotaciones y adaptadores de cada componente siguen siendo la fuente de
-verdad para el contrato de tipos.
+The configuration uses the local `.venv/Scripts/python.exe` interpreter through `venvPath` and `venv`. It does not lower diagnostic severity or use suppressions. Each component's annotations and adapters remain the source of truth for its type contract.
 
-## Ejecución
+## Run
 
-Desde la raíz Git de la aplicación:
+Run from the application Git root:
 
 ```powershell
 node ..\tools\node\node_modules\pyright\index.js `
   --pythonpath .venv\Scripts\python.exe --outputjson
 ```
 
-El comando no recibe rutas posicionales: estas se resuelven exclusivamente desde
-`pyrightconfig.json`, por lo que una ejecución local y una futura automatización
-analizan el mismo conjunto de fuentes. Revisa `errorCount`, `warningCount` y
-`filesAnalyzed` del JSON antes de afirmar una base limpia.
+The command takes no positional paths; `pyrightconfig.json` alone defines the analyzed sources. This keeps local and future automated runs aligned. Inspect `errorCount`, `warningCount`, and `filesAnalyzed` in the JSON before claiming a clean baseline.
 
-## Límites
+## Limits
 
-Pyright comprueba contratos estáticos; no sustituye las suites unitarias,
-integración, contratos, E2E ni la compuerta FAST. Las rutas de Functions se
-validan en su propio entorno cuando ese alcance esté autorizado.
+Pyright checks static contracts; it does not replace unit, integration, contract, end-to-end, or FAST-gate suites. Validate Functions paths in their own environment when that scope is authorized.

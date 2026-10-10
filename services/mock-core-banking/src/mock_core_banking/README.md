@@ -1,27 +1,11 @@
-# Código bancario sintético
+# Mock Core Banking Package
 
-## Para qué existe
+Package map for the synthetic local banking API. This is educational laboratory software, not a real banking system.
 
-main.py crea la API. api recibe HTTP; schemas valida entradas/salidas; domain aplica reglas; persistence encapsula ORM/transacciones/seed. Los esquemas de API y entidades ORM tienen responsabilidades distintas.
+- `main.py` — application construction and entry point
+- `api/` — HTTP routes and request dependencies
+- `schemas/` — API input and output models
+- `domain/` — deterministic domain rules
+- `persistence/` — local storage and repository adapters
 
-## Dónde mirar
-
-`__init__.py`; `config.py`; `correlation.py`; `error_handlers.py`; `main.py`
-
-La [guía inicial](../../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
-
-## Antes de cambiar
-
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
-
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Keep business rules deterministic, use synthetic data, and test interface changes at the relevant layer. See the service [README](../../README.md) and project [canonical component guide](../../../../docs/architecture/CANONICAL-COMPONENTS.md).

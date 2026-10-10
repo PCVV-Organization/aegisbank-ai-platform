@@ -1,27 +1,13 @@
-# Código RAG
+# Retrieval-Augmented Generation Package
 
-## Para qué existe
+This package prepares and retrieves document context for grounded answers. Retrieved content is untrusted input: it can inform an answer but cannot authorize tools or override deterministic policy.
 
-corpus y chunking preparan evidencia; lexical, dense_local e hybrid recuperan y combinan resultados; pgvector_retriever y redis_retriever adaptan almacenes. context, prompting y generation sustentan respuestas; foundry_local integra el proveedor local. Los documentos recuperados no pueden autorizar herramientas.
+## Responsibilities
 
-## Dónde mirar
+- Corpus loading, parsing, and chunking prepare source material.
+- Lexical, dense, and hybrid retrieval locate candidate evidence.
+- Vector and cache adapters connect the package to configured stores.
+- Context assembly and prompting provide bounded evidence to generation.
+- Provider adapters isolate model-service integration.
 
-`__init__.py`; `cache.py`; `chunking.py`; `cli.py`; `constants.py`; `context.py`; `corpus.py`; `dense_local.py`; `embedding.py`; `evaluation.py`; `foundry_local.py`; `generation.py`; `generation_evaluation.py`; `hybrid.py`; `lexical.py`; `metrics.py`; `pgvector_retriever.py`; `prompting.py`; `provider.py`; `redis_retriever.py`; `retriever.py`
-
-La [guía inicial](../../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
-
-## Antes de cambiar
-
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
-
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Keep evaluation data separate from tuning data, preserve source provenance where available, and use synthetic data only. Verify runtime claims against tests and current configuration.

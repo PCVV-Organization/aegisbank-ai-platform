@@ -1,22 +1,17 @@
-# Ingeniería
+# Engineering
 
-Responsabilidades de código, separación de repositorios y reglas para mantener documentación e índices coherentes.
+Code ownership, repository boundaries, and practices for maintaining documentation and generated indexes.
 
-## Cómo usar esta carpeta
+## How to use this directory
 
-Primero definir la pregunta que se quiere resolver. Leer el documento pertinente,
-anotar su fecha/estado y seguir su referencia al código o evidencia. Si contradice
-el checkout actual, comunicar la diferencia y conservar el histórico.
+Define the question, read the relevant document, note its date and status, and follow links to code or evidence. Report conflicts with the current checkout without rewriting historical records.
 
-## Documentos
+## Documents
 
-- [DOCUMENTATION-MAINTENANCE](DOCUMENTATION-MAINTENANCE.md)
-- [OWNERSHIP-MAP](OWNERSHIP-MAP.md)
-- [REPOSITORY-BOUNDARIES](REPOSITORY-BOUNDARIES.md)
+- [Documentation maintenance](DOCUMENTATION-MAINTENANCE.md)
+- [Ownership map](OWNERSHIP-MAP.md)
+- [Repository boundaries](REPOSITORY-BOUNDARIES.md)
 
-## Mantenimiento
+## Maintenance
 
-Añadir documentos nuevos a este índice; enlazar el reemplazo cuando cambie una
-decisión. Regenerar los índices de navegación desde la raíz de aplicación.
-Consultar [sistema documental](DOCUMENTATION-SYSTEM.md)
-y volver al [portal](../README.md).
+Add new documents to this index and link replacements when decisions change. Regenerate navigation indexes from the application root. See the [documentation system](DOCUMENTATION-SYSTEM.md) and return to the [project portal](../README.md).

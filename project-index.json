@@ -487,7 +487,15 @@
       "category": "operations-reference"
     },
     {
+      "path": "docs/operations/production-configuration-secrets-identity-audit-prompt.en.md",
+      "category": "operations-reference"
+    },
+    {
       "path": "docs/operations/production-configuration-secrets-identity-audit-prompt.md",
+      "category": "operations-reference"
+    },
+    {
+      "path": "docs/operations/production-configuration-secrets-identity-audit.en.md",
       "category": "operations-reference"
     },
     {

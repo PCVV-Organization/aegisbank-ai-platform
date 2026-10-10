@@ -1,26 +1,21 @@
-# Seguridad
+# Security
 
-Amenazas, controles, límites y evaluaciones. Solo datos sintéticos; evidencia de laboratorio no equivale a resistencia universal ni cumplimiento.
+Threats, controls, boundaries, and evaluations. Use synthetic data only. Laboratory evidence does not establish universal resistance or compliance.
 
-## Cómo usar esta carpeta
+## How to use this directory
 
-Primero definir la pregunta que se quiere resolver. Leer el documento pertinente,
-anotar su fecha/estado y seguir su referencia al código o evidencia. Si contradice
-el checkout actual, comunicar la diferencia y conservar el histórico.
+Read the relevant document, note its date and status, and follow links to code or evidence. A dated report is not proof of current behavior.
 
-## Documentos
+## Documents
 
-- [CONTAINER-SECURITY](CONTAINER-SECURITY.md)
-- [DATA-LAYER-SECURITY](DATA-LAYER-SECURITY.md)
-- [DEVSECOPS-GATES](DEVSECOPS-GATES.md)
-- [PHASE2-LOCAL-RED-TEAM-EVIDENCE](PHASE2-LOCAL-RED-TEAM-EVIDENCE.md)
-- [sbom](sbom.json)
-- [SERVERLESS-SECURITY](SERVERLESS-SECURITY.md)
-- [V1.0-THREAT-MODEL](V1.0-THREAT-MODEL.md)
+- [Container security](CONTAINER-SECURITY.md)
+- [Data-layer security](DATA-LAYER-SECURITY.md)
+- [DevSecOps gates](DEVSECOPS-GATES.md)
+- [Phase 2 local red-team evidence](PHASE2-LOCAL-RED-TEAM-EVIDENCE.md)
+- [SBOM](sbom.json)
+- [Serverless security](SERVERLESS-SECURITY.md)
+- [Version 1.0 threat model](V1.0-THREAT-MODEL.md)
 
-## Mantenimiento
+## Maintenance
 
-Añadir documentos nuevos a este índice; enlazar el reemplazo cuando cambie una
-decisión. Regenerar los índices de navegación desde la raíz de aplicación.
-Consultar [sistema documental](../engineering/DOCUMENTATION-SYSTEM.md)
-y volver al [portal](../README.md).
+Keep this index focused on current guidance; preserve dated evidence in place. Regenerate navigation indexes from the application root. See the [documentation system](../engineering/DOCUMENTATION-SYSTEM.md) and [project portal](../README.md).

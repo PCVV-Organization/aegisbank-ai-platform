@@ -1,27 +1,22 @@
-# evaluation
+# Evaluation Component
 
-## Para qué existe
+## Purpose
 
-Evaluación de utilidad, seguridad y comparación estadística. Modificar este componente exige revisar consumidores y su suite asociada; no crear una responsabilidad paralela.
+Owns utility, safety, and statistical-comparison evaluation. Review consumers and their tests before changing this component; do not create a parallel evaluation owner.
 
-## Dónde mirar
+## Source navigation
 
-`__init__.py`; `ab_testing.py`; `evaluators.py`; `red_team.py`; `taxonomy.py`
+- `__init__.py`
+- `ab_testing.py`
+- `evaluators.py`
+- `red_team.py`
+- `taxonomy.py`
+- [Start Here](../../../../../docs/START-HERE.md) and the [directory map](../../../../../docs/DIRECTORY-MAP.md).
 
-La [guía inicial](../../../../../docs/START-HERE.md) explica el flujo completo.
-El [mapa de carpetas](../../../../../docs/DIRECTORY-MAP.md) identifica las subcarpetas.
+## Before changing this component
 
-## Antes de cambiar
+Identify inputs, outputs, and consumers. Review [canonical components](../../../../../docs/architecture/CANONICAL-COMPONENTS.md), use synthetic data, acquire SessionGuard as required by [AGENTS.md](../../../../../AGENTS.md), and run relevant checks from the [test strategy](../../../../../docs/quality/TEST-STRATEGY.md). Update tests and documentation with interface changes.
 
-Identificar entrada, salida y consumidores; consultar los
-[componentes canónicos](../../../../../docs/architecture/CANONICAL-COMPONENTS.md).
-Trabajar con datos sintéticos y adquirir SessionGuard según
-[AGENTS](../../../../../AGENTS.md). Ejecutar la suite correspondiente de la
-[estrategia de pruebas](../../../../../docs/quality/TEST-STRATEGY.md).
-Un cambio de interfaz requiere actualizar pruebas y documentación en el mismo cambio.
+## Limits
 
-## Límites
-
-Esta guía describe responsabilidades del checkout, no una certificación ni una
-ejecución live. Para evidencias y bloqueos consultar el
-[estado fechado](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md).
+Evaluation code and recorded scores do not establish model superiority or production readiness. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.

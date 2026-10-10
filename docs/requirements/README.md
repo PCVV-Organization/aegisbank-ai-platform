@@ -1,22 +1,17 @@
-# Requisitos y madurez
+# Requirements and Maturity
 
-Alcance, cobertura y estado declarado de capacidades. Una fila planificada o configurada no prueba ejecución.
+Scope, coverage, and declared capability status. A planned or configured row does not prove execution.
 
-## Cómo usar esta carpeta
+## How to use this directory
 
-Primero definir la pregunta que se quiere resolver. Leer el documento pertinente,
-anotar su fecha/estado y seguir su referencia al código o evidencia. Si contradice
-el checkout actual, comunicar la diferencia y conservar el histórico.
+Read the relevant document, note its date and status, and follow links to code or evidence. Report conflicts with the current checkout without rewriting historical records.
 
-## Documentos
+## Documents
 
-- [COVERAGE-MATRIX](COVERAGE-MATRIX.md)
-- [MIBANCO-JOB-PROFILE-2026](MIBANCO-JOB-PROFILE-2026.md)
-- [V1.0-MATURITY-MATRIX](V1.0-MATURITY-MATRIX.md)
+- [Historical coverage matrix](COVERAGE-MATRIX.md) — dated Spanish snapshot with recorded counts; use the maturity matrix and current evidence for present status
+- [MiBanco job profile 2026](MIBANCO-JOB-PROFILE-2026.md)
+- [Version 1.0 maturity matrix](V1.0-MATURITY-MATRIX.md)
 
-## Mantenimiento
+## Maintenance
 
-Añadir documentos nuevos a este índice; enlazar el reemplazo cuando cambie una
-decisión. Regenerar los índices de navegación desde la raíz de aplicación.
-Consultar [sistema documental](../engineering/DOCUMENTATION-SYSTEM.md)
-y volver al [portal](../README.md).
+Add new documents to this index and link replacements when decisions change. Regenerate navigation indexes from the application root. See the [documentation system](../engineering/DOCUMENTATION-SYSTEM.md) and [project portal](../README.md).

@@ -1,23 +1,23 @@
-# Runbook de Despliegue, Operación y Promoción a Producción
+# Production Deployment, Operations, and Promotion Runbook (Design Only)
 
-> **Clasificación:** `AZURE_DEPLOYMENT_PREPARED` · `CLOUD_UNVALIDATED`.
-> **Alcance:** Procedimientos de despliegue, promoción inmutable, rotación, incidentes y rollback.
-> **Límite Canónico:** AegisBank AI Platform es un laboratorio educativo de banca con IA; no es un banco comercial ni procesa dinero real.
+> **Recorded classification:** `AZURE_DEPLOYMENT_PREPARED`; `CLOUD_UNVALIDATED`.
+> **Scope:** Proposed procedures for promotion, operations, credential rotation, incidents, and rollback.
+> **Product boundary:** AegisBank is an educational banking-AI laboratory, not a commercial bank; it does not process real money.
+>
+> **Critical:** This document is not deployment authorization or evidence of a production environment. No Azure resources may be provisioned and no deployment may be run without explicit approval. Validate every command, resource name, role, endpoint, configuration value, and rollback target against the authorized environment before use. Examples are not verified production settings.
 
----
+## 1. Prerequisites for Any Future Promotion
 
-## 1. Prerrequisitos de Plataforma
+1. The exact immutable image digest has documented `STAGING_ACCEPTED` evidence under the [staging acceptance runbook](STAGING-ACCEPTANCE-RUNBOOK.md).
+2. An isolated, explicitly authorized production resource group and region exist; never reuse staging resources, stores, or vaults.
+3. The base infrastructure template and production parameters have been reviewed for the approved target.
+4. `id-aegisbank-production-workload` and least-privilege role assignments have been verified against the [RBAC matrix](RBAC-LEAST-PRIVILEGE-MATRIX.md).
 
-1. **Aceptación Previa en Staging:** El artefacto exacto (digest de imagen de contenedor) debe haber obtenido `STAGING_ACCEPTED` documentado bajo el [STAGING-ACCEPTANCE-RUNBOOK.md](STAGING-ACCEPTANCE-RUNBOOK.md).
-2. **Grupo de Recursos Aislado:** `rg-aegisbank-production` independiente en región autorizada.
-3. **Infraestructura Base Desplegada:** `deploy/azure/main.bicep` con `parameters.production.json`.
-4. **Identidad Gestionada Asignada:** `id-aegisbank-production-workload` provisionada con asignaciones RBAC mínimas (ver [RBAC-LEAST-PRIVILEGE-MATRIX.md](RBAC-LEAST-PRIVILEGE-MATRIX.md)).
+These are proposed gates, not statements that they have been met.
 
----
+## 2. Proposed Non-Secret Runtime Bootstrap Settings
 
-## 2. Variables Mínimas de Bootstrap (Runtime Container Apps)
-
-En el entorno de producción en Container Apps, se configuran **únicamente** variables no secretas para localizar los recursos:
+The following names and values are documentation examples only; they have not been validated as live endpoints:
 
 ```bash
 AEGISBANK_ENV=production
@@ -30,105 +30,65 @@ AZURE_OPENAI_DEPLOYMENT_NAME=phi-4-mini
 AZURE_OPENAI_API_VERSION=2024-10-21
 ```
 
-> **REGLA DE ORO:** Ningún secreto, password, token o clave de acceso se inyecta en variables de entorno. Todo acceso a recursos Azure se realiza mediante Entra ID (`DefaultAzureCredential`).
+Do not inject secrets, passwords, tokens, or access keys through environment variables. The proposed cloud design uses Microsoft Entra ID for Azure resource access; validate actual credential behavior before use.
 
----
+## 3. Documented App Configuration Key Catalog
 
-## 3. Catálogo de Claves en Azure App Configuration
+These values are illustrative defaults, not approved production configuration:
 
-Las siguientes configuraciones se gestionan centralizadamente en App Configuration con label `production`:
+| Key | Type | Example | Description |
+|---|---|---:|---|
+| `AegisBank:Agent:MaxRounds` | int | `3` | Maximum tool rounds per invocation. |
+| `AegisBank:Agent:TimeoutSeconds` | float | `45.0` | Agent invocation timeout. |
+| `AegisBank:RAG:Retriever` | string | `hybrid_rrf` | Retrieval strategy. |
+| `AegisBank:RAG:TopK` | int | `3` | Maximum corpus documents returned. |
+| `AegisBank:RAG:CacheTtlSeconds` | int | `3600` | Document/embedding cache TTL. |
+| `AegisBank:CoreBanking:TimeoutSeconds` | float | `5.0` | Core Banking service call timeout. |
+| `AegisBank:Reliability:RetryCount` | int | `3` | Bounded retries for transient failures. |
+| `AegisBank:Reliability:CircuitBreakerThreshold` | int | `5` | Consecutive failures before opening the circuit breaker. |
+| `AegisBank:Observability:LogLevel` | string | `INFO` | Minimum structured log level. |
+| `AegisBank:Observability:SamplingRatio` | float | `0.1` | OpenTelemetry distributed trace sampling ratio. |
 
-| Clave | Tipo | Valor Típico | Descripción |
-| --- | --- | --- | --- |
-| `AegisBank:Agent:MaxRounds` | int | `3` | Límite máximo de rondas de herramientas por invocación. |
-| `AegisBank:Agent:TimeoutSeconds` | float | `45.0` | Timeout de invocación del agente. |
-| `AegisBank:RAG:Retriever` | string | `hybrid_rrf` | Estrategia de recuperación canónica. |
-| `AegisBank:RAG:TopK` | int | `3` | Documentos máximos retornados por el corpus. |
-| `AegisBank:RAG:CacheTtlSeconds` | int | `3600` | TTL para caché de embeddings/documentos en Redis. |
-| `AegisBank:CoreBanking:TimeoutSeconds` | float | `5.0` | Timeout para llamadas al servicio de Core Banking. |
-| `AegisBank:Reliability:RetryCount` | int | `3` | Intentos acotados para fallos transitorios. |
-| `AegisBank:Reliability:CircuitBreakerThreshold` | int | `5` | Fallos consecutivos antes de abrir el disyuntor. |
-| `AegisBank:Observability:LogLevel` | string | `INFO` | Nivel mínimo de logging estructurado. |
-| `AegisBank:Observability:SamplingRatio` | float | `0.1` | Muestreo de trazas distribuidas OpenTelemetry. |
+## 4. Key Vault Secret Names (No Values)
 
----
+The design limits Key Vault to unavoidable third-party secrets that cannot use Entra ID. The following names are illustrative and do not imply that secrets exist:
 
-## 4. Nombres de Secretos en Azure Key Vault (SIN VALORES)
+| Secret name | Intended purpose | Format |
+|---|---|---|
+| `external-sms-gateway-api-key` | Third-party SMS/OTP notification gateway | Alphanumeric token |
+| `legacy-vendor-webhook-signing-key` | HMAC verification for external vendor webhooks | 256-bit hexadecimal value |
 
-Key Vault almacena **únicamente** secretos externos inevitables que no admiten Entra ID:
+App Configuration may store `@Microsoft.KeyVault(SecretUri=...)` references to approved secret names. Never place secret values in this document.
 
-| Nombre del Secreto en Key Vault | Propósito | Formato |
-| --- | --- | --- |
-| `external-sms-gateway-api-key` | API Key para gateway de SMS / notificaciones OTP externo | Token alfanumérico |
-| `legacy-vendor-webhook-signing-key` | Llave HMAC para verificar webhooks de proveedores externos | Hexadecimal 256 bits |
+## 5. Immutable Staging-to-Production Promotion (Proposed)
 
-*(App Configuration almacena referencias `@Microsoft.KeyVault(SecretUri=...)` hacia estos nombres).*
+1. Do not rebuild the production image. Promote only the exact staging-accepted digest, for example `aegisbank-agent@sha256:<ACCEPTED_DIGEST>`.
+2. An authorized operator must verify the account, subscription, resource group, app name, and digest before any update command. The original design's `az containerapp update` example is intentionally not repeated here because target details are unverified.
+3. Validate `/health/live` and `/health/ready` only after an approved deployment, and record the exact revision and evidence.
 
----
+## 6. Emergency Write Kill Switch (Proposed)
 
-## 5. Promoción Inmutable Staging -> Producción
+If a future authorized deployment exhibits anomalous model behavior, the design calls for a human-on-the-loop (HOTL) supervisor to disable mutations using the approved App Configuration feature flag or supervision endpoint.
 
-1. **Inmutabilidad Absoluta:**
-   - La imagen de producción **no se recompila**.
-   - Se promueve la imagen exactamente referenciada por digest: `aegisbank-agent@sha256:...`.
-2. **Actualización de Container App:**
-   ```bash
-   az containerapp update \
-     --name ca-aegisbank-agent \
-     --resource-group rg-aegisbank-production \
-     --image "aegisbankacr.azurecr.io/aegisbank-agent@sha256:<ACCEPTED_DIGEST>"
-   ```
-3. **Verificación de Liveness y Readiness:**
-   ```bash
-   curl -f https://<production-endpoint>/health/live
-   curl -f https://<production-endpoint>/health/ready
-   ```
+The intended invariant is deterministic: state-changing requests such as `create_service_request` remain blocked regardless of LLM output, while approved read-only operations may continue if safe. Verify actual implementation before relying on this behavior. Any state change requires an authorized operator.
 
----
+## 7. Rollback (Proposed)
 
-## 6. Procedimiento de Emergencia: Kill-Switch HOTL
+1. An authorized operator may reactivate a previously verified healthy revision after confirming the exact target and impact.
+2. Verify the selected revision returns `200 OK` from `/health/ready`.
+3. Record the incident and post-mortem without exposing sensitive audit data.
 
-Si se detecta una anomalía o comportamiento imprevisto del modelo en producción:
+No rollback command should be run from this design document without target-specific review and authorization.
 
-1. **Activación de HOTL (Human-On-The-Loop) Supervisory Kill Switch:**
-   - Desactivar mutaciones actualizando el feature flag en App Configuration:
-     `set_feature_flag("banking_mutations_enabled", False, label="production")`
-   - O enviar señal de supervisor a `/api/v1/supervision/hotl/kill-switch`.
-2. **Efecto Inmediato:**
-   - Toda solicitud de escritura (`create_service_request`, etc.) se bloquea de inmediato a nivel de código determinista, independientemente de lo que responda el LLM.
-   - Las consultas de solo lectura (`get_account_balance`, etc.) continúan operando con normalidad.
+## 8. Credential and Identity Rotation (Proposed)
 
----
+1. Rotate unavoidable Key Vault secrets by creating an approved new version; verify whether consumers use a floating or pinned version and refresh behavior.
+2. Rotate GitHub Actions OIDC federated credentials by updating the Entra service principal configuration.
+3. Validate identity continuity, least privilege, and service health. Do not assume zero downtime without testing.
 
-## 7. Procedimiento de Rollback
+## 9. Explicit Limitations
 
-1. En caso de fallo en producción, revertir Container Apps a la revisión anterior conocida estable:
-   ```bash
-   az containerapp revision set-active \
-     --name ca-aegisbank-agent \
-     --resource-group rg-aegisbank-production \
-     --revision <PREVIOUS_HEALTHY_REVISION>
-   ```
-2. Validar que la revisión anterior responde con `200 OK` en `/health/ready`.
-3. Registrar el incidente en el registro de incidentes post-mortem sin divulgar datos de auditoría sensibles.
-
----
-
-## 8. Rotación de Secretos e Identidades
-
-1. **Rotación de Secretos en Key Vault:**
-   - Crear una nueva versión del secreto en Azure Key Vault.
-   - App Configuration puede apuntar a la versión flotante o fija.
-   - Forzar refresh del proveedor en la aplicación (`ConfigurationProvider.refresh()`).
-2. **Rotación de Federated Credentials (OIDC):**
-   - Actualizar la credencial federada en el Service Principal de GitHub Actions en Entra ID.
-   - Cero tiempo de inactividad para los runtimes de producción.
-
----
-
-## 9. Limitaciones Explícitas del Sistema
-
-- **No es un banco real:** Todos los datos son sintéticos; los clientes `CUST-0001` a `CUST-0004` son ficticios.
-- **Sin dinero real:** No existe liquidación con BCRP, Cámara de Compensación Electrónica, ni SWIFT.
-- **Sin Certificación SBS/PCI-DSS:** No se reclama cumplimiento regulatorio formal de banca real.
-- **Cloud-Unvalidated:** El sistema está técnicamente preparado para despliegue en Azure (`AZURE_DEPLOYMENT_PREPARED`), pero la ejecución en la nube no se realiza hasta que se apruebe el aprovisionamiento real de staging.
+- AegisBank is not a real bank; all data and customer identifiers (including `CUST-0001` through `CUST-0004`) are synthetic.
+- No BCRP, Electronic Clearing House, or SWIFT settlement exists.
+- No SBS or PCI-DSS certification/compliance is claimed.
+- Cloud status remains unvalidated until authorized provisioning, execution, and evidence are completed.

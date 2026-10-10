@@ -1,36 +1,39 @@
-# AegisBank — Test Strategy (v0.13.0-R2)
+# AegisBank Test Strategy (v0.13.0-R2)
 
 > **Milestone:** `v0.13.0-R2 — Test Suite Rationalization`
-> **Principio rector:** `TEST VALUE > TEST COUNT`.
+> **Guiding principle:** `TEST VALUE > TEST COUNT`.
 
-## 1. Test Pyramid
+## 1. Test pyramid
 
-```
+```text
             /\
-           /  \          E2E (Critical User Journeys)
-          / E2E \         pocos journeys bancarios completos
+           /  \          E2E (critical user journeys)
+          / E2E \         A small set of complete banking journeys
          /──────\
-        / Contract\      Contratos JSON Schema, MCP, Outbox events
+        /Contract\       JSON Schema, MCP, and outbox-event contracts
        /──────────\
-      /Integration\     Componentes conectados (DB + RAG + Bus + Cosmos)
+      /Integration\     Components connected in process
      /──────────────\
-    /     Unit       \   Pieza única, sin I/O o con stubs en memoria
+    /     Unit       \   One component, without I/O or with in-memory stubs
    /──────────────────\
 ```
 
-Microsoft Well-Architected y Microsoft Foundry AI-200 recomiendan esta distribución: muchos unit tests rápidos en la base y muy pocos E2E en la cima porque los E2E son los más costosos y frágiles. ([Microsoft Learn][1]; [Microsoft Learn][2]).
+Microsoft Well-Architected and Microsoft Foundry AI-200 guidance are cited for
+the distribution above: many fast unit tests at the base and few E2E tests at
+the top because E2E tests are more expensive and fragile. See
+[Microsoft Learn 1][1] and [Microsoft Learn 2][2].
 
-## 2. Capas AegisBank (post v0.13.0-R2)
+## 2. AegisBank test layers (after v0.13.0-R2)
 
-```
+```text
 ai/agent/tests/
-├── unit/           # pieza única, < 1 s por caso, sin estado externo
-├── integration/    # múltiples componentes internos en proceso
-├── contracts/      # JSON Schema, interfaces
-├── e2e/             # Critical User Journeys
+├── unit/           # One component; no external state
+├── integration/    # Multiple in-process components
+├── contracts/      # JSON Schema and interfaces
+├── e2e/            # Critical user journeys
 │   ├── read_journeys/
 │   └── write_journeys/
-└── infra/           # opt-in: Docker, K8s, Functions, Cosmos emulator
+└── infra/          # Opt-in: Docker, Kubernetes, Functions, Cosmos emulator
     ├── containers/
     ├── kubernetes/
     ├── serverless/
@@ -38,95 +41,108 @@ ai/agent/tests/
     └── session_guard/
 ```
 
-Los números de versión (v06/, v07/, v08/, v09/, v012/, v013r1/) **ya no existen en el árbol**; viven en Git history, ADRs y documentación.
+Versioned test directories such as `v06/`, `v07/`, `v08/`, `v09/`, `v012/`,
+and `v013r1/` were removed from the tree; their history remains in Git, ADRs,
+and documentation.
 
-## 3. Pytest Markers (estrictos, `--strict-markers`)
+## 3. Pytest markers (`--strict-markers`)
 
-| Marker | Capa | `pytest ai/agent/tests/...` |
+| Marker | Layer | Test location |
 |---|---|---|
-| `unit` | Pieza única | `unit/` |
-| `integration` | Componentes en proceso | `integration/` |
-| `contract` | JSON Schema | `contracts/` |
-| `e2e` | Critical User Journeys | `e2e/` |
-| `infra` | Docker / K8s / Functions | `infra/` |
-| `slow` | Tests con sleeps o tiempos largos | opt-in |
+| `unit` | Single component | `unit/` |
+| `integration` | In-process components | `integration/` |
+| `contract` | JSON Schema and interfaces | `contracts/` |
+| `e2e` | Critical user journeys | `e2e/` |
+| `infra` | Docker, Kubernetes, Functions | `infra/` |
+| `slow` | Tests with long waits or durations | Opt-in |
 
-`pytest.mark.unit` se aplica vía `pytestmark = pytest.mark.unit` en cada archivo de `unit/`. No se permite mezclar capas en un mismo archivo.
+Each file under `unit/` applies `pytest.mark.unit` with `pytestmark`.
+Do not mix test layers in one file.
 
 ## 4. Gates
 
-### FAST / PR (gate por defecto)
+### FAST / PR (default gate)
+
 ```bash
 pytest ai/agent/tests/unit ai/agent/tests/integration ai/agent/tests/contracts
 ruff check .
 ruff format --check .
 python -m compileall -q .
 ```
-Tiempo objetivo: **< 30 s**.
 
-### CRITICAL E2E (opt-in, pre-release)
+Target duration: **under 30 seconds**.
+
+### Critical E2E (opt-in, pre-release)
+
 ```bash
 pytest ai/agent/tests/e2e
 ```
-Tiempo objetivo: **< 30 s**.
 
-### INFRA (opt-in, post-merge)
+Target duration: **under 30 seconds**.
+
+### Infrastructure (opt-in, post-merge)
+
 ```bash
 pytest ai/agent/tests/infra
 pytest ai/agent/tests/contracts
-scripts/container_acceptance.py   # requiere Docker + MSSQL_SA_PASSWORD
+scripts/container_acceptance.py   # requires Docker and MSSQL_SA_PASSWORD
 ```
-Opt-in porque requiere Docker, Kubernetes cluster local, etc.
 
-## 5. Conceptos Pedagógicos (Maestría)
+This gate is opt-in because it requires Docker, a local Kubernetes cluster, or
+other infrastructure.
 
-- **Unit Test** = pieza única, sin I/O.
-- **Integration Test** = piezas conectadas (DB + RAG + Bus + Cosmos in-process).
-- **Contract Test** = dos componentes cumplen su contrato (JSON Schema, MCP tool spec, Outbox event payload).
-- **E2E Test** = journey completo del usuario. Solo journeys bancarios críticos.
-- **Regression Test** = test que codifica un bug real para que no vuelva a aparecer (p. ej. `test_metamorphic_paraphrase_matrix_loan_details` codifica el bug "Dame detalle de mi LOAN-0001" descubierto manualmente).
-- **Parametrization** (`@pytest.mark.parametrize`) = un test con varios inputs para evitar duplicar funciones casi idénticas.
-- **Flaky Test** = test que pasa y falla sin cambios de código. Marcar como `slow` y aislar.
-- **Critical User Journey** = el subconjunto mínimo de journeys que cubren el valor de negocio.
-- **Diminishing Returns** = a partir de cierta densidad, agregar tests ya no aumenta la confianza sino el costo y el ruido.
-- **Test Maintenance Debt** = infraestructura de tests que consume tiempo sin proteger ningún riesgo. Es exactamente lo que `v0.13.0-R2` ataca.
+## 5. Testing concepts
 
-## 6. Reglas Permanentes
+- **Unit test:** one component, without I/O.
+- **Integration test:** connected components, such as DB, RAG, bus, or Cosmos,
+  tested in process.
+- **Contract test:** verifies that two components satisfy an interface, such
+  as JSON Schema, MCP tool specification, or outbox-event payload.
+- **E2E test:** completes a full user journey. Keep the suite to critical
+  banking journeys.
+- **Regression test:** captures a real defect so it does not recur. For
+  example, `test_metamorphic_paraphrase_matrix_loan_details` captures the
+  “Dame detalle de mi LOAN-0001” routing defect.
+- **Parametrization:** exercises multiple inputs through one test using
+  `@pytest.mark.parametrize`, avoiding near-duplicate functions.
+- **Flaky test:** passes and fails without code changes. Investigate and isolate
+  it; marking a test `slow` does not by itself fix flakiness.
+- **Critical user journey:** the smallest set of full flows that protects
+  important user value and safety properties.
+- **Diminishing returns:** additional tests eventually add less confidence than
+  maintenance cost and noise.
+- **Test maintenance debt:** infrastructure that consumes time without
+  protecting a meaningful risk.
 
-1. **No se conservan tests solo porque existen desde versiones antiguas.** Git preserva el historial.
-2. **No se borran tests solo para bajar el contador.** Un test permanece porque protege un riesgo, no porque aumenta el contador.
-3. **Antes de consolidar un test, clasificarlo:**
-   - `KEEP_CRITICAL` (HITL, Outbox, ownership, idempotency, etc.)
-   - `KEEP_UNIQUE` (un test único para una propiedad)
-   - `MERGE_PARAMETRIZE` (variantes equivalentes → `@pytest.mark.parametrize`)
-   - `MOVE_LAYER` (el test está bien pero pertenece a otra capa)
-   - `DELETE_DUPLICATE` (otro test ya lo cubre)
-   - `DELETE_OBSOLETE` (la responsabilidad ya no existe en el código)
-4. **Críticos que NO se pueden perder:**
-   - Native structured tool calling
-   - Pseudo-tool-call blocked
-   - Ownership/customer isolation
-   - Loan routing paraphrase regression
-   - RAG grounding + abstention + superseded docs
-   - MCP + HITL APPROVE/REJECT
-   - WRITE idempotency
-   - Retry + Circuit Breaker + Timeout
-   - Transactional Outbox
-   - Idempotent Consumer + DLQ
-   - Audit + OTel + HOTL
-   - Core Banking contracts
-   - Critical READ E2E
-   - Critical WRITE E2E (HITL → WRITE → Outbox → Consumer)
-   - Security/secret gates
-   - Docker/Kubernetes/Functions acceptance como INFRA
+## 6. Permanent rules
 
-## 7. How to Add a Test
+1. Do not retain a test solely because it was added in an earlier version; Git
+   preserves history.
+2. Do not delete tests just to reduce the count. Keep them when they protect a
+   meaningful risk.
+3. Before consolidating a test, classify the action:
+   - `KEEP_CRITICAL`: protects HITL, outbox, ownership, idempotency, or another
+     critical invariant.
+   - `KEEP_UNIQUE`: uniquely covers a property.
+   - `MERGE_PARAMETRIZE`: combines equivalent variants using parametrization.
+   - `MOVE_LAYER`: moves a test to its correct test layer.
+   - `DELETE_DUPLICATE`: removes coverage duplicated by another test.
+   - `DELETE_OBSOLETE`: removes coverage for a responsibility that no longer
+     exists.
+4. Preserve coverage for structured tool calling, pseudo-tool-call blocking,
+   customer ownership isolation, loan-routing paraphrases, RAG grounding and
+   abstention, MCP and HITL approve/reject, write idempotency, retries, circuit
+   breaker and timeout behavior, transactional outbox, idempotent consumers,
+   DLQ, audit, OpenTelemetry, HOTL, Core Banking contracts, critical read and
+   write journeys, secret controls, and infrastructure acceptance.
 
-1. Decidir capa (`unit` / `integration` / `contract` / `e2e` / `infra`).
-2. Colocar el archivo en la carpeta correcta **sin prefijo de versión**.
-3. Definir `pytestmark = pytest.mark.<capa>` al inicio del archivo.
-4. Si hay variantes equivalentes, **parametrizar**.
-5. Antes de agregar, verificar si la propiedad ya está cubierta por otro test.
+## 7. Adding a test
+
+1. Choose the layer: `unit`, `integration`, `contract`, `e2e`, or `infra`.
+2. Put the test file in the matching directory without a version prefix.
+3. Set `pytestmark = pytest.mark.<layer>` at the top of the file.
+4. Parametrize equivalent test variants.
+5. Check whether another test already covers the same property.
 
 [1]: https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/testing
 [2]: https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluate-generative-ai-app
