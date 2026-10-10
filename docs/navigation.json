@@ -88,6 +88,7 @@
     "docs/operations/RBAC-LEAST-PRIVILEGE-MATRIX.md",
     "docs/operations/STAGING-ACCEPTANCE-RUNBOOK.md",
     "docs/operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md",
+    "docs/operations/LOCAL-ENVIRONMENT-CONFIGURATION.md",
     "docs/operations/production-configuration-secrets-identity-audit-prompt.en.md",
     "docs/operations/production-configuration-secrets-identity-audit.en.md",
     "services/mock-core-banking/README.md",

@@ -99,18 +99,38 @@ def load_local_dotenv(base_dir: str | None = None) -> bool:
     if env.is_cloud:
         return False
 
-    search_root = Path(base_dir) if base_dir else Path.cwd()
-    candidates = [search_root / ".env.local"]
+    search_root = Path(base_dir).resolve() if base_dir else Path.cwd().resolve()
+    if base_dir is not None:
+        candidates = [search_root / ".env.local"]
+    else:
+        directories = [search_root]
+        current = search_root
+        git_root_found = (current / ".git").exists()
+        while not git_root_found and current.parent != current:
+            current = current.parent
+            directories.append(current)
+            git_root_found = (current / ".git").exists()
+
+        # Never search above the current directory unless it is inside a Git
+        # repository; in a repo, stop at that repository's root boundary.
+        if not git_root_found:
+            directories = [search_root]
+        candidates = [directory / ".env.local" for directory in directories]
+
+    loaded_any = False
     for candidate in candidates:
         if candidate.is_file():
             try:
                 from dotenv import load_dotenv
-
-                load_dotenv(candidate, override=False)
-                return True
-            except ImportError:
-                pass
-    return False
+            except ImportError as exc:
+                raise RuntimeError(
+                    "python-dotenv is required to load local .env.local configuration; "
+                    "install the aegisbank-agent project dependencies"
+                ) from exc
+            # Load nearest-to-farthest with override disabled: exported process
+            # variables win, then the closest dotenv value, then parent defaults.
+            loaded_any = load_dotenv(candidate, override=False) or loaded_any
+    return loaded_any
 
 
 def validate_runtime_configuration(

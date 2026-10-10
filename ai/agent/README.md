@@ -58,7 +58,14 @@ references do not require the LLM.
 
 ### Foundry Local configuration
 
-Copy `.env.example` to `.env` for local use, or export the same variables in
+The runtime searches for `.env.local` in the process working directory and
+parents up to the application Git root. It loads found files nearest-to-root:
+the closest file overrides duplicate values, while parent files fill variables
+that are not set closer to the working directory. Exported process variables
+always win. Copy the root `.env.example` to `.env.local` for shared settings;
+optionally use `ai/agent/.env.example` as a small agent-specific override at
+`ai/agent/.env.local`. Both local files are ignored by Git. The application
+does not load a plain `.env` file. Alternatively, export the same variables in
 the process environment. `AEGISBANK_FOUNDRY_LOCAL_BASE_URL` takes precedence;
 when empty, the adapter discovers the current endpoint with `foundry server
 status -o json`. LLM calls use a bounded timeout and retry count from the

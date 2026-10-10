@@ -8,6 +8,7 @@ Read the relevant procedure and verify its date, status, prerequisites, and targ
 
 ## Documents
 
+- [Local environment configuration](LOCAL-ENVIRONMENT-CONFIGURATION.md) — dotenv file locations, precedence, Git exclusions, Docker Compose boundaries, and cloud rules
 - [Kubernetes troubleshooting](KUBERNETES-TROUBLESHOOTING.md)
 - [Production configuration, secrets, and identity audit prompt (English, canonical for LLM use)](production-configuration-secrets-identity-audit-prompt.en.md) — read-only discovery prompt; planning only
 - [Spanish source prompt](production-configuration-secrets-identity-audit-prompt.md) — retained for provenance; prefer the English version for LLM use

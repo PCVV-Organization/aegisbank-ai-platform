@@ -467,6 +467,10 @@
       "category": "operations-reference"
     },
     {
+      "path": "docs/operations/LOCAL-ENVIRONMENT-CONFIGURATION.md",
+      "category": "operations-reference"
+    },
+    {
       "path": "docs/operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md",
       "category": "operations-reference"
     },
