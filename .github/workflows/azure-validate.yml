@@ -17,9 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Compile Bicep with Azure CLI
-        uses: azure/cli@v2
-        with:
-          inlineScript: az bicep build --file deploy/azure/main.bicep --stdout > /dev/null
+        run: az bicep build --file deploy/azure/main.bicep --stdout > /dev/null
       - name: Explain deployment boundary
         run: |
           echo 'No Azure login, resource creation, secret access, or deployment runs in this workflow.'
