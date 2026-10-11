@@ -2,6 +2,14 @@
 
 ## Reading contract
 
+Follow the [documentation standard](DOCUMENTATION-STANDARD.md) for names,
+placement, language, and context budgets, and [CONTRIBUTING.md](../../CONTRIBUTING.md)
+for Conventional Commits and the development workflow.
+
+`docs/PROJECT-BRIEF.md` provides orientation in at most 600 words. Keep it
+independent of dated test totals so model context stays small and status has
+one owning source: the root README and its linked evidence.
+
 `README.md` explains the product, current documented baseline, and where to
 continue. `README.LLM.md` explains authority, boundaries, and task-based
 retrieval. `llms.txt` is a concise link map. `llms-full.txt` is a generated

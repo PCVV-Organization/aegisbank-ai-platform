@@ -2,7 +2,7 @@
 
 > **Documentation structure:** introduced in v1.0.2 and maintained as the project evolves. The current technical baseline and checkout status live in [the project README](../README.md); use Git and dated evidence to verify a release claim.
 > **Philosophy:** *The LLM interprets and proposes; deterministic identity, policy, authorization, validation, and business rules decide.*
-> **Documentation Framework:** Inspired by **Diátaxis** (Tutorials, How-To Guides, Reference, Explanations) and enterprise banking system governance (OCC SR 11-7 / EBA guidelines).
+> **Documentation framework:** Diataxis separates tutorials, task guides, reference, and explanations. The [repository standard](engineering/DOCUMENTATION-STANDARD.md) defines naming, ownership, language, evidence, and LLM context rules.
 
 ---
 
@@ -12,6 +12,10 @@ For a first reading, use [START-HERE](START-HERE.md). The generated
 [directory map](DIRECTORY-MAP.md) covers folder ownership and file locations.
 [Documentation evolution](engineering/DOCUMENTATION-SYSTEM.md) explains what
 must change when code, contracts, configuration or evidence evolve.
+
+For a small context window, start with the [project brief](PROJECT-BRIEF.md)
+and choose one task route in [README.LLM.md](../README.LLM.md). For changes and
+commits, use [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 Current local baseline: consult [the project README](../README.md) and the
 [capability maturity matrix](requirements/V1.0-MATURITY-MATRIX.md). The

@@ -50,6 +50,11 @@ behavior.
 
 ## Evidence freshness
 
+The generator also enforces the root GitHub README convention and the project
+brief's 600-word budget. Naming and content conventions are defined in
+[the documentation standard](DOCUMENTATION-STANDARD.md). Check both when adding
+a new guide. `.github/CI-GUIDE.md` owns automation documentation.
+
 Use Git and dated evidence to establish technical status. Do not duplicate
 version tables across the outer workspace and application. Keep dates on
 historical results and distinguish uncommitted changes from releases. A

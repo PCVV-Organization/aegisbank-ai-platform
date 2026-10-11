@@ -3,6 +3,30 @@
   "path_base": "application_repository_root",
   "entrypoints": [
     {
+      "path": "docs/PROJECT-BRIEF.md",
+      "purpose": "Compact orientation for limited context"
+    },
+    {
+      "path": "README.LLM.md",
+      "purpose": "Task routes and LLM evidence boundaries"
+    },
+    {
+      "path": "AGENTS.md",
+      "purpose": "Development instructions"
+    },
+    {
+      "path": "README.md",
+      "purpose": "Public project introduction and dated status"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "purpose": "Change workflow and Conventional Commits"
+    },
+    {
+      "path": "docs/engineering/DOCUMENTATION-STANDARD.md",
+      "purpose": "Documentation naming and context rules"
+    },
+    {
       "path": "docs/START-HERE.md",
       "purpose": "First reading and safe local onboarding"
     },
@@ -13,18 +37,6 @@
     {
       "path": "docs/engineering/DOCUMENTATION-SYSTEM.md",
       "purpose": "Documentation evolution and conventions"
-    },
-    {
-      "path": "AGENTS.md",
-      "purpose": "Development instructions"
-    },
-    {
-      "path": "README.md",
-      "purpose": "Purpose and checkout baseline"
-    },
-    {
-      "path": "README.LLM.md",
-      "purpose": "LLM reading order and evidence boundaries"
     },
     {
       "path": "docs/README.md",
@@ -107,7 +119,7 @@
   ],
   "documents": [
     {
-      "path": ".github/README.md",
+      "path": ".github/CI-GUIDE.md",
       "category": "component-guide"
     },
     {
@@ -120,6 +132,10 @@
     },
     {
       "path": "CLAUDE.md",
+      "category": "entrypoint"
+    },
+    {
+      "path": "CONTRIBUTING.md",
       "category": "entrypoint"
     },
     {
@@ -208,6 +224,10 @@
     },
     {
       "path": "docs/DIRECTORY-MAP.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "docs/PROJECT-BRIEF.md",
       "category": "component-guide"
     },
     {
@@ -392,6 +412,10 @@
     },
     {
       "path": "docs/engineering/DOCUMENTATION-MAINTENANCE.md",
+      "category": "engineering-reference"
+    },
+    {
+      "path": "docs/engineering/DOCUMENTATION-STANDARD.md",
       "category": "engineering-reference"
     },
     {

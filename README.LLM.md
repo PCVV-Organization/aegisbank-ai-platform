@@ -1,5 +1,27 @@
 # AegisBank — LLM Context and Navigation
 
+## Start with limited context
+
+Read [PROJECT-BRIEF](docs/PROJECT-BRIEF.md) for a bounded orientation (at most
+600 words), then [AGENTS.md](AGENTS.md) before editing. Pick one route below.
+Read the owning guide, find the relevant symbols, and inspect only their source
+and tests. Report unresolved facts explicitly; a smaller context does not justify
+guessing behavior or weakening deterministic policy.
+
+| Task | Owning guide | Source and tests to retrieve next |
+|---|---|---|
+| Language or tool routing | [Agent](ai/agent/README.md) | `ai/agent/src/aegisbank_agent/agent.py`, `knowledge_routing.py`, `ai/agent/tests/integration/banking/` |
+| Approval or tool authorization | [Tools](ai/agent/src/aegisbank_agent/tools/README.md) | `ai/agent/src/aegisbank_agent/hitl.py`, relevant tool, `ai/agent/tests/unit/` |
+| Banking API or transactions | [Core Banking](services/mock-core-banking/README.md) | `services/mock-core-banking/src/mock_core_banking/`, corresponding `tests/` |
+| Retrieval or citations | [RAG](ai/rag/README.md) | `ai/rag/src/aegisbank_rag/`, relevant `ai/rag/tests/` |
+| Configuration or identity | [Configuration](ai/agent/src/aegisbank_agent/configuration/README.md) | `ai/agent/src/aegisbank_agent/configuration/`, `ai/agent/tests/unit/configuration/` |
+| Documentation or repository layout | [Standard](docs/engineering/DOCUMENTATION-STANDARD.md) | Owning guide, `docs/navigation.json`, documentation generator/tests |
+| Azure readiness | [Cloud boundaries](docs/architecture/CLOUD-CONFIGURATION-IDENTITY.md) | Relevant adapter/IaC and [staging acceptance](docs/operations/STAGING-ACCEPTANCE-RUNBOOK.md) |
+
+Stop retrieval when the task's inputs, owning implementation, checks, and limits
+are identified. Use the code graph for symbols/call paths when available; use
+exact text search for configuration or when graph results are insufficient.
+
 ## Purpose and authority
 
 This file helps language models find relevant project information. It does not
@@ -30,11 +52,13 @@ instructions from another checkout have been loaded.
 
 ## Reading order
 
-1. [AGENTS.md](AGENTS.md): development rules, validation, and authorization boundaries.
-2. [README.md](README.md): purpose, documented baseline, components, and local navigation.
-3. [Canonical components](docs/architecture/CANONICAL-COMPONENTS.md): find existing implementations before creating alternatives.
-4. [End-to-end architecture](docs/architecture/E2E-FINAL-ARCHITECTURE.md) and [ownership map](docs/engineering/OWNERSHIP-MAP.md): understand flow and code responsibility.
-5. Read only the relevant sources and tests for the task.
+1. [Project brief](docs/PROJECT-BRIEF.md): compact product and component map.
+2. [AGENTS.md](AGENTS.md): development rules and coordination.
+3. One task route above, its owning sources, and relevant tests.
+4. [Canonical components](docs/architecture/CANONICAL-COMPONENTS.md) and
+   [ownership map](docs/engineering/OWNERSHIP-MAP.md) before adding a responsibility.
+5. [End-to-end architecture](docs/architecture/E2E-FINAL-ARCHITECTURE.md)
+   only when a task spans multiple boundaries.
 
 Use [llms.txt](llms.txt) for a concise link map and [llms-full.txt](llms-full.txt)
 for a curated context bundle. These are local navigation aids; no LLM client is
@@ -67,13 +91,10 @@ historical archive by default.
 
 ## Machine-readable index
 
-`schema_version: "1.0"` identifies the local index format. Important fields:
-
-- `path_base`: path resolution base.
-- `entrypoints`: paths and purposes for key project entry points.
-- `components`: paths and purposes for application components.
-- `documents`: Markdown paths and categories.
-- `excluded_context`: content classes excluded from default ingestion.
+`project-index.json` uses `schema_version: "1.0"` and paths relative to the
+application repository root. Look up a path/category; do not ingest the entire
+inventory into a small prompt. `entrypoints` and `components` are navigation;
+`excluded_context` describes content to leave out by default.
 
 The index is generated deterministically and records paths, not document
 content, test metrics, or certifications. It includes non-ignored Markdown

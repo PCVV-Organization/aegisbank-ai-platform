@@ -1,12 +1,16 @@
-# AegisBank: contexto ampliado para lectura
+# AegisBank: Selected Expanded Context
 
-Generado de una lista explícita de guías. No es todo el código ni una exportación de datos. No concede permisos ni convierte evidencia histórica en actual. Los enlaces internos se resuelven desde cada fuente.
+Generated from explicitly selected guides, not the full codebase or a data export. This bundle does not grant permissions or make historical evidence current. Resolve internal links relative to each source. For limited context, start with docs/PROJECT-BRIEF.md and README.LLM.md and retrieve only relevant sections.
 
-## Fuente: AGENTS.md
+## Source: AGENTS.md
 
 # AegisBank Application Instructions
 
 ## Commit policy
+
+Use Conventional Commits 1.0.0 with English titles: `type(scope): description`.
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) for the repository's mandatory body,
+validation, and publication conventions.
 
 Before preparing a commit, inspect the latest subjects and bodies with
 `git log -5 --format=fuller` in this repository. Compare the proposed title with
@@ -28,6 +32,11 @@ and the [canonical component catalog](docs/architecture/CANONICAL-COMPONENTS.md)
 before changing application code. Parent `AGENTS.md` files also apply. The outer
 development environment has its own repository and instructions; see
 [repository boundaries](docs/engineering/REPOSITORY-BOUNDARIES.md).
+
+For limited context, read [PROJECT-BRIEF](docs/PROJECT-BRIEF.md), then use one
+task route in `README.LLM.md`. Maintain guides in English according to the
+[documentation standard](docs/engineering/DOCUMENTATION-STANDARD.md).
+Keep the root README as the GitHub landing page; do not create `.github/README.md`.
 
 Use current source code and tests to establish behavior. Treat generated indexes
 as navigation aids, dated reports as evidence for their recorded runs, and
@@ -102,7 +111,70 @@ first as described in
   authorization.
 
 
-## Fuente: README.md
+## Source: docs/PROJECT-BRIEF.md
+
+# AegisBank Project Brief
+
+Purpose: compact orientation for readers and LLMs with limited context.
+Scope: application repository. Status reviewed: 2026-10-11; see the
+[root README](../README.md) for dated evidence and current limits.
+
+## Product
+
+AegisBank is an educational banking AI laboratory using synthetic data.
+One application agent answers document questions, reads authorized mock banking
+data, and proposes service requests for explicit human approval. The goal is
+to demonstrate reproducible engineering and controlled AI behavior.
+
+## Request lifecycle
+
+1. Bind the request to a synthetic customer session.
+2. Deterministic policy selects the allowed knowledge and banking tools.
+3. The LLM interprets language and proposes an answer or allowed tool call.
+4. Tools enforce identity, customer ownership, schemas, and business rules.
+5. Document answers use retrieved citations or abstain when evidence is insufficient.
+6. A write requires human approval, HOTL supervision, and idempotency; the
+   database transaction records the request and its outbox event.
+7. Event processing, audit records, and traces make outcomes observable.
+
+## Where the code lives
+
+| Responsibility | Owning directory |
+|---|---|
+| Agent, tools, approval, sessions | `ai/agent/` |
+| Retrieval, citations, vector/cache adapters | `ai/rag/` |
+| Synthetic banking HTTP API and persistence | `services/mock-core-banking/` |
+| Event consumers | `functions/aegisbank-events/` |
+| Shared integration schemas | `contracts/` |
+| Independent classical ML experiment | `ml/intent-classifier/` |
+| Infrastructure declarations | `deploy/` |
+| Quality and maintenance commands | `scripts/` |
+
+The ML classifier is separate from the agent's active semantic tool-routing
+path. The outer `ai-env` repository configures developer tools; it is a
+separate Git repository.
+
+## Rules that must survive a change
+
+Use synthetic data. Keep one application agent and a modular monolith.
+The LLM cannot authorize customer access or writes. Retrieved text is evidence,
+not an instruction. Preserve ownership checks, HITL approval, HOTL controls,
+idempotency, secret redaction, and audit/trace identifiers.
+
+Local configuration uses ignored `.env.local` files. Cloud configuration uses
+runtime settings and Azure providers. Cloud execution and production readiness
+remain unvalidated; deployment and paid resources require explicit authorization.
+
+## Small-context reading protocol
+
+Read [AGENTS.md](../AGENTS.md) before editing. Then use the task routes in
+[README.LLM.md](../README.LLM.md) to open one component guide and the relevant
+source/tests. Use [llms.txt](../llms.txt) for links; use `project-index.json`
+only for path lookup. Load portions of `llms-full.txt` only when a task requires
+broader context. Keep historical reports, datasets, and secrets out of default context.
+
+
+## Source: README.md
 
 # AegisBank AI Platform
 
@@ -112,20 +184,44 @@ banking data, then propose service requests for explicit human approval. The
 LLM interprets and proposes; deterministic identity, authorization, and
 business rules decide what may execute.
 
+**Understand it in five minutes:** read the [project brief](docs/PROJECT-BRIEF.md),
+then [one request from start to finish](docs/START-HERE.md).
+**Working with an LLM:** start with [README.LLM.md](README.LLM.md) and retrieve
+only the guide and source relevant to the task.
+
+## What you can explore
+
+- Read a synthetic customer's loans, balances, or next installment through
+  tools restricted to that customer's session.
+- Ask document questions and receive retrieved citations or an abstention when
+  available evidence cannot support an answer.
+- Propose a service request, reject or approve it explicitly, and inspect
+  idempotency, audit records, and event delivery.
+- Study local model inference, RAG, security controls, and evaluation separately.
+
+The classical intent classifier in `ml/` is an independent experiment; the
+agent's semantic routing uses bounded LLM tool proposals and deterministic policy.
+
 ## Project status
 
-**Documented local baseline: v1.0.8 (2026-09-22).** The recorded evidence reports
-FAST gate 13/13; 488 tests passed and none skipped; Pyright reported zero errors
-and warnings across Agent, RAG, ML, and Core Banking. Isolated Docker
-reproducibility and interactive user journeys for both rejecting and approving
-a service request were recorded. These are dated local results, not fresh
-validation of the current checkout.
+**Status reviewed: 2026-10-11.** The application is published at
+[PCVV-Organization/aegisbank-ai-platform](https://github.com/PCVV-Organization/aegisbank-ai-platform)
+on `master`. The latest recorded local FAST quality gate passed **13/13 on
+2026-10-10**; the associated corrections are in
+[commit a7e4506](https://github.com/PCVV-Organization/aegisbank-ai-platform/commit/a7e4506bbecb462f0af6ad39af75723cba2de2a3).
+This is dated local evidence, not cloud acceptance or a fresh full-infrastructure run.
 
-Known limits: remote CI is `CI-CONFIGURED / RUNNER-PENDING`; Azure and other
-cloud execution are `CLOUD-PENDING`; production is `PROD-UNPROVEN`. The manual
-composite query documented in the evidence was a single prefetched read, not a
-true multi-step journey. The `v1.0.7` tag remains an earlier historical
-milestone.
+The earlier **v1.0.8 local baseline (2026-09-22)** records broader synthetic
+tests, Docker reproducibility, and human rejection/approval journeys. Consult
+the [maturity matrix](docs/requirements/V1.0-MATURITY-MATRIX.md) and the owning
+dated reports for their scope, skips, and historical blockers.
+
+| Area | Evidence boundary |
+|---|---|
+| Local application | Recorded FAST gate passed; infrastructure and live-model journeys have separate checks. |
+| GitHub Actions | Workflows are configured; successful remote runs must be verified in Actions. |
+| Azure staging | Deployment contracts and adapters exist; cloud execution and acceptance remain pending. |
+| Production | Unproven; this remains a synthetic educational laboratory. |
 
 ## Start here
 
@@ -135,6 +231,7 @@ contains development tooling and instructions. See
 
 | Need | Entry point |
 |---|---|
+| Compact project overview | [Project brief](docs/PROJECT-BRIEF.md) |
 | LLM and agent context | [README.LLM.md](README.LLM.md), [AGENTS.md](AGENTS.md) |
 | Concise navigation | [llms.txt](llms.txt) |
 | Machine-readable file inventory | [project-index.json](project-index.json) |
@@ -142,6 +239,7 @@ contains development tooling and instructions. See
 | Architecture and ownership | [Canonical components](docs/architecture/CANONICAL-COMPONENTS.md), [E2E flow](docs/architecture/E2E-FINAL-ARCHITECTURE.md) |
 | Portfolio demonstration | [Portfolio evidence](docs/releases/PORTFOLIO-INTERVIEW-EVIDENCE.md) |
 | Quality and evidence limits | [Test strategy](docs/quality/TEST-STRATEGY.md), [evaluation](docs/evaluation/README.md) |
+| Contribute or organize documentation | [CONTRIBUTING.md](CONTRIBUTING.md), [documentation standard](docs/engineering/DOCUMENTATION-STANDARD.md) |
 
 ## Components
 
@@ -177,15 +275,39 @@ session state, and controls against making account claims without using
 authorized tools. Design documents and local test evidence have different
 scopes; see the [capability maturity matrix](docs/requirements/V1.0-MATURITY-MATRIX.md).
 
+For example, “When is my next installment?” lets the model propose a bounded
+read tool; that tool still checks the customer's ownership. “Create a service
+request” requires a separate human approval before the transaction can commit.
+The [onboarding walkthrough](docs/START-HERE.md) explains each boundary.
+
 ## Local development
 
 Run commands from this directory, which contains `ai/`, `services/`, and
 `scripts/`. If you opened the outer workspace, first enter
 `aegisbank-ai-platform/`.
 
+For a fresh clone with Python 3.14, start the synthetic banking API:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -e "services/mock-core-banking[dev]"
+.venv\Scripts\python.exe -m uvicorn mock_core_banking.main:app `
+  --app-dir services/mock-core-banking/src --host 127.0.0.1 --port 8001
+```
+
+Open [the local API explorer](http://127.0.0.1:8001/docs) after startup. This
+path uses local SQLite and synthetic seed data. For the model-backed assistant,
+continue with the [agent guide](ai/agent/README.md) and
+[Foundry Local configuration](docs/operations/LOCAL-ENVIRONMENT-CONFIGURATION.md).
+See the [Core Banking guide](services/mock-core-banking/README.md) for API tests
+and configuration.
+
 1. Read the [development instructions](AGENTS.md) and check Git status.
 2. Follow the relevant component README. Dependencies are declared in its
    `pyproject.toml`.
+   The application components require Python 3.14. Use the component's documented
+   environment and run command. Configure local variables using the
+   [environment guide](docs/operations/LOCAL-ENVIRONMENT-CONFIGURATION.md).
 3. To check documentation navigation only, use Python:
 
 ```powershell
@@ -194,15 +316,8 @@ python -B -m unittest discover -s scripts -p test_documentation_index.py
 git diff --check
 ```
 
-For the canonical static contract across the four application roots, run:
-
-```powershell
-node ..\.agents\node_modules\.pnpm\pyright@1.1.413\node_modules\pyright\index.js `
-  --pythonpath .venv\Scripts\python.exe --outputjson
-```
-
-See the [Pyright guide](docs/quality/PYRIGHT-VALIDATION.md) for scope,
-environment, and limitations. For application changes, consult the test
+For static type validation, use the [Pyright guide](docs/quality/PYRIGHT-VALIDATION.md)
+with the tooling available in your environment. For application changes, consult the test
 strategy and `python scripts/quality_gate.py --help`. Some checks require the
 application environment and can write reports; read their documented effects
 before running them. A documented command is not evidence that it has run.
@@ -229,10 +344,37 @@ The indexes are generated; do not copy the entire repository into a prompt.
 When paths, interfaces, or evidence change, update the owning guide and
 regenerate its derived navigation.
 
+The root `README.md` is the canonical GitHub landing page. GitHub automation is
+documented in [.github/CI-GUIDE.md](.github/CI-GUIDE.md) so it does not shadow
+this introduction. Maintained guides are in English and follow the
+[documentation standard](docs/engineering/DOCUMENTATION-STANDARD.md).
 
-## Fuente: README.LLM.md
+
+## Source: README.LLM.md
 
 # AegisBank — LLM Context and Navigation
+
+## Start with limited context
+
+Read [PROJECT-BRIEF](docs/PROJECT-BRIEF.md) for a bounded orientation (at most
+600 words), then [AGENTS.md](AGENTS.md) before editing. Pick one route below.
+Read the owning guide, find the relevant symbols, and inspect only their source
+and tests. Report unresolved facts explicitly; a smaller context does not justify
+guessing behavior or weakening deterministic policy.
+
+| Task | Owning guide | Source and tests to retrieve next |
+|---|---|---|
+| Language or tool routing | [Agent](ai/agent/README.md) | `ai/agent/src/aegisbank_agent/agent.py`, `knowledge_routing.py`, `ai/agent/tests/integration/banking/` |
+| Approval or tool authorization | [Tools](ai/agent/src/aegisbank_agent/tools/README.md) | `ai/agent/src/aegisbank_agent/hitl.py`, relevant tool, `ai/agent/tests/unit/` |
+| Banking API or transactions | [Core Banking](services/mock-core-banking/README.md) | `services/mock-core-banking/src/mock_core_banking/`, corresponding `tests/` |
+| Retrieval or citations | [RAG](ai/rag/README.md) | `ai/rag/src/aegisbank_rag/`, relevant `ai/rag/tests/` |
+| Configuration or identity | [Configuration](ai/agent/src/aegisbank_agent/configuration/README.md) | `ai/agent/src/aegisbank_agent/configuration/`, `ai/agent/tests/unit/configuration/` |
+| Documentation or repository layout | [Standard](docs/engineering/DOCUMENTATION-STANDARD.md) | Owning guide, `docs/navigation.json`, documentation generator/tests |
+| Azure readiness | [Cloud boundaries](docs/architecture/CLOUD-CONFIGURATION-IDENTITY.md) | Relevant adapter/IaC and [staging acceptance](docs/operations/STAGING-ACCEPTANCE-RUNBOOK.md) |
+
+Stop retrieval when the task's inputs, owning implementation, checks, and limits
+are identified. Use the code graph for symbols/call paths when available; use
+exact text search for configuration or when graph results are insufficient.
 
 ## Purpose and authority
 
@@ -264,11 +406,13 @@ instructions from another checkout have been loaded.
 
 ## Reading order
 
-1. [AGENTS.md](AGENTS.md): development rules, validation, and authorization boundaries.
-2. [README.md](README.md): purpose, documented baseline, components, and local navigation.
-3. [Canonical components](docs/architecture/CANONICAL-COMPONENTS.md): find existing implementations before creating alternatives.
-4. [End-to-end architecture](docs/architecture/E2E-FINAL-ARCHITECTURE.md) and [ownership map](docs/engineering/OWNERSHIP-MAP.md): understand flow and code responsibility.
-5. Read only the relevant sources and tests for the task.
+1. [Project brief](docs/PROJECT-BRIEF.md): compact product and component map.
+2. [AGENTS.md](AGENTS.md): development rules and coordination.
+3. One task route above, its owning sources, and relevant tests.
+4. [Canonical components](docs/architecture/CANONICAL-COMPONENTS.md) and
+   [ownership map](docs/engineering/OWNERSHIP-MAP.md) before adding a responsibility.
+5. [End-to-end architecture](docs/architecture/E2E-FINAL-ARCHITECTURE.md)
+   only when a task spans multiple boundaries.
 
 Use [llms.txt](llms.txt) for a concise link map and [llms-full.txt](llms-full.txt)
 for a curated context bundle. These are local navigation aids; no LLM client is
@@ -301,13 +445,10 @@ historical archive by default.
 
 ## Machine-readable index
 
-`schema_version: "1.0"` identifies the local index format. Important fields:
-
-- `path_base`: path resolution base.
-- `entrypoints`: paths and purposes for key project entry points.
-- `components`: paths and purposes for application components.
-- `documents`: Markdown paths and categories.
-- `excluded_context`: content classes excluded from default ingestion.
+`project-index.json` uses `schema_version: "1.0"` and paths relative to the
+application repository root. Look up a path/category; do not ingest the entire
+inventory into a small prompt. `entrypoints` and `components` are navigation;
+`excluded_context` describes content to leave out by default.
 
 The index is generated deterministically and records paths, not document
 content, test metrics, or certifications. It includes non-ignored Markdown
@@ -339,7 +480,77 @@ the intended context bundle or folder responsibilities change. This guidance
 does not authorize execution.
 
 
-## Fuente: docs/START-HERE.md
+## Source: CONTRIBUTING.md
+
+# Contributing to AegisBank
+
+Read [AGENTS.md](AGENTS.md) for development authority and coordination,
+[README.LLM.md](README.LLM.md) for targeted navigation, and the
+[documentation standard](docs/engineering/DOCUMENTATION-STANDARD.md) for names,
+placement, language, and evidence rules.
+
+## Change workflow
+
+1. Inspect Git state, find the owning component, and preserve unrelated edits.
+2. Define a bounded change. Acquire SessionGuard before writing; check it before
+   every write, stage, and commit. Release only your session's lock.
+3. Update the owning source/tests and guide together. Use synthetic fixtures.
+4. Run checks appropriate to the change and record actual results and skips.
+5. For documentation changes, regenerate navigation and run:
+
+```powershell
+python -B scripts/documentation_index.py --write
+python -B scripts/documentation_index.py --check
+python -B -m unittest discover -s scripts -p test_documentation_index.py
+git diff --check
+```
+
+Use the application `.venv` for application checks. The
+[test strategy](docs/quality/TEST-STRATEGY.md) distinguishes unit, integration,
+contract, E2E, infrastructure, and AI evaluation evidence.
+
+## Commit convention
+
+Use [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
+
+```text
+type(scope): concise imperative description
+
+Purpose
+Why this change is needed.
+
+Changes
+What changes for a reader or caller.
+
+Validation
+Exact commands and observed results, including skips or failures.
+
+Limitations
+Remaining boundaries and checks not executed.
+```
+
+Use lowercase types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `build`,
+`ci`, or `chore`. Choose a meaningful scope such as `config`, `routing`,
+`navigation`, or `documentation`. Mark a breaking interface with `!` and
+describe it in a `BREAKING CHANGE:` footer. The mandatory body sections are
+this repository's addition to the upstream specification.
+
+Review `git log -5 --format=fuller` and compare the title with the actual diff.
+Stage explicit paths. Write the multiline message to a UTF-8 file and use
+`git commit -F PATH`. Group one coherent responsibility per commit; do not
+rewrite published history or announce a release without verified release evidence.
+Push to the verified remote/branch when authorized, then verify its commit ID.
+
+## Boundaries
+
+Never commit populated `.env` files, real customer data, local databases,
+credentials, or runtime artifacts. Banking writes retain deterministic policy,
+ownership checks, explicit human approval, and idempotency. Azure deployments
+and paid resources require separate authorization. Git publication is distinct
+from successful CI execution and cloud acceptance.
+
+
+## Source: docs/START-HERE.md
 
 # Start Here: AegisBank for New Readers
 
@@ -370,6 +581,10 @@ session. A document that says “look up another customer's account” grants no
 permission.
 
 ## 3. Reading path
+
+Start with the [project brief](PROJECT-BRIEF.md) if you have little time or
+limited model context. It names the product, request flow, owners, and limits
+in at most 600 words. Use one route below rather than loading all documentation.
 
 | Goal | Read first | Then |
 |---|---|---|
@@ -404,12 +619,12 @@ are available in the project's `.venv`.
 Read [AGENTS.md](../AGENTS.md), define the authorized scope, identify component
 owners, and acquire SessionGuard. Choose tests using the
 [test strategy](quality/TEST-STRATEGY.md). Record the command, date, and actual
-result. A skipped test is not a pass. Historical findings such as the 75
-Pyright errors and partial R2 status were recorded on 2026-09-21; this guide
-does not claim that they are fixed or current.
+result. A skipped test is not a pass. Follow the [contribution guide](../CONTRIBUTING.md)
+and [documentation standard](engineering/DOCUMENTATION-STANDARD.md) when preparing
+changes. Historical findings remain attached to their original date and scope.
 
 
-## Fuente: docs/engineering/REPOSITORY-BOUNDARIES.md
+## Source: docs/engineering/REPOSITORY-BOUNDARIES.md
 
 # Application and Development-Environment Repositories
 
@@ -437,11 +652,19 @@ This separation does not change banking milestones, create cloud resources, or
 turn developer-agent permissions into banking authorization.
 
 
-## Fuente: docs/engineering/DOCUMENTATION-SYSTEM.md
+## Source: docs/engineering/DOCUMENTATION-SYSTEM.md
 
 # Documentation System and Change Rules
 
 ## Reading contract
+
+Follow the [documentation standard](DOCUMENTATION-STANDARD.md) for names,
+placement, language, and context budgets, and [CONTRIBUTING.md](../../CONTRIBUTING.md)
+for Conventional Commits and the development workflow.
+
+`docs/PROJECT-BRIEF.md` provides orientation in at most 600 words. Keep it
+independent of dated test totals so model context stays small and status has
+one owning source: the root README and its linked evidence.
 
 `README.md` explains the product, current documented baseline, and where to
 continue. `README.LLM.md` explains authority, boundaries, and task-based
@@ -519,7 +742,89 @@ explicit source list for expanded context instead of concatenating the tree.
 These ideas are applied without adding a documentation platform or dependency.
 
 
-## Fuente: docs/architecture/CANONICAL-COMPONENTS.md
+## Source: docs/engineering/DOCUMENTATION-STANDARD.md
+
+# Documentation Standard
+
+Status: active repository convention. Owner: engineering documentation.
+Applies to maintained application guides and navigation; historical records
+retain their original filenames, language, dates, and evidence.
+
+## Adopted references
+
+- [Diataxis](https://diataxis.fr/): separate tutorials, task guides, reference,
+  and explanations by reader need. Existing responsibility directories remain
+  stable; classification does not require relocating the whole tree.
+- [GitHub README rules](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes):
+  the root README is the public introduction. Do not add `.github/README.md`,
+  which would take precedence. Use `.github/CI-GUIDE.md` for automation.
+- [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
+  commit titles communicate type, scope, and intent; repository-specific body
+  requirements are defined in [CONTRIBUTING.md](../../CONTRIBUTING.md).
+- [llms.txt](https://llmstxt.org/): proposed link-oriented LLM navigation.
+  Our relative-path adaptation helps repository retrieval; it is not an official
+  universal LLM standard or a guarantee that any client loads it automatically.
+
+## Filenames and placement
+
+| Kind | Convention | Example |
+|---|---|---|
+| Public introduction | Root `README.md` | `README.md` |
+| Developer rules | Root `AGENTS.md` | `AGENTS.md` |
+| Contribution rules | Root `CONTRIBUTING.md` | `CONTRIBUTING.md` |
+| Component entry point | Component `README.md` | `ai/rag/README.md` |
+| New maintained guide | English `UPPER-KEBAB-CASE.md` in its owning area | `docs/operations/LOCAL-ENVIRONMENT-CONFIGURATION.md` |
+| Architecture decision | Existing numbered ADR convention | `docs/architecture/adr/ADR-029-configuration-secrets-identity-boundary.md` |
+| New dated evidence | Topic plus `YYYYMMDD` under `history/quality/` | `history/quality/LOCAL-BASELINE-CLOSURE-20260921.md` |
+| Machine navigation | Fixed lowercase filenames | `llms.txt`, `project-index.json` |
+
+Use descriptive topic names rather than `final`, `perfect`, `new`, or
+`updated`. Existing stable filenames, published ADRs, and historical paths are
+compatibility interfaces: do not rename them merely to normalize casing.
+If a move is needed, update consumers, links, manifests, and generated indexes
+in the same change. Keep a single authoritative document per responsibility.
+
+## Content contract
+
+Maintained guides use English. Preserve language-specific test examples and
+historical sources. Start with purpose, scope, and ownership; add a status/date
+when a statement depends on execution evidence. Write short sections and
+relative Markdown links. Expand an unfamiliar acronym on first use.
+
+Task guides identify prerequisites, working directory, commands, effects,
+success criteria, and relevant failure handling. Reference guides identify
+contracts and owning source paths. Evidence records include date, Git base,
+environment, executed command, result, skips, and remaining limits.
+Do not turn historical results into current claims by editing their date.
+
+## Context layers
+
+1. `docs/PROJECT-BRIEF.md`: at most 600 whitespace-separated words; orientation.
+2. `README.LLM.md` and `llms.txt`: task selection and links.
+3. One owning component guide and relevant source/test symbols: task evidence.
+4. `project-index.json` and `docs/DIRECTORY-MAP.md`: path lookup when needed.
+5. Selected sections of `llms-full.txt`: optional expanded context.
+
+The word limit is an inspectable size budget, not a token count or a guarantee
+of accuracy. Small models benefit from narrower retrieval, concrete contracts,
+and explicit unknowns. Never compensate for uncertainty by loading all history,
+datasets, runtime reports, or secrets.
+
+## Enforcement and maintenance
+
+`scripts/documentation_index.py --check` rejects stale generated outputs,
+broken local inline file links, a GitHub README that shadows the root, and an
+oversized project brief. It does not verify remote URLs, anchors, every naming
+convention, or application behavior. Review those separately when affected.
+
+Update the source guide and `docs/navigation.json` first; regenerate the four
+derived navigation files as described in
+[documentation maintenance](DOCUMENTATION-MAINTENANCE.md). Never edit generated
+indexes by hand. Follow the [change rules](DOCUMENTATION-SYSTEM.md) and
+[contribution workflow](../../CONTRIBUTING.md).
+
+
+## Source: docs/architecture/CANONICAL-COMPONENTS.md
 
 # AegisBank Canonical Component Catalog
 
@@ -571,7 +876,7 @@ Before creating a file, function, or class:
      new and does not overlap another component.
 
 
-## Fuente: docs/architecture/E2E-FINAL-ARCHITECTURE.md
+## Source: docs/architecture/E2E-FINAL-ARCHITECTURE.md
 
 # AegisBank v1.0 End-to-End Architecture
 
@@ -609,7 +914,7 @@ Canonical implementations are listed in
 `docs/engineering/OWNERSHIP-MAP.md`.
 
 
-## Fuente: docs/engineering/OWNERSHIP-MAP.md
+## Source: docs/engineering/OWNERSHIP-MAP.md
 
 # AegisBank Component Ownership Map
 
@@ -641,7 +946,7 @@ Canonical implementations are listed in
   it is not an operating-system security boundary.
 
 
-## Fuente: docs/requirements/V1.0-MATURITY-MATRIX.md
+## Source: docs/requirements/V1.0-MATURITY-MATRIX.md
 
 # v1.0 Capability Maturity Matrix
 
@@ -687,7 +992,7 @@ an earlier historical milestone. The recorded local release status is
 | Production SLA, capacity, and compliance | `PROD-UNPROVEN` | Intentionally outside laboratory scope |
 
 
-## Fuente: docs/evaluation/README.md
+## Source: docs/evaluation/README.md
 
 # AegisBank AI Platform — AI Evaluation Taxonomy & Measurement Architecture
 
@@ -821,7 +1126,7 @@ In enterprise MLOps, observed gains must be tested for statistical validity befo
 For full details and individual run parameters, see [EVALUATION-CATALOG.md](EVALUATION-CATALOG.md).
 
 
-## Fuente: docs/evaluation/EVALUATION-CATALOG.md
+## Source: docs/evaluation/EVALUATION-CATALOG.md
 
 # AegisBank AI Platform — AI Evaluation Catalog & Provenance Register
 
@@ -918,7 +1223,7 @@ In accordance with [TEACHING-CONTRACT.md](../learning/TEACHING-CONTRACT.md), all
 3. **No Production Concurrency Claims:** The performance baseline (25 iterations, p50=14.2ms) is a sequential laboratory baseline. High-concurrency throughput (1,000+ RPS), distributed multi-region failover, and live Azure cloud performance remain `PROD-UNPROVEN` and `CLOUD-PENDING`.
 
 
-## Fuente: docs/security/V1.0-THREAT-MODEL.md
+## Source: docs/security/V1.0-THREAT-MODEL.md
 
 # v1.0 Threat Model
 
@@ -977,7 +1282,7 @@ later invariants require their respective transactional, reliability, or observa
   load evidence explicitly `CLOUD-PENDING`.
 
 
-## Fuente: docs/quality/TEST-STRATEGY.md
+## Source: docs/quality/TEST-STRATEGY.md
 
 # AegisBank Test Strategy (v0.13.0-R2)
 
@@ -1129,7 +1434,7 @@ other infrastructure.
 [2]: https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluate-generative-ai-app
 
 
-## Fuente: docs/quality/PYRIGHT-VALIDATION.md
+## Source: docs/quality/PYRIGHT-VALIDATION.md
 
 # Pyright Type Validation
 
@@ -1155,7 +1460,7 @@ The command takes no positional paths; `pyrightconfig.json` alone defines the an
 Pyright checks static contracts; it does not replace unit, integration, contract, end-to-end, or FAST-gate suites. Validate Functions paths in their own environment when that scope is authorized.
 
 
-## Fuente: ai/agent/README.md
+## Source: ai/agent/README.md
 
 # AegisBank Agent
 
@@ -1242,7 +1547,7 @@ attributing them to a release. Documentation does not prove that a live model,
 Docker, or a cloud service has been exercised in the current session.
 
 
-## Fuente: ai/agent/src/aegisbank_agent/configuration/README.md
+## Source: ai/agent/src/aegisbank_agent/configuration/README.md
 
 # Configuration Component
 
@@ -1267,7 +1572,7 @@ Identify inputs, outputs, and consumers. Review [canonical components](../../../
 This guide describes repository responsibilities; it is not certification or evidence of live execution. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.
 
 
-## Fuente: ai/agent/src/aegisbank_agent/evaluation/README.md
+## Source: ai/agent/src/aegisbank_agent/evaluation/README.md
 
 # Evaluation Component
 
@@ -1293,7 +1598,7 @@ Identify inputs, outputs, and consumers. Review [canonical components](../../../
 Evaluation code and recorded scores do not establish model superiority or production readiness. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.
 
 
-## Fuente: ai/agent/src/aegisbank_agent/mcp/README.md
+## Source: ai/agent/src/aegisbank_agent/mcp/README.md
 
 # Application MCP Adapter
 
@@ -1317,7 +1622,7 @@ Identify inputs, outputs, and consumers. Review [canonical components](../../../
 This adapter is an application integration, not proof of a production MCP deployment or security certification. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.
 
 
-## Fuente: ai/agent/src/aegisbank_agent/mlops/README.md
+## Source: ai/agent/src/aegisbank_agent/mlops/README.md
 
 # MLOps Component
 
@@ -1342,7 +1647,7 @@ Identify inputs, outputs, and consumers. Review [canonical components](../../../
 Local experiment tracking or drift checks do not prove cloud monitoring or production model quality. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.
 
 
-## Fuente: ai/agent/src/aegisbank_agent/observability/README.md
+## Source: ai/agent/src/aegisbank_agent/observability/README.md
 
 # Observability Component
 
@@ -1366,7 +1671,7 @@ Identify inputs, outputs, and consumers. Review [canonical components](../../../
 Local telemetry does not prove a cloud exporter, complete audit durability, or certification. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.
 
 
-## Fuente: ai/agent/src/aegisbank_agent/prompts/README.md
+## Source: ai/agent/src/aegisbank_agent/prompts/README.md
 
 # Product Prompt Catalog
 
@@ -1391,7 +1696,7 @@ Identify every runtime consumer and evaluation case. Review [canonical component
 A prompt version does not prove model behavior or deployment. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.
 
 
-## Fuente: ai/agent/src/aegisbank_agent/reliability/README.md
+## Source: ai/agent/src/aegisbank_agent/reliability/README.md
 
 # Reliability Component
 
@@ -1419,7 +1724,7 @@ Identify inputs, outputs, and consumers. Review [canonical components](../../../
 Local adapters and tests do not prove cloud broker availability, distributed guarantees, or production resilience. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.
 
 
-## Fuente: ai/agent/src/aegisbank_agent/tools/README.md
+## Source: ai/agent/src/aegisbank_agent/tools/README.md
 
 # Application Tool Registry and Implementations
 
@@ -1445,7 +1750,7 @@ Identify inputs, outputs, callers, and side effects. Review [canonical component
 Tool registration does not itself authorize execution or prove a live integration. See the dated [local baseline record](../../../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical evidence and blockers.
 
 
-## Fuente: ai/agent/tests/README.md
+## Source: ai/agent/tests/README.md
 
 # Agent Test Suite Guide
 
@@ -1475,7 +1780,7 @@ Identify the behavior and layer being tested. Use synthetic data, acquire Sessio
 Test configuration is not execution evidence. Record the exact command, date, and result; consult the dated [local baseline record](../../../history/quality/LOCAL-BASELINE-CLOSURE-20260921.md) for historical results and blockers.
 
 
-## Fuente: docs/security/CONTAINER-SECURITY.md
+## Source: docs/security/CONTAINER-SECURITY.md
 
 # AegisBank Container Security and Hardening Standards
 
@@ -1519,7 +1824,7 @@ graph TD
 ```
 
 
-## Fuente: docs/security/DATA-LAYER-SECURITY.md
+## Source: docs/security/DATA-LAYER-SECURITY.md
 
 # AegisBank Data-Layer Security Standard
 
@@ -1584,7 +1889,7 @@ Verify these constraints in current migrations, queries, and tests.
 | Runtime supply chain | The historical record pins `redis:8.10.1-trixie` to an observed digest and rejects floating tags/prereleases. | Validate managed image maintenance and vulnerability posture with current Azure evidence; a local pin does not prove production security. |
 
 
-## Fuente: docs/architecture/CLOUD-CONFIGURATION-IDENTITY.md
+## Source: docs/architecture/CLOUD-CONFIGURATION-IDENTITY.md
 
 # Cloud Configuration, Workload Identity, and Deployment Boundaries
 
@@ -1668,7 +1973,7 @@ The documented GitHub Actions workflow [`deploy-staging.yml`](../../.github/work
 - [Production deployment runbook](../operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md)
 
 
-## Fuente: docs/architecture/EVENT-GRID-CLOUD-DESIGN.md
+## Source: docs/architecture/EVENT-GRID-CLOUD-DESIGN.md
 
 # Declarative Azure Event Grid Cloud Design (AegisBank)
 
@@ -1728,7 +2033,7 @@ graph TD
 - Local Azure Functions handler: `LOCAL-FUNCTIONS-COVERED` (recorded claim; verify current test evidence).
 
 
-## Fuente: docs/architecture/EVENT-GRID-VS-SERVICE-BUS.md
+## Source: docs/architecture/EVENT-GRID-VS-SERVICE-BUS.md
 
 # Event Grid vs. Service Bus in AegisBank (v0.13 Design)
 
@@ -1818,7 +2123,7 @@ The design retains both transports and treats the transactional outbox as the pu
 Do not add parallel handlers, buses, outboxes, audit loggers, or metrics frameworks without reviewing [canonical components](CANONICAL-COMPONENTS.md) and documenting a justified architecture change. Verify this design against the current source before implementation.
 
 
-## Fuente: docs/architecture/REDIS-CACHE-POLICY.md
+## Source: docs/architecture/REDIS-CACHE-POLICY.md
 
 # Redis Cache and In-Memory Data Policy
 
@@ -1893,7 +2198,7 @@ The documented policy is that Redis unavailability must not interrupt read opera
 2. This fallback increases latency. Do not claim behavior is implemented or tested without current runtime/test evidence.
 
 
-## Fuente: docs/operations/AZURE-STAGING-RUNBOOK.md
+## Source: docs/operations/AZURE-STAGING-RUNBOOK.md
 
 # Azure Staging Promotion Runbook
 
@@ -1942,7 +2247,7 @@ The final command requires all editable packages to be installed in `.venv`. If 
 This document does not prove a cloud deployment, cloud Foundry model, real Core Banking service authentication, data migration, load test, SLA, multi-region operation, or regulatory certification. AegisBank uses synthetic data and does not process real money.
 
 
-## Fuente: docs/operations/IDENTITY-TROUBLESHOOTING.md
+## Source: docs/operations/IDENTITY-TROUBLESHOOTING.md
 
 # Microsoft Entra ID Troubleshooting Guide
 
@@ -2044,7 +2349,7 @@ Before separately authorizing any Azure staging deployment, verify:
 This checklist is not deployment evidence or permission to deploy.
 
 
-## Fuente: docs/operations/KUBERNETES-TROUBLESHOOTING.md
+## Source: docs/operations/KUBERNETES-TROUBLESHOOTING.md
 
 # Kubernetes Operations and Troubleshooting Guide
 
@@ -2146,7 +2451,7 @@ Confirm `Last State: Terminated`, `Reason: OOMKilled`, and the configured memory
 These commands are diagnostic examples. Do not run mutation commands such as `kubectl apply`, delete, scale, or rollout operations without explicit authorization and a verified context.
 
 
-## Fuente: docs/operations/RBAC-LEAST-PRIVILEGE-MATRIX.md
+## Source: docs/operations/RBAC-LEAST-PRIVILEGE-MATRIX.md
 
 # Azure RBAC Least-Privilege Matrix (Microsoft Entra ID)
 
@@ -2199,7 +2504,7 @@ az role assignment delete --assignee <principal-id> --role "Key Vault Secrets Us
 ```
 
 
-## Fuente: docs/operations/STAGING-ACCEPTANCE-RUNBOOK.md
+## Source: docs/operations/STAGING-ACCEPTANCE-RUNBOOK.md
 
 # Azure Staging Acceptance Contract and Runbook
 
@@ -2266,7 +2571,7 @@ $env:AZURE_OPENAI_ENDPOINT = "https://aegisbank-staging-ai.cognitiveservices.azu
 No status may be upgraded without actual execution evidence.
 
 
-## Fuente: docs/operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md
+## Source: docs/operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md
 
 # Production Deployment, Operations, and Promotion Runbook (Design Only)
 
@@ -2364,7 +2669,7 @@ No rollback command should be run from this design document without target-speci
 - Cloud status remains unvalidated until authorized provisioning, execution, and evidence are completed.
 
 
-## Fuente: docs/operations/LOCAL-ENVIRONMENT-CONFIGURATION.md
+## Source: docs/operations/LOCAL-ENVIRONMENT-CONFIGURATION.md
 
 # Local Environment Configuration
 
@@ -2436,7 +2741,7 @@ the [local Compose lab](../../deploy/local/README.md), and the
 [application environment template](../../.env.example).
 
 
-## Fuente: docs/operations/production-configuration-secrets-identity-audit-prompt.en.md
+## Source: docs/operations/production-configuration-secrets-identity-audit-prompt.en.md
 
 # LLM Audit Prompt: Production Configuration, Secrets, and Identity
 
@@ -2516,7 +2821,7 @@ Before returning the report, confirm that:
 - Recommendations do not bypass deterministic authorization, ownership checks, validation, human approval, or idempotency.
 
 
-## Fuente: docs/operations/production-configuration-secrets-identity-audit.en.md
+## Source: docs/operations/production-configuration-secrets-identity-audit.en.md
 
 # English Summary: Production Configuration, Secrets, and Identity Audit
 
@@ -2595,7 +2900,7 @@ These are translations of dated audit findings, not claims about the current imp
 The audit did not authorize or perform any of these actions. No secret values are reproduced here.
 
 
-## Fuente: services/mock-core-banking/README.md
+## Source: services/mock-core-banking/README.md
 
 # AegisBank Mock Core Banking
 
@@ -2792,7 +3097,7 @@ services/mock-core-banking/
 ```
 
 
-## Fuente: ai/rag/README.md
+## Source: ai/rag/README.md
 
 # AegisBank RAG
 
@@ -2922,7 +3227,7 @@ contexts isolate generation measurements from frozen retrieval measurements.
   production-quality guarantees.
 
 
-## Fuente: ml/intent-classifier/README.md
+## Source: ml/intent-classifier/README.md
 
 # AegisBank Intent Classification Baseline
 
@@ -3042,7 +3347,7 @@ The dataset SHA-256 is
 - No integration, action execution, or production suitability claim.
 
 
-## Fuente: scripts/README.md
+## Source: scripts/README.md
 
 # Maintenance and Evaluation Commands
 

@@ -2,6 +2,10 @@
 
 ## Commit policy
 
+Use Conventional Commits 1.0.0 with English titles: `type(scope): description`.
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) for the repository's mandatory body,
+validation, and publication conventions.
+
 Before preparing a commit, inspect the latest subjects and bodies with
 `git log -5 --format=fuller` in this repository. Compare the proposed title with
 the actual diff. Describe the change and its scope; do not claim an unreleased
@@ -22,6 +26,11 @@ and the [canonical component catalog](docs/architecture/CANONICAL-COMPONENTS.md)
 before changing application code. Parent `AGENTS.md` files also apply. The outer
 development environment has its own repository and instructions; see
 [repository boundaries](docs/engineering/REPOSITORY-BOUNDARIES.md).
+
+For limited context, read [PROJECT-BRIEF](docs/PROJECT-BRIEF.md), then use one
+task route in `README.LLM.md`. Maintain guides in English according to the
+[documentation standard](docs/engineering/DOCUMENTATION-STANDARD.md).
+Keep the root README as the GitHub landing page; do not create `.github/README.md`.
 
 Use current source code and tests to establish behavior. Treat generated indexes
 as navigation aids, dated reports as evidence for their recorded runs, and

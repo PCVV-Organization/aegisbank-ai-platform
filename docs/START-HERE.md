@@ -28,6 +28,10 @@ permission.
 
 ## 3. Reading path
 
+Start with the [project brief](PROJECT-BRIEF.md) if you have little time or
+limited model context. It names the product, request flow, owners, and limits
+in at most 600 words. Use one route below rather than loading all documentation.
+
 | Goal | Read first | Then |
 |---|---|---|
 | Understand the purpose | [README](../README.md) | [Glossary](learning/GLOSSARY.md) |
@@ -61,6 +65,6 @@ are available in the project's `.venv`.
 Read [AGENTS.md](../AGENTS.md), define the authorized scope, identify component
 owners, and acquire SessionGuard. Choose tests using the
 [test strategy](quality/TEST-STRATEGY.md). Record the command, date, and actual
-result. A skipped test is not a pass. Historical findings such as the 75
-Pyright errors and partial R2 status were recorded on 2026-09-21; this guide
-does not claim that they are fixed or current.
+result. A skipped test is not a pass. Follow the [contribution guide](../CONTRIBUTING.md)
+and [documentation standard](engineering/DOCUMENTATION-STANDARD.md) when preparing
+changes. Historical findings remain attached to their original date and scope.

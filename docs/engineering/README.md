@@ -8,6 +8,9 @@ Define the question, read the relevant document, note its date and status, and f
 
 ## Documents
 
+- [Documentation standard](DOCUMENTATION-STANDARD.md)
+- [Contribution and commit conventions](../../CONTRIBUTING.md)
+- [Documentation system](DOCUMENTATION-SYSTEM.md)
 - [Documentation maintenance](DOCUMENTATION-MAINTENANCE.md)
 - [Ownership map](OWNERSHIP-MAP.md)
 - [Repository boundaries](REPOSITORY-BOUNDARIES.md)

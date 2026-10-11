@@ -7,12 +7,15 @@ Paths are relative to the application repository root.
 
 ## Start here
 
+- [Compact orientation for limited context](docs/PROJECT-BRIEF.md)
+- [Task routes and LLM evidence boundaries](README.LLM.md)
+- [Development instructions](AGENTS.md)
+- [Public project introduction and dated status](README.md)
+- [Change workflow and Conventional Commits](CONTRIBUTING.md)
+- [Documentation naming and context rules](docs/engineering/DOCUMENTATION-STANDARD.md)
 - [First reading and safe local onboarding](docs/START-HERE.md)
 - [Directory-by-directory ownership and files](docs/DIRECTORY-MAP.md)
 - [Documentation evolution and conventions](docs/engineering/DOCUMENTATION-SYSTEM.md)
-- [Development instructions](AGENTS.md)
-- [Purpose and checkout baseline](README.md)
-- [LLM reading order and evidence boundaries](README.LLM.md)
 - [Documentation portal](docs/README.md)
 - [Canonical implementations](docs/architecture/CANONICAL-COMPONENTS.md)
 - [Execution and trust boundaries](docs/architecture/E2E-FINAL-ARCHITECTURE.md)

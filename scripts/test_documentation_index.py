@@ -11,6 +11,33 @@ import documentation_index as index
 
 
 class DocumentationIndexTests(unittest.TestCase):
+    def test_github_readme_shadow_is_rejected_case_insensitively(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / ".github").mkdir()
+            (root / "README.md").write_text("# Public introduction\n", encoding="utf-8")
+            automation = root / ".github/CI-GUIDE.md"
+            automation.write_text("# Automation\n", encoding="utf-8")
+            index.validate_reading_contract(root)
+            for name in ["README.md", "Readme.MD", "README.rst", "README"]:
+                with self.subTest(name=name):
+                    shadow = root / ".github" / name
+                    shadow.write_text("# Shadow\n", encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "shadows the root"):
+                        index.validate_reading_contract(root)
+                    shadow.unlink()
+
+    def test_project_brief_budget_accepts_limit_and_rejects_overflow(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "docs").mkdir()
+            brief = root / "docs/PROJECT-BRIEF.md"
+            brief.write_text("word " * 600, encoding="utf-8")
+            index.validate_reading_contract(root)
+            brief.write_text("word " * 601, encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "600-word context budget"):
+                index.validate_reading_contract(root)
+
     def test_bundle_contains_only_curated_sources_and_stays_deterministic(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -24,6 +51,8 @@ class DocumentationIndexTests(unittest.TestCase):
             )
             first = index.navigation_outputs(root)
             self.assertIn("# Selected", first["llms-full.txt"])
+            self.assertIn("## Source: README.md", first["llms-full.txt"])
+            self.assertIn("# Directory Map", first["docs/DIRECTORY-MAP.md"])
             self.assertNotIn("DO NOT INCLUDE", first["llms-full.txt"])
             for path, content in first.items():
                 (root / path).write_text(content, encoding="utf-8")
