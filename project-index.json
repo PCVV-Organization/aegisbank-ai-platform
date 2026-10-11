@@ -503,6 +503,10 @@
       "category": "operations-reference"
     },
     {
+      "path": "docs/operations/LOCAL-FIRST-READINESS.md",
+      "category": "operations-reference"
+    },
+    {
       "path": "docs/operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md",
       "category": "operations-reference"
     },

@@ -520,6 +520,12 @@ with a reason rather than leaving a section ambiguous. A reviewer should be
 able to understand what changed, why, how it was validated, and what remains
 without reading the entire repository.
 
+For pull requests, GitHub first assigns the author and applies the
+`needs-review` label. The CI quality jobs depend on that metadata preparation
+job, so they do not start before the PR has an assignee and a baseline label.
+Authors must add at least one additional relevant label such as `bug`,
+`documentation`, or `enhancement` before requesting review.
+
 ## Commit convention
 
 Use [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
