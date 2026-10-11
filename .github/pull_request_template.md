@@ -42,6 +42,7 @@
 ## Author checklist
 
 - [ ] The title follows `type(scope): imperative description`.
+- [ ] At least one relevant GitHub label is selected; `needs-review` is applied automatically.
 - [ ] The diff is limited to the stated scope; unrelated changes are excluded.
 - [ ] Tests and checks are listed with exact commands and observed results.
 - [ ] Secrets, personal data, and production credentials are absent.
