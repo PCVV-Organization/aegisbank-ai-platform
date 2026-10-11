@@ -64,7 +64,7 @@ def is_local_endpoint(value: str | None) -> bool:
         return False
     parsed = urlparse(value)
     host = (parsed.hostname or "").lower()
-    return host in {"localhost", "127.0.0.1", "::1", "0.0.0.0"}
+    return host in {"localhost", "127.0.0.1", "::1", "0.0.0.0"}  # nosec B104 - classify local wildcard endpoints
 
 
 def _is_enabled(value: str | None) -> bool:

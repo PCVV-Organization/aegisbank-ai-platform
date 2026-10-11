@@ -14,6 +14,9 @@ on:
 permissions:
   contents: read
 
+env:
+  PYTHONPATH: ${{ github.workspace }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -73,6 +76,10 @@ jobs:
         run: |
           pip install -e ai/agent[dev]
           pip install pytest==9.1.1 pytest-cov==7.0.0 jsonschema==4.26.0
+          pip install azure-functions==2.3.0
+
+      - name: Build Core Banking Test Image
+        run: docker build --tag aegisbank/mock-core-banking:0.11.0 services/mock-core-banking
 
       - name: Run Mock Core Banking Tests & Contracts
         run: pytest services/mock-core-banking/tests
@@ -84,6 +91,8 @@ jobs:
         run: pytest ai/rag/tests
 
       - name: Run AI Agent Tests, Contracts & E2E Journeys
+        env:
+          AEGISBANK_FOUNDRY_LOCAL_BASE_URL: http://127.0.0.1:5272/v1
         run: pytest ai/agent/tests --cov=ai/agent/src --cov-report=term-missing
 
   devsecops:

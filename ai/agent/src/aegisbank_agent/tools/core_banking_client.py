@@ -104,7 +104,7 @@ class CoreBankingHttpClient:
 
         req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # nosec B310 - URL is built from configured service base URL
                 resp_bytes = resp.read()
                 return json.loads(resp_bytes.decode("utf-8")) if resp_bytes else {}
         except urllib.error.HTTPError as http_err:

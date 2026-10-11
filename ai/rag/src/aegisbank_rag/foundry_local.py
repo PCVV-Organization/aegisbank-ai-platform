@@ -42,7 +42,7 @@ def check_foundry_health(base_url: str, timeout: float = 1.0) -> bool:
     url = f"{base_url.rstrip('/')}/models"
     try:
         req = urllib.request.Request(url, headers={"Authorization": "Bearer none"})
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310 - caller supplies configured local endpoint
             return resp.status == 200
     except Exception:
         return False
