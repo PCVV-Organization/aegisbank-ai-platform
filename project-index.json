@@ -127,6 +127,10 @@
       "category": "component-guide"
     },
     {
+      "path": ".github/pull_request_template.md",
+      "category": "component-guide"
+    },
+    {
       "path": "AGENTS.md",
       "category": "entrypoint"
     },

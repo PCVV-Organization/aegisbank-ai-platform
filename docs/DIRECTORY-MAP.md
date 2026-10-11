@@ -7,7 +7,7 @@ Excludes environments, secrets, and dataset/report contents. A folder without it
 | Directory | Responsibility | Direct files |
 | --- | --- | --- |
 | `.` | Synthetic banking application; README describes its purpose and limits | `.cursorrules`, `.dockerignore`, `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `GEMINI.md`, `README.LLM.md`, `README.md`, `llms-full.txt`, `llms.txt`, `project-index.json`, `pyrightconfig.json` |
-| `.github` | Declared CI automation; configuration does not prove remote execution | `CI-GUIDE.md`, `copilot-instructions.md` |
+| `.github` | Declared CI automation; configuration does not prove remote execution | `CI-GUIDE.md`, `copilot-instructions.md`, `pull_request_template.md` |
 | `.github/workflows` | Declared CI automation; configuration does not prove remote execution | `azure-validate.yml`, `ci.yml`, `deploy-staging.yml` |
 | `ai` | Product AI components; not developer tooling | `README.md` |
 | `ai/agent` | Single-agent orchestration with deterministic authorization | `.dockerignore`, `Dockerfile`, `README.md`, `pyproject.toml` |

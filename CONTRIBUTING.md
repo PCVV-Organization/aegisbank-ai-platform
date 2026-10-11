@@ -25,6 +25,16 @@ Use the application `.venv` for application checks. The
 [test strategy](docs/quality/TEST-STRATEGY.md) distinguishes unit, integration,
 contract, E2E, infrastructure, and AI evaluation evidence.
 
+## Pull requests
+
+Every pull request uses the repository
+[template](.github/pull_request_template.md). Keep the description complete but
+bounded: explain purpose, scope, observable changes, exact validation evidence,
+risks, rollback, deployment boundary, and remaining limits. Use `Not applicable`
+with a reason rather than leaving a section ambiguous. A reviewer should be
+able to understand what changed, why, how it was validated, and what remains
+without reading the entire repository.
+
 ## Commit convention
 
 Use [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):

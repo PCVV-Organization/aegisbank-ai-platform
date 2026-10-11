@@ -7,6 +7,7 @@ The [root README](../README.md) is the project's public introduction.
 
 - [CI workflow](workflows/ci.yml): static analysis and test jobs.
 - [Staging workflow](workflows/deploy-staging.yml): declared Azure promotion procedure.
+- [Pull request template](pull_request_template.md): required PR structure and evidence checklist.
 - [Copilot instructions](copilot-instructions.md): navigation for that host.
 - [Contribution guide](../CONTRIBUTING.md): validation and commit conventions.
 
