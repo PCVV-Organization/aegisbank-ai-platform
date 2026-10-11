@@ -127,6 +127,10 @@
       "category": "component-guide"
     },
     {
+      "path": ".github/pull_request_template.md",
+      "category": "component-guide"
+    },
+    {
       "path": "AGENTS.md",
       "category": "entrypoint"
     },
@@ -432,6 +436,10 @@
     },
     {
       "path": "docs/engineering/REPOSITORY-BOUNDARIES.md",
+      "category": "engineering-reference"
+    },
+    {
+      "path": "docs/engineering/REPOSITORY-WORKFLOW.md",
       "category": "engineering-reference"
     },
     {

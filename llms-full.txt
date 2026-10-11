@@ -370,6 +370,7 @@ guessing behavior or weakening deterministic policy.
 | Retrieval or citations | [RAG](ai/rag/README.md) | `ai/rag/src/aegisbank_rag/`, relevant `ai/rag/tests/` |
 | Configuration or identity | [Configuration](ai/agent/src/aegisbank_agent/configuration/README.md) | `ai/agent/src/aegisbank_agent/configuration/`, `ai/agent/tests/unit/configuration/` |
 | Documentation or repository layout | [Standard](docs/engineering/DOCUMENTATION-STANDARD.md) | Owning guide, `docs/navigation.json`, documentation generator/tests |
+| Branches and deployment environments | [Repository workflow](docs/engineering/REPOSITORY-WORKFLOW.md) | `.github/workflows/ci.yml`, staging workflow, deployment runbooks |
 | Azure readiness | [Cloud boundaries](docs/architecture/CLOUD-CONFIGURATION-IDENTITY.md) | Relevant adapter/IaC and [staging acceptance](docs/operations/STAGING-ACCEPTANCE-RUNBOOK.md) |
 
 Stop retrieval when the task's inputs, owning implementation, checks, and limits
@@ -508,6 +509,16 @@ git diff --check
 Use the application `.venv` for application checks. The
 [test strategy](docs/quality/TEST-STRATEGY.md) distinguishes unit, integration,
 contract, E2E, infrastructure, and AI evaluation evidence.
+
+## Pull requests
+
+Every pull request uses the repository
+[template](.github/pull_request_template.md). Keep the description complete but
+bounded: explain purpose, scope, observable changes, exact validation evidence,
+risks, rollback, deployment boundary, and remaining limits. Use `Not applicable`
+with a reason rather than leaving a section ambiguous. A reviewer should be
+able to understand what changed, why, how it was validated, and what remains
+without reading the entire repository.
 
 ## Commit convention
 
