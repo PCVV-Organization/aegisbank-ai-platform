@@ -31,6 +31,22 @@ class GateResult:
     error_message: str | None = None
 
 
+def _runtime_env(repo_root: Path) -> dict[str, str]:
+    """Return the reproducible local import environment for child commands."""
+    env = os.environ.copy()
+    source_paths = [
+        repo_root,
+        repo_root / "ai" / "agent" / "src",
+        repo_root / "ai" / "rag" / "src",
+        repo_root / "ml" / "intent-classifier" / "src",
+        repo_root / "services" / "mock-core-banking" / "src",
+    ]
+    existing = env.get("PYTHONPATH", "")
+    joined = os.pathsep.join(str(path) for path in source_paths)
+    env["PYTHONPATH"] = joined + (os.pathsep + existing if existing else "")
+    return env
+
+
 def _run_cmd(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
     res = subprocess.run(
         cmd,
@@ -38,6 +54,7 @@ def _run_cmd(cmd: list[str], cwd: Path) -> tuple[int, str, str]:
         capture_output=True,
         text=True,
         check=False,
+        env=_runtime_env(cwd),
     )
     return res.returncode, res.stdout, res.stderr
 
@@ -246,7 +263,8 @@ def run_quality_gates(
     intent_robustness: bool = False,
 ) -> tuple[int, list[GateResult]]:
     results: list[GateResult] = []
-    py_exec = sys.executable
+    local_python = repo_root / ".venv" / "Scripts" / "python.exe"
+    py_exec = str(local_python) if local_python.exists() else sys.executable
 
     # Session Guard verification
     session_result = _session_guard_result(repo_root)
