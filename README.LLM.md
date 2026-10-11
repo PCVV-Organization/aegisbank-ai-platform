@@ -16,6 +16,7 @@ guessing behavior or weakening deterministic policy.
 | Retrieval or citations | [RAG](ai/rag/README.md) | `ai/rag/src/aegisbank_rag/`, relevant `ai/rag/tests/` |
 | Configuration or identity | [Configuration](ai/agent/src/aegisbank_agent/configuration/README.md) | `ai/agent/src/aegisbank_agent/configuration/`, `ai/agent/tests/unit/configuration/` |
 | Documentation or repository layout | [Standard](docs/engineering/DOCUMENTATION-STANDARD.md) | Owning guide, `docs/navigation.json`, documentation generator/tests |
+| Branches and deployment environments | [Repository workflow](docs/engineering/REPOSITORY-WORKFLOW.md) | `.github/workflows/ci.yml`, staging workflow, deployment runbooks |
 | Azure readiness | [Cloud boundaries](docs/architecture/CLOUD-CONFIGURATION-IDENTITY.md) | Relevant adapter/IaC and [staging acceptance](docs/operations/STAGING-ACCEPTANCE-RUNBOOK.md) |
 
 Stop retrieval when the task's inputs, owning implementation, checks, and limits

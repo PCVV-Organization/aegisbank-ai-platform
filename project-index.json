@@ -435,6 +435,10 @@
       "category": "engineering-reference"
     },
     {
+      "path": "docs/engineering/REPOSITORY-WORKFLOW.md",
+      "category": "engineering-reference"
+    },
+    {
       "path": "docs/evaluation/EVALUATION-CATALOG.md",
       "category": "evaluation-protocol-or-historical-evidence"
     },
