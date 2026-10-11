@@ -25,11 +25,11 @@ concurrency:
 jobs:
   prepare-pr:
     name: Prepare PR Metadata
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Assign author and apply default label
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const issue = context.payload.pull_request;
@@ -65,14 +65,14 @@ jobs:
 
   static-analysis:
     name: Static Quality & Linting
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: prepare-pr
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.14
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.14"
 
@@ -92,14 +92,14 @@ jobs:
 
   test-suite:
     name: Test Pyramid (Unit, Integration, Contract, E2E)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: static-analysis
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.14
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.14"
 
@@ -139,14 +139,14 @@ jobs:
 
   devsecops:
     name: DevSecOps Gates (SAST, SCA, SBOM, Secrets)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: static-analysis
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.14
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.14"
 

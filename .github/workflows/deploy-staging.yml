@@ -25,13 +25,13 @@ concurrency:
 jobs:
   pre-deployment-gates:
     name: Verify Quality & DevSecOps Gates
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.14
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.14"
 
@@ -45,7 +45,7 @@ jobs:
 
   deploy-staging-infrastructure:
     name: Deploy Azure Staging Foundation (OIDC)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: pre-deployment-gates
     if: ${{ github.event.inputs.confirm_deployment == 'DEPLOY-STAGING' }}
     environment:
@@ -53,7 +53,7 @@ jobs:
       url: https://portal.azure.com
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Azure OIDC Login (Passwordless)
         uses: azure/login@v2

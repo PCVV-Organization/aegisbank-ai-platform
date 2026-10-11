@@ -14,9 +14,9 @@ permissions:
 jobs:
   validate-iac:
     name: Compile Azure foundation without deployment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Azure CLI
         uses: azure/setup-azure@v2
       - name: Compile Bicep
