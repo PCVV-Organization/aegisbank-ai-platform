@@ -10,6 +10,12 @@
 `aegisbankstagingacr.azurecr.io/aegisbank-agent:1281bd8a7b3a` (digest
 `sha256:33e87240c48f1466dbf9a28819eccb2357b29cd53a11fab15c2842392fe12df1`).
 
+The later deployment `aegisbank-staging-jwt-v10` completed with state
+`Succeeded` and made `aegisbankstagingacr.azurecr.io/aegisbank-agent:a2f3f58c6d1a`
+the running revision. This image replaces the temporary synthetic bearer smoke
+boundary with Entra JWT verification that fails closed until a tenant and
+audience are configured.
+
 The deployment created and configured:
 
 - Azure AI Services account `aegisbank-staging-ai` and its
@@ -34,6 +40,7 @@ at the namespace scope.
 | `STG-02` readiness | `PASS` | Public `GET /health/ready` returned `200` and `{"status":"ready","environment":"staging"}`. |
 | `STG-06` Foundry inference | `PASS` | A synthetic authenticated request, `Di hola en una frase.`, returned HTTP `200`, `rounds: 1`, and `Hola, ¿en qué puedo ayudarte hoy?`. |
 | RAG routing smoke | `PASS` | A synthetic `DELINQUENT` question returned HTTP `200` through `search_knowledge` with `rounds: 0`; the deterministic retrieval route did not invoke the model. |
+| Cloud auth hardening | `PASS` | On the later JWT-hardened revision, public liveness/readiness returned `200`; a bearer value without configured Entra validation returned HTTP `503`, not an authenticated response. |
 
 No real customer data, credentials, banking transactions, or state-changing
 operations were used.
@@ -44,8 +51,9 @@ The following acceptance cases are still open and prevent a full
 `STAGING_ACCEPTED` or any production claim:
 
 - `STG-03` App Configuration hydration through the deployed private endpoint.
-- `STG-04` end-user Entra JWT validation; the current synthetic staging bearer
-  smoke is not evidence of production authentication.
+- `STG-04` end-user Entra JWT validation with an approved tenant, audience, and
+  synthetic customer claim. The deployed service correctly fails closed until
+  those configuration values and a valid signed token exist.
 - `STG-05` Key Vault reference resolution through the deployed private endpoint.
 - `STG-07` through `STG-14`: cited RAG, IDOR, HITL reject/approve, idempotency,
   messaging delivery, and telemetry redaction evidence.

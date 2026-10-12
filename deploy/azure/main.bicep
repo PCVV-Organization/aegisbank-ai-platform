@@ -32,6 +32,12 @@ param registryName string = 'aegisbankstagingacr'
 @description('Existing user-assigned identity used by staging workloads.')
 param workloadIdentityName string = 'id-aegisbank-staging-workload'
 
+@description('Existing Azure AI Services account used for cloud model inference.')
+param foundryAccountName string = '${namePrefix}${environment}ai'
+
+@description('Existing model deployment name in the Azure AI Services account.')
+param foundryDeploymentName string = 'phi-4-mini-instruct'
+
 var identityName = workloadIdentityName
 var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
@@ -39,9 +45,6 @@ var logWorkspaceName = '${namePrefix}-${environment}-logs'
 var containerEnvName = '${namePrefix}-${environment}-aca-env'
 var serviceBusName = '${namePrefix}-${environment}-bus'
 var queueName = 'aegisbank-events'
-var foundryAccountName = '${namePrefix}-${environment}-ai'
-var foundryDeploymentName = 'aegisbank-phi-4-mini'
-
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
   name: registryName
 }
@@ -275,7 +278,7 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             }
             {
               name: 'AEGISBANK_FOUNDRY_ENDPOINT'
-              value: 'https://${foundryAccount.name}.services.ai.azure.com/openai/v1'
+              value: 'https://${foundryAccount.name}.cognitiveservices.azure.com/'
             }
             {
               name: 'AEGISBANK_FOUNDRY_DEPLOYMENT_NAME'
@@ -394,5 +397,5 @@ output appConfigurationEndpoint string = appConfiguration.properties.endpoint
 output keyVaultUri string = keyVault.properties.vaultUri
 output serviceBusEndpoint string = '${serviceBus.name}.servicebus.windows.net'
 output agentFqdn string = agentApp.properties.configuration.ingress.fqdn
-output foundryEndpoint string = 'https://${foundryAccount.name}.services.ai.azure.com/openai/v1'
+output foundryEndpoint string = 'https://${foundryAccount.name}.cognitiveservices.azure.com/'
 output foundryDeploymentName string = foundryDeploymentName

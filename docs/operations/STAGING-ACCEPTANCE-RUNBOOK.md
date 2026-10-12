@@ -12,7 +12,7 @@
    - `AZURE_APPCONFIG_ENDPOINT=https://<prefix>-staging-config.azconfig.io`
    - `AZURE_KEY_VAULT_URL=https://<prefix>-staging-kv.vault.azure.net/`
    - `AEGISBANK_SERVICEBUS_NAMESPACE=<prefix>-staging.servicebus.windows.net`
-   - `AEGISBANK_FOUNDRY_ENDPOINT=https://<prefix>-staging-ai.services.ai.azure.com/openai/v1`
+   - `AEGISBANK_FOUNDRY_ENDPOINT=https://<foundry-account>.cognitiveservices.azure.com/`
    - `AEGISBANK_FOUNDRY_DEPLOYMENT_NAME=<approved-foundry-deployment>`
 3. The assigned workload identity has the required roles from the [RBAC matrix](RBAC-LEAST-PRIVILEGE-MATRIX.md).
 4. No `.env` or `.env.local` file is present in the container or runtime environment.
@@ -47,8 +47,8 @@ $env:AEGISBANK_ENV = "staging"
 $env:AZURE_APPCONFIG_ENDPOINT = "https://aegisbank-staging-config.azconfig.io"
 $env:AZURE_KEY_VAULT_URL = "https://aegisbank-staging-kv.vault.azure.net/"
 $env:AEGISBANK_SERVICEBUS_NAMESPACE = "aegisbank-staging.servicebus.windows.net"
-$env:AEGISBANK_FOUNDRY_ENDPOINT = "https://aegisbank-staging-ai.services.ai.azure.com/openai/v1"
-$env:AEGISBANK_FOUNDRY_DEPLOYMENT_NAME = "aegisbank-phi-4-mini"
+$env:AEGISBANK_FOUNDRY_ENDPOINT = "https://aegisbankstagingai.cognitiveservices.azure.com/"
+$env:AEGISBANK_FOUNDRY_DEPLOYMENT_NAME = "phi-4-mini-instruct"
 
 # Validate runtime configuration for the explicitly approved target.
 & .\.venv\Scripts\python.exe -c "from aegisbank_agent.configuration import validate_runtime_configuration, resolve_runtime_environment; validate_runtime_configuration(resolve_runtime_environment())"
