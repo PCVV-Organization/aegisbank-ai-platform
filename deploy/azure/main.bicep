@@ -33,13 +33,13 @@ param registryName string = 'aegisbankstagingacr'
 param workloadIdentityName string = 'id-aegisbank-staging-workload'
 
 @description('Existing Azure AI Services account used for cloud model inference.')
-param foundryAccountName string = '${namePrefix}${environment}ai'
+param foundryAccountName string = '${namePrefix}-${environment}-ai'
 
 @description('Existing model deployment name in the Azure AI Services account.')
-param foundryDeploymentName string = 'phi-4-mini-instruct'
+param foundryDeploymentName string = 'aegisbank-phi-4-mini'
 
 @description('Stable role-assignment resource ID for the pre-authorized Foundry workload identity.')
-param foundryRoleAssignmentName string = '91c5bfc1-8df7-43b1-9805-92ac0fb6266b'
+param foundryRoleAssignmentName string = 'a32c0bf0-80e4-5c04-832b-fdc8553d5d43'
 
 @description('Microsoft Entra tenant ID that issues access tokens for the Agent API. Empty keeps cloud authentication fail-closed.')
 param entraTenantId string = ''
