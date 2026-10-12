@@ -60,9 +60,7 @@ class PrincipalContext:
 class AuthenticationProvider:
     """Authentication and identity verification boundary for the HTTP API."""
 
-    def __init__(
-        self, jwt_validator: Callable[[str], PrincipalContext] | None = None
-    ) -> None:
+    def __init__(self, jwt_validator: Callable[[str], PrincipalContext] | None = None) -> None:
         """Allow a deterministic verifier to be supplied by isolated tests."""
         self._jwt_validator = jwt_validator or self._validate_entra_jwt
 
