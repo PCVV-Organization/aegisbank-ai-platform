@@ -33,10 +33,10 @@ param registryName string = 'aegisbankstagingacr'
 param workloadIdentityName string = 'id-aegisbank-staging-workload'
 
 @description('Existing Azure AI Services account used for cloud model inference.')
-param foundryAccountName string = '${namePrefix}${environment}ai'
+param foundryAccountName string = '${namePrefix}-${environment}-ai'
 
 @description('Existing model deployment name in the Azure AI Services account.')
-param foundryDeploymentName string = 'phi-4-mini-instruct'
+param foundryDeploymentName string = 'aegisbank-phi-4-mini'
 
 var identityName = workloadIdentityName
 var appConfigName = '${namePrefix}-${environment}-config'
