@@ -86,7 +86,12 @@ class AuthenticationProvider:
             from jwt import PyJWKClient
 
             issuer = f"https://login.microsoftonline.com/{tenant_id}/v2.0"
-            jwks_client = PyJWKClient(f"{issuer}/discovery/v2.0/keys")
+            # Microsoft Entra publishes tenant JWKS one level above the v2.0
+            # issuer URL. Appending discovery to ``issuer`` produces a 404
+            # (``.../v2.0/discovery/v2.0/keys``) in hosted runtimes.
+            jwks_client = PyJWKClient(
+                f"https://login.microsoftonline.com/{tenant_id}/discovery/v2.0/keys"
+            )
             signing_key = jwks_client.get_signing_key_from_jwt(token)
             claims = jwt.decode(
                 token,
