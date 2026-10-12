@@ -6,7 +6,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from aegisbank_rag.azure_foundry import AzureFoundryProvider, resolve_azure_endpoint
+from aegisbank_rag.azure_foundry import (
+    AzureFoundryProvider,
+    create_azure_foundry_client,
+    is_foundry_v1_endpoint,
+    resolve_azure_endpoint,
+)
 from aegisbank_rag.provider import LLMProvider, LLMRequest
 
 
@@ -117,7 +122,7 @@ def test_azure_provider_uses_shared_client_factory(monkeypatch) -> None:
     mock_choice.message.content = '{"answer": "ok"}'
     fake_client.chat.completions.create.return_value.choices = [mock_choice]
     factory = MagicMock(return_value=fake_client)
-    monkeypatch.setattr("aegisbank_rag.azure_foundry.create_azure_openai_client", factory)
+    monkeypatch.setattr("aegisbank_rag.azure_foundry.create_azure_foundry_client", factory)
 
     provider = AzureFoundryProvider(
         endpoint="https://aegisbank-ai.cognitiveservices.azure.com",
@@ -132,3 +137,22 @@ def test_azure_provider_uses_shared_client_factory(monkeypatch) -> None:
         timeout=45.0,
         max_retries=2,
     )
+
+
+def test_foundry_v1_endpoint_is_recognized() -> None:
+    assert is_foundry_v1_endpoint("https://aegisbank-staging-ai.services.ai.azure.com/openai/v1")
+    assert not is_foundry_v1_endpoint("https://aegisbank-staging-ai.openai.azure.com")
+
+
+def test_foundry_v1_client_uses_openai_compatible_client(monkeypatch) -> None:
+    fake_client = MagicMock()
+    factory = MagicMock(return_value=fake_client)
+    import openai
+
+    monkeypatch.setattr(openai, "OpenAI", factory)
+    client = create_azure_foundry_client(
+        endpoint="https://aegisbank-staging-ai.services.ai.azure.com/openai/v1",
+        credential=object(),
+    )
+    assert client is fake_client
+    factory.assert_called_once()

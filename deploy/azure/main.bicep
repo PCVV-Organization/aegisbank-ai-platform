@@ -39,6 +39,8 @@ var logWorkspaceName = '${namePrefix}-${environment}-logs'
 var containerEnvName = '${namePrefix}-${environment}-aca-env'
 var serviceBusName = '${namePrefix}-${environment}-bus'
 var queueName = 'aegisbank-events'
+var foundryAccountName = '${namePrefix}-${environment}-ai'
+var foundryDeploymentName = 'aegisbank-phi-4-mini'
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
   name: registryName
@@ -84,6 +86,37 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enableRbacAuthorization: true
     enablePurgeProtection: true
     publicNetworkAccess: 'Disabled'
+  }
+}
+
+// Microsoft Foundry Models resource. The model deployment is deliberately
+// separate from Foundry Local and uses Entra ID rather than an API key.
+resource foundryAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
+  name: foundryAccountName
+  location: location
+  kind: 'AIServices'
+  sku: {
+    name: 'S0'
+  }
+  properties: {
+    customSubDomainName: foundryAccountName
+    publicNetworkAccess: 'Enabled'
+  }
+}
+
+resource foundryModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+  parent: foundryAccount
+  name: foundryDeploymentName
+  sku: {
+    name: 'GlobalStandard'
+    capacity: 1
+  }
+  properties: {
+    model: {
+      format: 'Microsoft'
+      name: 'Phi-4-mini-instruct'
+      version: '1'
+    }
   }
 }
 
@@ -238,7 +271,15 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             }
             {
               name: 'MOCK_CORE_BANKING_BASE_URL'
-              value: 'http://${mockCoreBankingApp.name}'
+              value: 'http://${mockCoreBankingApp.properties.configuration.ingress.fqdn}'
+            }
+            {
+              name: 'AEGISBANK_FOUNDRY_ENDPOINT'
+              value: 'https://${foundryAccount.name}.services.ai.azure.com/openai/v1'
+            }
+            {
+              name: 'AEGISBANK_FOUNDRY_DEPLOYMENT_NAME'
+              value: foundryDeploymentName
             }
             {
               name: 'AEGISBANK_SERVICEBUS_FQDN'
@@ -273,6 +314,8 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
   }
   dependsOn: [
     containerRegistryPull
+    foundryModelDeployment
+    foundryModelUser
   ]
 }
 
@@ -318,6 +361,20 @@ resource containerRegistryPull 'Microsoft.Authorization/roleAssignments@2022-04-
   }
 }
 
+// Allows the runtime identity to invoke the Foundry deployment with Entra ID.
+resource foundryModelUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(foundryAccount.id, identityName, 'CognitiveServicesOpenAIUser')
+  scope: foundryAccount
+  properties: {
+    principalId: workloadIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+    )
+  }
+}
+
 // Azure Service Bus Data Sender
 resource serviceBusDataSender 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(serviceBus.id, identityName, 'AzureServiceBusDataSender')
@@ -332,22 +389,10 @@ resource serviceBusDataSender 'Microsoft.Authorization/roleAssignments@2022-04-0
   }
 }
 
-// Azure Service Bus Data Receiver
-resource serviceBusDataReceiver 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(serviceBus.id, identityName, 'AzureServiceBusDataReceiver')
-  scope: serviceBus
-  properties: {
-    principalId: workloadIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
-    )
-  }
-}
-
 output workloadIdentityClientId string = workloadIdentity.properties.clientId
 output appConfigurationEndpoint string = appConfiguration.properties.endpoint
 output keyVaultUri string = keyVault.properties.vaultUri
 output serviceBusEndpoint string = '${serviceBus.name}.servicebus.windows.net'
 output agentFqdn string = agentApp.properties.configuration.ingress.fqdn
+output foundryEndpoint string = 'https://${foundryAccount.name}.services.ai.azure.com/openai/v1'
+output foundryDeploymentName string = foundryDeploymentName

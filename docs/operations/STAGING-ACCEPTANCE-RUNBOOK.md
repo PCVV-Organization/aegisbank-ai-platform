@@ -1,8 +1,8 @@
 # Azure Staging Acceptance Contract and Runbook
 
-> **Recorded status:** `SPECIFIED_STAGING_CONTRACT`; `CLOUD_UNVALIDATED`.
-> **Purpose:** Define end-to-end acceptance checks for a future Azure staging environment after resources have been provisioned with explicit authorization.
-> **Safety boundary:** Commands are examples, not an automatically executed workflow. This document does not authorize provisioning, deployment, or cloud tests.
+> **Recorded status (2026-10-11):** `STAGING_FOUNDATION_DEPLOYED`; `STAGING_ACCEPTANCE_PARTIAL`.
+> **Purpose:** Define end-to-end acceptance checks for Azure staging and distinguish executed evidence from checks that remain open.
+> **Evidence:** The dated [staging-foundation evidence](../quality/AZURE-STAGING-FOUNDATION-EVIDENCE-20261011.md) records the deployed immutable image, Foundry model, managed-identity role, public health checks, and a synthetic inference request. It does not authorize production promotion.
 
 ## 1. Preconditions
 
@@ -12,7 +12,8 @@
    - `AZURE_APPCONFIG_ENDPOINT=https://<prefix>-staging-config.azconfig.io`
    - `AZURE_KEY_VAULT_URL=https://<prefix>-staging-kv.vault.azure.net/`
    - `AEGISBANK_SERVICEBUS_NAMESPACE=<prefix>-staging.servicebus.windows.net`
-   - `AZURE_OPENAI_ENDPOINT=https://<prefix>-staging-ai.cognitiveservices.azure.com/`
+   - `AEGISBANK_FOUNDRY_ENDPOINT=https://<prefix>-staging-ai.services.ai.azure.com/openai/v1`
+   - `AEGISBANK_FOUNDRY_DEPLOYMENT_NAME=<approved-foundry-deployment>`
 3. The assigned workload identity has the required roles from the [RBAC matrix](RBAC-LEAST-PRIVILEGE-MATRIX.md).
 4. No `.env` or `.env.local` file is present in the container or runtime environment.
 
@@ -46,7 +47,8 @@ $env:AEGISBANK_ENV = "staging"
 $env:AZURE_APPCONFIG_ENDPOINT = "https://aegisbank-staging-config.azconfig.io"
 $env:AZURE_KEY_VAULT_URL = "https://aegisbank-staging-kv.vault.azure.net/"
 $env:AEGISBANK_SERVICEBUS_NAMESPACE = "aegisbank-staging.servicebus.windows.net"
-$env:AZURE_OPENAI_ENDPOINT = "https://aegisbank-staging-ai.cognitiveservices.azure.com/"
+$env:AEGISBANK_FOUNDRY_ENDPOINT = "https://aegisbank-staging-ai.services.ai.azure.com/openai/v1"
+$env:AEGISBANK_FOUNDRY_DEPLOYMENT_NAME = "aegisbank-phi-4-mini"
 
 # Validate runtime configuration for the explicitly approved target.
 & .\.venv\Scripts\python.exe -c "from aegisbank_agent.configuration import validate_runtime_configuration, resolve_runtime_environment; validate_runtime_configuration(resolve_runtime_environment())"

@@ -1,9 +1,9 @@
 # Cloud Configuration, Workload Identity, and Deployment Boundaries
 
-> **Recorded status:** `AZURE_DEPLOYMENT_PREPARED`; `CLOUD_UNVALIDATED`.
+> **Recorded status (2026-10-11):** `STAGING_FOUNDATION_DEPLOYED`; `PARTIAL_RUNTIME_ACCEPTANCE`.
 > **Product boundary:** AegisBank AI Platform is a secure, reproducible educational banking-AI laboratory. It is not a commercial bank and does not process real financial transactions.
 >
-> This is an architectural contract, not proof of cloud provisioning, deployment, or acceptance. Check the current application README and dated evidence before reporting status.
+> This remains an architectural contract. The dated [staging-foundation evidence](../quality/AZURE-STAGING-FOUNDATION-EVIDENCE-20261011.md) proves only its listed deployment and runtime checks; it does not prove full acceptance or production readiness.
 
 ## Delivery Contract: Local First, Then Azure
 
@@ -39,7 +39,7 @@ The states below are recorded design/adapter claims, not evidence of successful 
 
 | Capability | Local design | Azure target | Recorded cloud status | Limit before real deployment |
 |---|---|---|---|---|
-| LLM inference | Foundry Local (`http://127.0.0.1:5272/v1`, `phi-4-mini`) | Azure AI Foundry / Azure OpenAI (`AzureFoundryProvider`) | `PASSWORDLESS_ADAPTER_READY` | Requires a provisioned Azure OpenAI resource and `Cognitive Services OpenAI User` RBAC. |
+| LLM inference | Foundry Local (`http://127.0.0.1:5272/v1`, `phi-4-mini`) | Azure AI Foundry Models (`AIServices`, OpenAI v1-compatible endpoint) | `STAGING_DEPLOYED_AND_SYNTHETICALLY_EXERCISED` | The 2026-10-11 staging evidence covers Phi-4-mini inference through managed identity; Azure OpenAI quota is not required for this path. |
 | Core Banking | Local FastAPI mock with embedded SQLite | External boundary / hosted service | `DOCUMENTED_ONLY` | Staging keeps the mock isolated. The agent must not access the Core Banking database directly. |
 | RAG embeddings/vector store | Docker PostgreSQL + pgvector (`vector(32)`, HNSW) | Azure Database for PostgreSQL Flexible Server | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Current connection uses a psycopg DSN; Entra token authentication requires cloud testing. |
 | Cache and vector search | Standalone local Docker Redis | Azure Managed Redis | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Entra authentication requires Azure Managed Redis-specific configuration and testing. |

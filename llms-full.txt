@@ -1910,10 +1910,10 @@ Verify these constraints in current migrations, queries, and tests.
 
 # Cloud Configuration, Workload Identity, and Deployment Boundaries
 
-> **Recorded status:** `AZURE_DEPLOYMENT_PREPARED`; `CLOUD_UNVALIDATED`.
+> **Recorded status (2026-10-11):** `STAGING_FOUNDATION_DEPLOYED`; `PARTIAL_RUNTIME_ACCEPTANCE`.
 > **Product boundary:** AegisBank AI Platform is a secure, reproducible educational banking-AI laboratory. It is not a commercial bank and does not process real financial transactions.
 >
-> This is an architectural contract, not proof of cloud provisioning, deployment, or acceptance. Check the current application README and dated evidence before reporting status.
+> This remains an architectural contract. The dated [staging-foundation evidence](../quality/AZURE-STAGING-FOUNDATION-EVIDENCE-20261011.md) proves only its listed deployment and runtime checks; it does not prove full acceptance or production readiness.
 
 ## Delivery Contract: Local First, Then Azure
 
@@ -1949,7 +1949,7 @@ The states below are recorded design/adapter claims, not evidence of successful 
 
 | Capability | Local design | Azure target | Recorded cloud status | Limit before real deployment |
 |---|---|---|---|---|
-| LLM inference | Foundry Local (`http://127.0.0.1:5272/v1`, `phi-4-mini`) | Azure AI Foundry / Azure OpenAI (`AzureFoundryProvider`) | `PASSWORDLESS_ADAPTER_READY` | Requires a provisioned Azure OpenAI resource and `Cognitive Services OpenAI User` RBAC. |
+| LLM inference | Foundry Local (`http://127.0.0.1:5272/v1`, `phi-4-mini`) | Azure AI Foundry Models (`AIServices`, OpenAI v1-compatible endpoint) | `STAGING_DEPLOYED_AND_SYNTHETICALLY_EXERCISED` | The 2026-10-11 staging evidence covers Phi-4-mini inference through managed identity; Azure OpenAI quota is not required for this path. |
 | Core Banking | Local FastAPI mock with embedded SQLite | External boundary / hosted service | `DOCUMENTED_ONLY` | Staging keeps the mock isolated. The agent must not access the Core Banking database directly. |
 | RAG embeddings/vector store | Docker PostgreSQL + pgvector (`vector(32)`, HNSW) | Azure Database for PostgreSQL Flexible Server | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Current connection uses a psycopg DSN; Entra token authentication requires cloud testing. |
 | Cache and vector search | Standalone local Docker Redis | Azure Managed Redis | `PASSWORDLESS_REQUIRES_FUTURE_CLOUD_VALIDATION` | Entra authentication requires Azure Managed Redis-specific configuration and testing. |
@@ -2478,7 +2478,7 @@ These commands are diagnostic examples. Do not run mutation commands such as `ku
 
 # Azure RBAC Least-Privilege Matrix (Microsoft Entra ID)
 
-> **Status:** `DOCUMENTED_LEAST_PRIVILEGE`; `CLOUD_UNVALIDATED`.
+> **Status (2026-10-11):** `DOCUMENTED_LEAST_PRIVILEGE`; `STAGING_PARTIALLY_APPLIED`.
 > **Scope:** Azure staging and production runtime design for AegisBank AI Platform. Local development and automated tests use local trust or emulators, not Azure RBAC.
 >
 > This is a proposed/documented role model, not evidence that roles or identities have been assigned in Azure.
@@ -2506,7 +2506,7 @@ These commands are diagnostic examples. Do not run mutation commands such as `ku
 | Agent workload | Azure Key Vault | `Key Vault Secrets User` (`4633458b-17de-408a-b874-0445c86b69ea`) | Read-only | Resolves unavoidable secret references; no cryptographic key or certificate permissions. |
 | Agent workload | Azure Service Bus | `Azure Service Bus Data Sender` (`69a216fc-b8fb-44d8-bc22-1f3c2cd27a39`) | Send-only | Sends authorized audit events and HITL-approved service requests to permitted queues/topics. |
 | Agent workload | Azure Cosmos DB | `Cosmos DB Built-in Data Reader` (NoSQL data plane) | Read-only | Reads partitioned agent session state and events. |
-| Agent workload | Azure AI Foundry / Azure OpenAI | `Cognitive Services OpenAI User` (`5e6ce059-de30-45e8-b8e7-e898950d9990`) | Inference | Uses Entra tokens for grounded chat completion (`phi-4-mini`) rather than static API keys. |
+| Agent workload | Azure AI Foundry / Azure OpenAI | `Cognitive Services OpenAI User` (`5e0bd9bd-7b93-4f28-af87-19fc36ad61bd`) | Inference | Uses Entra tokens for grounded chat completion (`phi-4-mini`) rather than static API keys. |
 | Functions consumer | Azure Service Bus | `Azure Service Bus Data Receiver` (`4f6d3a01-b2a5-4e24-9d14-70f80761a4c6`) | Receive and settle | Receives, completes/abandons, or dead-letters service events. |
 | Functions consumer | Azure Key Vault | `Key Vault Secrets User` | Read-only | Reads secrets required by external event integrations. |
 | GitHub Actions deployer | Resource group `rg-aegisbank-<env>` | Scoped deployment role (`Deployment Operator` / ARM deployment) | Control plane | Creates or updates ARM/Bicep resources and Container Apps revisions; no banking-data or secret access. |
@@ -2531,9 +2531,9 @@ az role assignment delete --assignee <principal-id> --role "Key Vault Secrets Us
 
 # Azure Staging Acceptance Contract and Runbook
 
-> **Recorded status:** `SPECIFIED_STAGING_CONTRACT`; `CLOUD_UNVALIDATED`.
-> **Purpose:** Define end-to-end acceptance checks for a future Azure staging environment after resources have been provisioned with explicit authorization.
-> **Safety boundary:** Commands are examples, not an automatically executed workflow. This document does not authorize provisioning, deployment, or cloud tests.
+> **Recorded status (2026-10-11):** `STAGING_FOUNDATION_DEPLOYED`; `STAGING_ACCEPTANCE_PARTIAL`.
+> **Purpose:** Define end-to-end acceptance checks for Azure staging and distinguish executed evidence from checks that remain open.
+> **Evidence:** The dated [staging-foundation evidence](../quality/AZURE-STAGING-FOUNDATION-EVIDENCE-20261011.md) records the deployed immutable image, Foundry model, managed-identity role, public health checks, and a synthetic inference request. It does not authorize production promotion.
 
 ## 1. Preconditions
 
@@ -2543,7 +2543,8 @@ az role assignment delete --assignee <principal-id> --role "Key Vault Secrets Us
    - `AZURE_APPCONFIG_ENDPOINT=https://<prefix>-staging-config.azconfig.io`
    - `AZURE_KEY_VAULT_URL=https://<prefix>-staging-kv.vault.azure.net/`
    - `AEGISBANK_SERVICEBUS_NAMESPACE=<prefix>-staging.servicebus.windows.net`
-   - `AZURE_OPENAI_ENDPOINT=https://<prefix>-staging-ai.cognitiveservices.azure.com/`
+   - `AEGISBANK_FOUNDRY_ENDPOINT=https://<prefix>-staging-ai.services.ai.azure.com/openai/v1`
+   - `AEGISBANK_FOUNDRY_DEPLOYMENT_NAME=<approved-foundry-deployment>`
 3. The assigned workload identity has the required roles from the [RBAC matrix](RBAC-LEAST-PRIVILEGE-MATRIX.md).
 4. No `.env` or `.env.local` file is present in the container or runtime environment.
 
@@ -2577,7 +2578,8 @@ $env:AEGISBANK_ENV = "staging"
 $env:AZURE_APPCONFIG_ENDPOINT = "https://aegisbank-staging-config.azconfig.io"
 $env:AZURE_KEY_VAULT_URL = "https://aegisbank-staging-kv.vault.azure.net/"
 $env:AEGISBANK_SERVICEBUS_NAMESPACE = "aegisbank-staging.servicebus.windows.net"
-$env:AZURE_OPENAI_ENDPOINT = "https://aegisbank-staging-ai.cognitiveservices.azure.com/"
+$env:AEGISBANK_FOUNDRY_ENDPOINT = "https://aegisbank-staging-ai.services.ai.azure.com/openai/v1"
+$env:AEGISBANK_FOUNDRY_DEPLOYMENT_NAME = "aegisbank-phi-4-mini"
 
 # Validate runtime configuration for the explicitly approved target.
 & .\.venv\Scripts\python.exe -c "from aegisbank_agent.configuration import validate_runtime_configuration, resolve_runtime_environment; validate_runtime_configuration(resolve_runtime_environment())"

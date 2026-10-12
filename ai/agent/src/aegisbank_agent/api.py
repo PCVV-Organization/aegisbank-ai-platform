@@ -8,8 +8,10 @@ Enforces an explicit authentication boundary in cloud environments.
 from __future__ import annotations
 
 import logging
+import os
+import re
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 from fastapi import FastAPI, HTTPException, Request, status
 from pydantic import BaseModel, Field
@@ -58,6 +60,63 @@ class PrincipalContext:
 class AuthenticationProvider:
     """Authentication and identity verification boundary for the HTTP API."""
 
+    def __init__(self, jwt_validator: Callable[[str], PrincipalContext] | None = None) -> None:
+        """Allow a deterministic verifier to be supplied by isolated tests."""
+        self._jwt_validator = jwt_validator or self._validate_entra_jwt
+
+    @staticmethod
+    def _validate_entra_jwt(token: str) -> PrincipalContext:
+        """Verify an Entra-issued JWT and bind the customer identity to its claims.
+
+        Cloud startup deliberately does not invent a tenant, audience, or customer
+        mapping.  Missing configuration makes authenticated requests unavailable
+        rather than accepting an arbitrary bearer value.
+        """
+        tenant_id = os.getenv("AEGISBANK_ENTRA_TENANT_ID", "").strip()
+        audience = os.getenv("AEGISBANK_ENTRA_AUDIENCE", "").strip()
+        customer_claim = os.getenv("AEGISBANK_ENTRA_CUSTOMER_ID_CLAIM", "customer_id").strip()
+        if not tenant_id or not audience:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Cloud JWT verification is not configured",
+            )
+
+        try:
+            import jwt
+            from jwt import PyJWKClient
+
+            issuer = f"https://login.microsoftonline.com/{tenant_id}/v2.0"
+            jwks_client = PyJWKClient(f"{issuer}/discovery/v2.0/keys")
+            signing_key = jwks_client.get_signing_key_from_jwt(token)
+            claims = jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=["RS256"],
+                audience=audience,
+                issuer=issuer,
+                options={"require": ["exp", "iat", "sub"]},
+            )
+        except Exception as exc:
+            logger.warning("Cloud JWT validation failed: %s", type(exc).__name__)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid Bearer token",
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
+
+        customer_id = claims.get(customer_claim)
+        if not isinstance(customer_id, str) or not re.fullmatch(r"CUST-\d{4}", customer_id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Verified token does not contain an authorized synthetic customer identity",
+            )
+
+        return PrincipalContext(
+            customer_id=customer_id,
+            authenticated=True,
+            claims={"auth_type": "entra-jwt", "subject": claims["sub"]},
+        )
+
     def authenticate(
         self, request: Request, request_customer_id: str | None = None
     ) -> PrincipalContext:
@@ -93,14 +152,9 @@ class AuthenticationProvider:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # In cloud, customer identity is bound to verified token claims, NOT client request body
-        # For staging verification with mock tenant tokens:
-        # In a real tenant, jwt.decode with Microsoft Entra JWKS extracts 'oid' / 'sub' claim.
-        return PrincipalContext(
-            customer_id=request_customer_id or "CUST-0001",
-            authenticated=True,
-            claims={"auth_type": "entra-bearer"},
-        )
+        # In cloud, customer identity is bound only to verified token claims,
+        # never to the request body or X-Customer-Id header.
+        return self._jwt_validator(token)
 
 
 def create_app(
@@ -115,7 +169,17 @@ def create_app(
     )
 
     auth = auth_provider or AuthenticationProvider()
-    agent_orchestrator = orchestrator or AgentOrchestrator()
+    orchestrator_init_error: RuntimeError | None = None
+    if orchestrator is not None:
+        agent_orchestrator = orchestrator
+    else:
+        try:
+            agent_orchestrator = AgentOrchestrator()
+        except RuntimeError as exc:
+            # Keep liveness available while an optional cloud model provider is unavailable.
+            logger.error("Agent orchestrator initialization failed: %s", exc)
+            agent_orchestrator = None
+            orchestrator_init_error = exc
 
     @app.get("/health/live", tags=["Health"])
     def liveness() -> dict[str, str]:
@@ -142,6 +206,11 @@ def create_app(
         request: Request,
     ) -> AgentRunResponse:
         """Execute a natural language banking query through the AgentOrchestrator."""
+        if agent_orchestrator is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Agent model provider is not configured",
+            ) from orchestrator_init_error
         principal = auth.authenticate(request, request_customer_id=payload.customer_id)
 
         try:
