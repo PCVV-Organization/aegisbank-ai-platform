@@ -26,13 +26,23 @@ param agentImage string
 @description('Container image reference for Mock Core Banking.')
 param coreBankingImage string
 
-var identityName = '${namePrefix}-${environment}-workload'
+@description('Existing Azure Container Registry name used by staging Container Apps.')
+param registryName string = 'aegisbankstagingacr'
+
+@description('Existing user-assigned identity used by staging workloads.')
+param workloadIdentityName string = 'id-aegisbank-staging-workload'
+
+var identityName = workloadIdentityName
 var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
 var logWorkspaceName = '${namePrefix}-${environment}-logs'
 var containerEnvName = '${namePrefix}-${environment}-aca-env'
-var serviceBusName = '${namePrefix}-${environment}-sb'
+var serviceBusName = '${namePrefix}-${environment}-bus'
 var queueName = 'aegisbank-events'
+
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+  name: registryName
+}
 
 resource workloadIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: identityName
@@ -126,6 +136,12 @@ resource mockCoreBankingApp 'Microsoft.App/containerApps@2023-05-01' = {
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
+      registries: [
+        {
+          server: containerRegistry.properties.loginServer
+          identity: workloadIdentity.id
+        }
+      ]
       ingress: {
         external: false
         targetPort: 8000
@@ -169,6 +185,9 @@ resource mockCoreBankingApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
     }
   }
+  dependsOn: [
+    containerRegistryPull
+  ]
 }
 
 resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
@@ -183,6 +202,12 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
+      registries: [
+        {
+          server: containerRegistry.properties.loginServer
+          identity: workloadIdentity.id
+        }
+      ]
       ingress: {
         external: true
         targetPort: 8000
@@ -246,6 +271,9 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
     }
   }
+  dependsOn: [
+    containerRegistryPull
+  ]
 }
 
 // App Configuration Data Reader
@@ -271,7 +299,21 @@ resource keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
-      '4633458b-17de-408a-b874-0445c86b69ea'
+      '4633458b-17de-408a-b874-0445c86b69e6'
+    )
+  }
+}
+
+// AcrPull
+resource containerRegistryPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(containerRegistry.id, identityName, 'AcrPull')
+  scope: containerRegistry
+  properties: {
+    principalId: workloadIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '7f951dda-4ed3-4680-a7ca-43fe172d538d'
     )
   }
 }
@@ -299,7 +341,7 @@ resource serviceBusDataReceiver 'Microsoft.Authorization/roleAssignments@2022-04
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
-      '4f6d3a01-5356-424a-9274-02e06e644125'
+      '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
     )
   }
 }
