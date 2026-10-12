@@ -13,6 +13,19 @@ on:
         description: 'Type "DEPLOY-STAGING" to confirm staging infrastructure deployment'
         required: true
         default: 'DRY-RUN'
+      resource_group:
+        description: 'Existing isolated Azure staging resource group'
+        required: true
+      agent_image:
+        description: 'Immutable agent image reference, including a digest'
+        required: true
+      core_banking_image:
+        description: 'Immutable mock core-banking image reference, including a digest'
+        required: true
+      location:
+        description: 'Azure region for the staging foundation'
+        required: true
+        default: 'eastus2'
 
 permissions:
   contents: read
@@ -24,7 +37,7 @@ concurrency:
 
 jobs:
   pre-deployment-gates:
-    name: Verify Quality & DevSecOps Gates
+    name: Validate Bicep & Deployment Inputs
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Source Code
@@ -43,6 +56,24 @@ jobs:
         run: |
           python -m compileall scripts/quality_gate.py
 
+      - name: Validate Staging Deployment Inputs
+        env:
+          CONFIRM_DEPLOYMENT: ${{ inputs.confirm_deployment }}
+          RESOURCE_GROUP: ${{ inputs.resource_group }}
+          AGENT_IMAGE: ${{ inputs.agent_image }}
+          CORE_BANKING_IMAGE: ${{ inputs.core_banking_image }}
+        run: |
+          test -n "$RESOURCE_GROUP"
+          test -n "$AGENT_IMAGE"
+          test -n "$CORE_BANKING_IMAGE"
+          case "$AGENT_IMAGE" in *:latest|*@*:latest) echo 'agent_image must not use latest'; exit 1;; esac
+          case "$CORE_BANKING_IMAGE" in *:latest|*@*:latest) echo 'core_banking_image must not use latest'; exit 1;; esac
+          if [ "$CONFIRM_DEPLOYMENT" = "DEPLOY-STAGING" ]; then
+            echo 'Deployment confirmation accepted for the manually supplied staging target.'
+          else
+            echo 'Dry-run mode: deployment job will remain skipped.'
+          fi
+
   deploy-staging-infrastructure:
     name: Deploy Azure Staging Foundation (OIDC)
     runs-on: ubuntu-24.04
@@ -55,6 +86,17 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v5
 
+      - name: Validate Azure OIDC Configuration
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          test -n "$AZURE_CLIENT_ID"
+          test -n "$AZURE_TENANT_ID"
+          test -n "$AZURE_SUBSCRIPTION_ID"
+          echo 'OIDC configuration variables are present; no credential value is printed.'
+
       - name: Azure OIDC Login (Passwordless)
         uses: azure/login@v2
         with:
@@ -62,13 +104,26 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Preview Staging Foundation
+        run: |
+          az deployment group what-if \
+            --resource-group "${{ inputs.resource_group }}" \
+            --template-file deploy/azure/main.bicep \
+            --parameters @deploy/azure/parameters.staging.json \
+            location="${{ inputs.location }}" \
+            agentImage="${{ inputs.agent_image }}" \
+            coreBankingImage="${{ inputs.core_banking_image }}"
+
       - name: Deploy Foundation Infrastructure
         run: |
           echo "Deploying AegisBank Staging Foundation via Bicep..."
           az deployment group create \
-            --resource-group "${{ vars.AZURE_STAGING_RESOURCE_GROUP || 'rg-aegisbank-staging' }}" \
+            --resource-group "${{ inputs.resource_group }}" \
             --template-file deploy/azure/main.bicep \
-            --parameters @deploy/azure/parameters.staging.json
+            --parameters @deploy/azure/parameters.staging.json \
+              location="${{ inputs.location }}" \
+              agentImage="${{ inputs.agent_image }}" \
+              coreBankingImage="${{ inputs.core_banking_image }}"
 
       - name: Report Deployment Evidence
         run: |

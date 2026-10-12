@@ -11,6 +11,11 @@
 3. A platform owner prepares the GitHub OIDC federated credential and RBAC assignments from the architecture matrix. Do not create client secrets.
 4. App Configuration contains non-secret settings under the `staging` label. Key Vault contains only secrets that cannot be eliminated through Entra ID.
 5. Complete human review of endpoints, private networking, ingress, compute limits, retention, alerts, backups, and the Core Banking contract.
+6. The manual workflow receives an existing isolated resource group and immutable
+   agent and mock-core-banking image references. `latest` tags are rejected.
+7. The protected `staging` environment contains `AZURE_CLIENT_ID`,
+   `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` variables for OIDC. No client
+   secret is configured.
 
 ## Pre-deployment Validation
 
@@ -28,6 +33,7 @@ The final command requires all editable packages to be installed in `.venv`. If 
 ## Controlled Promotion
 
 1. Manually review the infrastructure-as-code plan with the correct staging scope.
+   The workflow runs `az deployment group what-if` before the deployment command.
 2. Deploy the foundation only after approval. Verify redacted logs show `AEGISBANK_ENV=staging` selecting App Configuration, Key Vault, Service Bus, and Cosmos without connection strings or loopback endpoints.
 3. Run synthetic read journeys and one write journey that requests and receives explicit human approval.
 4. Verify ownership authorization, correlation, timeout behavior, cited RAG responses, and absence of secrets in logs, audit records, and telemetry.

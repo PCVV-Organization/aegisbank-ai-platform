@@ -18,10 +18,10 @@ param environment string
 param namePrefix string
 
 @description('Container image reference for Agent API.')
-param agentImage string = 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
+param agentImage string
 
 @description('Container image reference for Mock Core Banking.')
-param coreBankingImage string = 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
+param coreBankingImage string
 
 var identityName = '${namePrefix}-${environment}-workload'
 var appConfigName = '${namePrefix}-${environment}-config'
