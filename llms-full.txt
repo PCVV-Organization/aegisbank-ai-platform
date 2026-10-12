@@ -2551,6 +2551,7 @@ az role assignment delete --assignee <principal-id> --role "Key Vault Secrets Us
 3. The assigned workload identity has the required roles from the [RBAC matrix](RBAC-LEAST-PRIVILEGE-MATRIX.md).
 4. No `.env` or `.env.local` file is present in the container or runtime environment.
 5. All direct Bicep commands for this staging target explicitly pass `location=westus2` and `identityLocation=westus2`; the resource group's default location is not the Foundry account's location.
+6. Before a rerun, query the existing Foundry role assignment. Pass its exact ARM resource name as `foundryRoleAssignmentName`; role-assignment identifiers are immutable and ARM rejects attempts to adopt an assignment with a different name.
 
 ## 2. Acceptance Test Cases (14 Checks)
 
