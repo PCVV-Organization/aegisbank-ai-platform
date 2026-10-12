@@ -115,7 +115,17 @@ def create_app(
     )
 
     auth = auth_provider or AuthenticationProvider()
-    agent_orchestrator = orchestrator or AgentOrchestrator()
+    orchestrator_init_error: RuntimeError | None = None
+    if orchestrator is not None:
+        agent_orchestrator = orchestrator
+    else:
+        try:
+            agent_orchestrator = AgentOrchestrator()
+        except RuntimeError as exc:
+            # Keep liveness available while an optional cloud model provider is unavailable.
+            logger.error("Agent orchestrator initialization failed: %s", exc)
+            agent_orchestrator = None
+            orchestrator_init_error = exc
 
     @app.get("/health/live", tags=["Health"])
     def liveness() -> dict[str, str]:
@@ -142,6 +152,11 @@ def create_app(
         request: Request,
     ) -> AgentRunResponse:
         """Execute a natural language banking query through the AgentOrchestrator."""
+        if agent_orchestrator is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Agent model provider is not configured",
+            ) from orchestrator_init_error
         principal = auth.authenticate(request, request_customer_id=payload.customer_id)
 
         try:
