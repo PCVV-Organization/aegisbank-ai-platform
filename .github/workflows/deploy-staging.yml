@@ -25,7 +25,11 @@ on:
       location:
         description: 'Azure region for the staging foundation'
         required: true
-        default: 'eastus2'
+        default: 'westus2'
+      identity_location:
+        description: 'Azure region for the user-assigned workload identity'
+        required: true
+        default: 'westus2'
 
 permissions:
   contents: read
@@ -111,6 +115,7 @@ jobs:
             --template-file deploy/azure/main.bicep \
             --parameters @deploy/azure/parameters.staging.json \
             location="${{ inputs.location }}" \
+            identityLocation="${{ inputs.identity_location }}" \
             agentImage="${{ inputs.agent_image }}" \
             coreBankingImage="${{ inputs.core_banking_image }}"
 
@@ -122,6 +127,7 @@ jobs:
             --template-file deploy/azure/main.bicep \
             --parameters @deploy/azure/parameters.staging.json \
               location="${{ inputs.location }}" \
+              identityLocation="${{ inputs.identity_location }}" \
               agentImage="${{ inputs.agent_image }}" \
               coreBankingImage="${{ inputs.core_banking_image }}"
 

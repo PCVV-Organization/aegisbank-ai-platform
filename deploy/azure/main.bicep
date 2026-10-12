@@ -5,6 +5,9 @@ targetScope = 'resourceGroup'
 @description('Azure region for the isolated environment foundation.')
 param location string = resourceGroup().location
 
+@description('Azure region for the user-assigned workload identity. Must satisfy subscription region policy.')
+param identityLocation string = 'westus2'
+
 @allowed([
   'staging'
   'production'
@@ -33,7 +36,7 @@ var queueName = 'aegisbank-events'
 
 resource workloadIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: identityName
-  location: location
+  location: identityLocation
 }
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {

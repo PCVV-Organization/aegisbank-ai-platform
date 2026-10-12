@@ -7,10 +7,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
-COPY src ./src
+COPY ai/agent/pyproject.toml ai/agent/README.md ./
+COPY ai/agent/src ./src
+COPY ai/rag /build/aegisbank-rag
+COPY services/mock-core-banking /build/mock-core-banking
 
-RUN python -m pip install --no-cache-dir --disable-pip-version-check . \
+RUN python -m pip install --no-cache-dir --disable-pip-version-check \
+        /build/aegisbank-rag \
+        /build/mock-core-banking \
+        . \
     && useradd --create-home --uid 10001 --shell /usr/sbin/nologin aegisbank \
     && mkdir --parents /app/data /tmp/aegisbank \
     && chown --recursive aegisbank:aegisbank /app /tmp/aegisbank
