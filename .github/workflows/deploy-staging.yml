@@ -116,6 +116,9 @@ jobs:
             --parameters @deploy/azure/parameters.staging.json \
             location="${{ inputs.location }}" \
             identityLocation="${{ inputs.identity_location }}" \
+              entraTenantId="${{ vars.AZURE_TENANT_ID }}" \
+              entraAudience="${{ vars.AEGISBANK_ENTRA_AUDIENCE }}" \
+              entraCustomerIdClaim="customer_id" \
             agentImage="${{ inputs.agent_image }}" \
             coreBankingImage="${{ inputs.core_banking_image }}"
 
@@ -128,6 +131,9 @@ jobs:
             --parameters @deploy/azure/parameters.staging.json \
               location="${{ inputs.location }}" \
               identityLocation="${{ inputs.identity_location }}" \
+              entraTenantId="${{ vars.AZURE_TENANT_ID }}" \
+              entraAudience="${{ vars.AEGISBANK_ENTRA_AUDIENCE }}" \
+              entraCustomerIdClaim="customer_id" \
               agentImage="${{ inputs.agent_image }}" \
               coreBankingImage="${{ inputs.core_banking_image }}"
 
