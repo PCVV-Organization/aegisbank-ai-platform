@@ -14,6 +14,9 @@
    - `AEGISBANK_SERVICEBUS_NAMESPACE=<prefix>-staging.servicebus.windows.net`
    - `AEGISBANK_FOUNDRY_ENDPOINT=https://<foundry-account>.cognitiveservices.azure.com/`
    - `AEGISBANK_FOUNDRY_DEPLOYMENT_NAME=<approved-foundry-deployment>`
+   - `AEGISBANK_ENTRA_TENANT_ID=<approved-tenant-guid>`
+   - `AEGISBANK_ENTRA_AUDIENCE=<registered-api-application-id-uri-or-client-id>`
+   - `AEGISBANK_ENTRA_CUSTOMER_ID_CLAIM=<approved-synthetic-customer-claim>`
 3. The assigned workload identity has the required roles from the [RBAC matrix](RBAC-LEAST-PRIVILEGE-MATRIX.md).
 4. No `.env` or `.env.local` file is present in the container or runtime environment.
 5. All direct Bicep commands for this staging target explicitly pass `location=westus2` and `identityLocation=westus2`; the resource group's default location is not the Foundry account's location.
@@ -50,6 +53,9 @@ $env:AZURE_KEY_VAULT_URL = "https://aegisbank-staging-kv.vault.azure.net/"
 $env:AEGISBANK_SERVICEBUS_NAMESPACE = "aegisbank-staging.servicebus.windows.net"
 $env:AEGISBANK_FOUNDRY_ENDPOINT = "https://aegisbank-staging-ai.cognitiveservices.azure.com/"
 $env:AEGISBANK_FOUNDRY_DEPLOYMENT_NAME = "aegisbank-phi-4-mini"
+$env:AEGISBANK_ENTRA_TENANT_ID = "<approved-tenant-guid>"
+$env:AEGISBANK_ENTRA_AUDIENCE = "<registered-api-application-id-uri-or-client-id>"
+$env:AEGISBANK_ENTRA_CUSTOMER_ID_CLAIM = "customer_id"
 
 # Validate runtime configuration for the explicitly approved target.
 & .\.venv\Scripts\python.exe -c "from aegisbank_agent.configuration import validate_runtime_configuration, resolve_runtime_environment; validate_runtime_configuration(resolve_runtime_environment())"

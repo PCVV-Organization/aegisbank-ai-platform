@@ -38,6 +38,18 @@ param foundryAccountName string = '${namePrefix}-${environment}-ai'
 @description('Existing model deployment name in the Azure AI Services account.')
 param foundryDeploymentName string = 'aegisbank-phi-4-mini'
 
+@description('Stable role-assignment resource ID for the pre-authorized Foundry workload identity.')
+param foundryRoleAssignmentName string = '91c5bfc1-8df7-43b1-9805-92ac0fb6266b'
+
+@description('Microsoft Entra tenant ID that issues access tokens for the Agent API. Empty keeps cloud authentication fail-closed.')
+param entraTenantId string = ''
+
+@description('Registered API audience accepted by the Agent API. Empty keeps cloud authentication fail-closed.')
+param entraAudience string = ''
+
+@description('JWT claim containing the synthetic AegisBank customer identifier.')
+param entraCustomerIdClaim string = 'customer_id'
+
 var identityName = workloadIdentityName
 var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
@@ -285,6 +297,18 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
               value: foundryDeploymentName
             }
             {
+              name: 'AEGISBANK_ENTRA_TENANT_ID'
+              value: entraTenantId
+            }
+            {
+              name: 'AEGISBANK_ENTRA_AUDIENCE'
+              value: entraAudience
+            }
+            {
+              name: 'AEGISBANK_ENTRA_CUSTOMER_ID_CLAIM'
+              value: entraCustomerIdClaim
+            }
+            {
               name: 'AEGISBANK_SERVICEBUS_FQDN'
               value: '${serviceBus.name}.servicebus.windows.net'
             }
@@ -366,7 +390,7 @@ resource containerRegistryPull 'Microsoft.Authorization/roleAssignments@2022-04-
 
 // Allows the runtime identity to invoke the Foundry deployment with Entra ID.
 resource foundryModelUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(foundryAccount.id, identityName, 'CognitiveServicesOpenAIUser')
+  name: foundryRoleAssignmentName
   scope: foundryAccount
   properties: {
     principalId: workloadIdentity.properties.principalId
