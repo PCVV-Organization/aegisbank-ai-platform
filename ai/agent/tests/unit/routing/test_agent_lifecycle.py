@@ -164,7 +164,7 @@ def test_agent_cloud_client_uses_shared_azure_factory(monkeypatch) -> None:
     monkeypatch.setenv("AEGISBANK_ENV", "staging")
     monkeypatch.setenv("AZURE_OPENAI_ENDPOINT", "https://aegisbank-ai.cognitiveservices.azure.com")
     monkeypatch.setattr("aegisbank_agent.agent.load_local_dotenv", lambda: False)
-    monkeypatch.setattr("aegisbank_agent.agent.create_azure_openai_client", factory)
+    monkeypatch.setattr("aegisbank_agent.agent.create_azure_foundry_client", factory)
 
     orchestrator = AgentOrchestrator(registry=ToolRegistry())
 
