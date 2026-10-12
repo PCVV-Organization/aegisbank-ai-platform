@@ -140,7 +140,9 @@ def test_azure_provider_uses_shared_client_factory(monkeypatch) -> None:
 
 
 def test_foundry_v1_endpoint_is_recognized() -> None:
-    assert is_foundry_v1_endpoint("https://aegisbank-staging-ai.services.ai.azure.com/openai/v1")
+    assert is_foundry_v1_endpoint(
+        "https://aegisbank-staging-ai.services.ai.azure.com/openai/v1"
+    )
     assert not is_foundry_v1_endpoint("https://aegisbank-staging-ai.openai.azure.com")
 
 
