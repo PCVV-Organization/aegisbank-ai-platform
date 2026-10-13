@@ -6,13 +6,13 @@
 
 ### Current evidence
 
-- Deployment `aegisbank-staging-foundation-v20`: **Succeeded**.
+- Deployment `aegisbank-staging-foundation-v22`: **Succeeded**.
 - Agent revision `aegisbank-staging-agent--latest`: **Healthy/Running**; `/health/live` and `/health/ready`: **200**.
 - Invalid bearer token: **401** (authentication boundary is active).
 - Local regression suites for IDOR/HITL, idempotency/outbox/DLQ, observability and core banking: **45 passed**.
 - `Microsoft.App` provider: **Registering**; this remains an Azure control-plane blocker for reliable CLI management.
 - No VNet, private endpoints, or private DNS zones exist in the resource group; the current ACA environment has no VNet integration.
-- Cosmos account exists outside the original foundation deployment and is currently public/key-auth enabled; the Bicep now references it explicitly and assigns the managed identity Cosmos data role, but cloud role/access acceptance is still pending.
+- Cosmos account is now referenced by the foundation deployment; its SQL role assignment for the workload identity is present. Public/key authentication remains enabled until private networking and a controlled cutover are completed.
 - A signed JWT containing the synthetic `customer_id` claim has not been issued, so `STG-09` through `STG-14` remain blocked for cloud execution.
 
 ## 1. Preconditions

@@ -31,7 +31,7 @@ var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
 var logWorkspaceName = '${namePrefix}-${environment}-logs'
 var containerEnvName = '${namePrefix}-${environment}-aca-env'
-var serviceBusName = '${namePrefix}-${environment}-sb'
+var serviceBusName = '${namePrefix}-${environment}-bus'
 var queueName = 'aegisbank-events'
 
 resource workloadIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
@@ -283,7 +283,7 @@ resource keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
-      '4633458b-17de-408a-b874-0445c86b69ea'
+      '4633458b-17de-408a-b874-0445c86b69e6'
     )
   }
 }
@@ -303,16 +303,13 @@ resource serviceBusDataSender 'Microsoft.Authorization/roleAssignments@2022-04-0
 }
 
 // Cosmos DB Built-in Data Contributor (agent persistence/change-feed writes).
-resource cosmosDataContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource cosmosDataContributor 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = {
+  parent: cosmosAccount
   name: guid(cosmosAccount.id, identityName, 'CosmosDataContributor')
-  scope: cosmosAccount
   properties: {
     principalId: workloadIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '00000000-0000-0000-0000-000000000002'
-    )
+    roleDefinitionId: '${cosmosAccount.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002'
+    scope: cosmosAccount.id
   }
 }
 
