@@ -1,8 +1,19 @@
 # Azure Staging Acceptance Contract and Runbook
 
-> **Recorded status:** `SPECIFIED_STAGING_CONTRACT`; `CLOUD_UNVALIDATED`.
-> **Purpose:** Define end-to-end acceptance checks for a future Azure staging environment after resources have been provisioned with explicit authorization.
-> **Safety boundary:** Commands are examples, not an automatically executed workflow. This document does not authorize provisioning, deployment, or cloud tests.
+> **Recorded status (2026-10-12):** `CLOUD_PARTIALLY_VALIDATED`; `STAGING_ACCEPTANCE_BLOCKED`.
+> **Purpose:** Define and record end-to-end acceptance checks for the authorized Azure staging foundation.
+> **Safety boundary:** Cloud resources were inspected with read-only commands after the authorized deployment. No real customer data, credentials, or production state are used.
+
+### Current evidence
+
+- Deployment `aegisbank-staging-foundation-v20`: **Succeeded**.
+- Agent revision `aegisbank-staging-agent--latest`: **Healthy/Running**; `/health/live` and `/health/ready`: **200**.
+- Invalid bearer token: **401** (authentication boundary is active).
+- Local regression suites for IDOR/HITL, idempotency/outbox/DLQ, observability and core banking: **45 passed**.
+- `Microsoft.App` provider: **Registering**; this remains an Azure control-plane blocker for reliable CLI management.
+- No VNet, private endpoints, or private DNS zones exist in the resource group; the current ACA environment has no VNet integration.
+- Cosmos account exists outside the original foundation deployment and is currently public/key-auth enabled; the Bicep now references it explicitly and assigns the managed identity Cosmos data role, but cloud role/access acceptance is still pending.
+- A signed JWT containing the synthetic `customer_id` claim has not been issued, so `STG-09` through `STG-14` remain blocked for cloud execution.
 
 ## 1. Preconditions
 

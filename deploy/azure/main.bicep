@@ -23,6 +23,9 @@ param agentImage string = 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
 @description('Container image reference for Mock Core Banking.')
 param coreBankingImage string = 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
 
+@description('Name of the Azure Cosmos DB account provisioned for the environment.')
+param cosmosAccountName string = '${namePrefix}${environment}cosmos'
+
 var identityName = '${namePrefix}-${environment}-workload'
 var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
@@ -95,6 +98,14 @@ resource serviceBusQueue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-prev
     maxDeliveryCount: 10
     deadLetteringOnMessageExpiration: true
   }
+}
+
+// Cosmos is provisioned independently when the account lifecycle is owned by
+// the data platform. Keeping an explicit existing reference makes the
+// dependency, endpoint, and managed-identity authorization reproducible
+// without re-creating or importing the account during every app deployment.
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = {
+  name: cosmosAccountName
 }
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' = {
@@ -220,6 +231,10 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'AEGISBANK_SERVICEBUS_QUEUE'
               value: queueName
             }
+            {
+              name: 'COSMOS_ENDPOINT'
+              value: cosmosAccount.properties.documentEndpoint
+            }
           ]
           probes: [
             {
@@ -287,16 +302,16 @@ resource serviceBusDataSender 'Microsoft.Authorization/roleAssignments@2022-04-0
   }
 }
 
-// Azure Service Bus Data Receiver
-resource serviceBusDataReceiver 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(serviceBus.id, identityName, 'AzureServiceBusDataReceiver')
-  scope: serviceBus
+// Cosmos DB Built-in Data Contributor (agent persistence/change-feed writes).
+resource cosmosDataContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(cosmosAccount.id, identityName, 'CosmosDataContributor')
+  scope: cosmosAccount
   properties: {
     principalId: workloadIdentity.properties.principalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
-      '4f6d3a01-5356-424a-9274-02e06e644125'
+      '00000000-0000-0000-0000-000000000002'
     )
   }
 }
@@ -306,3 +321,4 @@ output appConfigurationEndpoint string = appConfiguration.properties.endpoint
 output keyVaultUri string = keyVault.properties.vaultUri
 output serviceBusEndpoint string = '${serviceBus.name}.servicebus.windows.net'
 output agentFqdn string = agentApp.properties.configuration.ingress.fqdn
+output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
