@@ -1,0 +1,43 @@
+name: Publish Agent Image (Azure OIDC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Immutable ACR tag (for example, the merge commit SHA)
+        required: true
+      resource_group:
+        description: Existing Azure resource group containing the registry
+        required: true
+        default: rg-aegisbank-staging
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Build and Push Agent Image
+    runs-on: ubuntu-24.04
+    environment: staging
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v5
+
+      - name: Azure OIDC Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name aegisbankstagingacr
+
+      - name: Build and Push Immutable Agent Image
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          image="aegisbankstagingacr.azurecr.io/aegisbank-agent:${IMAGE_TAG}"
+          docker build --file ai/agent/Dockerfile --tag "$image" .
+          docker push "$image"
