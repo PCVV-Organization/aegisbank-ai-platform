@@ -1,5 +1,0 @@
-{
-  "$schema": "https://oxc.rs/schema/oxlint.json",
-  "plugins": ["typescript", "react", "jsx-a11y"],
-  "rules": {"no-console": "warn", "typescript/no-explicit-any": "error"}
-}
