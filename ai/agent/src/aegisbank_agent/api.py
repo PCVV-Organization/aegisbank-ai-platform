@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .agent import AgentExecutionResult, AgentOrchestrator
@@ -172,6 +173,19 @@ def create_app(
         version="1.0.0",
         description="Production HTTP adapter for the AegisBank AI Agent Orchestrator",
     )
+    cors_origins = tuple(
+        origin.strip()
+        for origin in os.getenv("AEGISBANK_CORS_ORIGINS", "").split(",")
+        if origin.strip()
+    )
+    if cors_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(cors_origins),
+            allow_credentials=False,
+            allow_methods=["POST", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type"],
+        )
 
     auth = auth_provider or AuthenticationProvider()
     orchestrator_init_error: RuntimeError | None = None

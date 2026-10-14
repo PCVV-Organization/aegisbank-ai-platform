@@ -50,6 +50,9 @@ param entraAudience string = ''
 @description('JWT claim containing the synthetic AegisBank customer identifier.')
 param entraCustomerIdClaim string = 'customer_id'
 
+@description('Comma-separated HTTPS origins allowed to call the Agent API from browsers.')
+param corsOrigins string = ''
+
 var identityName = workloadIdentityName
 var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
@@ -307,6 +310,10 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             {
               name: 'AEGISBANK_ENTRA_CUSTOMER_ID_CLAIM'
               value: entraCustomerIdClaim
+            }
+            {
+              name: 'AEGISBANK_CORS_ORIGINS'
+              value: corsOrigins
             }
             {
               name: 'AEGISBANK_SERVICEBUS_FQDN'

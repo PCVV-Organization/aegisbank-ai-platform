@@ -10,6 +10,9 @@
     },
     "identityLocation": {
       "value": "westus2"
+    },
+    "corsOrigins": {
+      "value": "https://agreeable-smoke-0be6b411e.4.azurestaticapps.net"
     }
   }
 }
