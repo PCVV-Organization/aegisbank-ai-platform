@@ -1,8 +1,7 @@
-"""Azure AI Foundry / Azure OpenAI adapters for cloud environments.
+"""Azure AI Foundry and Azure OpenAI adapters for cloud environments.
 
-The module owns the Azure OpenAI client construction used by both the generic
-RAG boundary and the tool-capable application orchestrator.  Azure imports are
-lazy so local development remains offline and does not require cloud packages.
+Foundry Models use an OpenAI v1-compatible endpoint while Azure OpenAI uses
+its Azure-specific client. This keeps the Local-first provider boundary intact.
 """
 
 from __future__ import annotations
@@ -14,12 +13,12 @@ from aegisbank_rag.foundry_local import _clean_json_response
 from aegisbank_rag.provider import LLMProvider, LLMRequest
 
 PROVIDER_NAME: str = "azure-foundry"
-DEFAULT_DEPLOYMENT_NAME: str = "phi-4-mini"
+DEFAULT_DEPLOYMENT_NAME: str = "Phi-4-mini-instruct"
 DEFAULT_API_VERSION: str = "2024-10-21"
 
 
 def resolve_azure_endpoint(endpoint: str | None = None) -> str:
-    """Return a normalized HTTPS Azure OpenAI endpoint without logging it."""
+    """Return a normalized HTTPS Foundry or Azure OpenAI endpoint without logging it."""
     resolved = (
         endpoint
         or os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -31,11 +30,16 @@ def resolve_azure_endpoint(endpoint: str | None = None) -> str:
             "AZURE_OPENAI_ENDPOINT or AEGISBANK_FOUNDRY_ENDPOINT is required in cloud"
         )
     if not resolved.startswith("https://"):
-        raise ValueError("Azure OpenAI endpoint must use https in cloud environments")
+        raise ValueError("Azure AI endpoint must use https in cloud environments")
     return resolved
 
 
-def create_azure_openai_client(
+def is_foundry_v1_endpoint(endpoint: str) -> bool:
+    """Return whether *endpoint* targets Foundry's OpenAI v1-compatible route."""
+    return ".services.ai.azure.com/openai/v1" in endpoint.casefold()
+
+
+def create_azure_foundry_client(
     *,
     endpoint: str | None = None,
     api_version: str | None = None,
@@ -43,7 +47,7 @@ def create_azure_openai_client(
     timeout: float = 45.0,
     max_retries: int = 2,
 ) -> Any:
-    """Create the shared Entra-authenticated Azure OpenAI chat client.
+    """Create the shared Entra-authenticated Foundry or Azure OpenAI client.
 
     ``DefaultAzureCredential`` selects the managed identity in Azure.  It can
     also use an explicitly configured developer credential during an approved
@@ -54,7 +58,7 @@ def create_azure_openai_client(
         ManagedIdentityCredential,
         get_bearer_token_provider,
     )
-    from openai import AzureOpenAI
+    from openai import AzureOpenAI, OpenAI
 
     resolved_endpoint = resolve_azure_endpoint(endpoint)
     if credential is None:
@@ -74,6 +78,13 @@ def create_azure_openai_client(
         cred,
         "https://cognitiveservices.azure.com/.default",
     )
+    if is_foundry_v1_endpoint(resolved_endpoint):
+        return OpenAI(
+            base_url=resolved_endpoint,
+            api_key=token_provider,
+            timeout=timeout,
+            max_retries=max_retries,
+        )
     return AzureOpenAI(
         azure_endpoint=resolved_endpoint,
         azure_ad_token_provider=token_provider,
@@ -81,6 +92,11 @@ def create_azure_openai_client(
         timeout=timeout,
         max_retries=max_retries,
     )
+
+
+# Compatibility alias for existing callers. New cloud code should use the
+# provider-neutral name above.
+create_azure_openai_client = create_azure_foundry_client
 
 
 class AzureFoundryProvider(LLMProvider):
@@ -134,7 +150,7 @@ class AzureFoundryProvider(LLMProvider):
 
     def _get_client(self) -> Any:
         if self._client is None:
-            self._client = create_azure_openai_client(
+            self._client = create_azure_foundry_client(
                 endpoint=self._endpoint,
                 api_version=self._api_version,
                 credential=self._credential,

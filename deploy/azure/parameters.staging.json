@@ -7,6 +7,9 @@
     },
     "namePrefix": {
       "value": "aegisbank"
+    },
+    "identityLocation": {
+      "value": "westus2"
     }
   }
 }

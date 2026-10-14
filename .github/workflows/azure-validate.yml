@@ -9,17 +9,14 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   validate-iac:
     name: Compile Azure foundation without deployment
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Azure CLI
-        uses: azure/setup-azure@v2
-      - name: Compile Bicep
+      - uses: actions/checkout@v5
+      - name: Compile Bicep with Azure CLI
         run: az bicep build --file deploy/azure/main.bicep --stdout > /dev/null
       - name: Explain deployment boundary
         run: |

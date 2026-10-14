@@ -5,6 +5,9 @@ targetScope = 'resourceGroup'
 @description('Azure region for the isolated environment foundation.')
 param location string = resourceGroup().location
 
+@description('Azure region for the user-assigned workload identity. Must satisfy subscription region policy.')
+param identityLocation string = 'westus2'
+
 @allowed([
   'staging'
   'production'
@@ -18,25 +21,49 @@ param environment string
 param namePrefix string
 
 @description('Container image reference for Agent API.')
-param agentImage string = 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
+param agentImage string
 
 @description('Container image reference for Mock Core Banking.')
-param coreBankingImage string = 'mcr.microsoft.com/azuredocs/aci-helloworld:latest'
+param coreBankingImage string
 
-@description('Name of the Azure Cosmos DB account provisioned for the environment.')
-param cosmosAccountName string = '${namePrefix}${environment}cosmos'
+@description('Existing Azure Container Registry name used by staging Container Apps.')
+param registryName string = 'aegisbankstagingacr'
 
-var identityName = '${namePrefix}-${environment}-workload'
+@description('Existing user-assigned identity used by staging workloads.')
+param workloadIdentityName string = 'id-aegisbank-staging-workload'
+
+@description('Existing Azure AI Services account used for cloud model inference.')
+param foundryAccountName string = '${namePrefix}-${environment}-ai'
+
+@description('Existing model deployment name in the Azure AI Services account.')
+param foundryDeploymentName string = 'aegisbank-phi-4-mini'
+
+@description('Stable role-assignment resource ID for the pre-authorized Foundry workload identity.')
+param foundryRoleAssignmentName string = 'a32c0bf0-80e4-5c04-832b-fdc8553d5d43'
+
+@description('Microsoft Entra tenant ID that issues access tokens for the Agent API. Empty keeps cloud authentication fail-closed.')
+param entraTenantId string = ''
+
+@description('Registered API audience accepted by the Agent API. Empty keeps cloud authentication fail-closed.')
+param entraAudience string = ''
+
+@description('JWT claim containing the synthetic AegisBank customer identifier.')
+param entraCustomerIdClaim string = 'customer_id'
+
+var identityName = workloadIdentityName
 var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
 var logWorkspaceName = '${namePrefix}-${environment}-logs'
 var containerEnvName = '${namePrefix}-${environment}-aca-env'
 var serviceBusName = '${namePrefix}-${environment}-bus'
 var queueName = 'aegisbank-events'
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+  name: registryName
+}
 
 resource workloadIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: identityName
-  location: location
+  location: identityLocation
 }
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
@@ -77,6 +104,37 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
+// Microsoft Foundry Models resource. The model deployment is deliberately
+// separate from Foundry Local and uses Entra ID rather than an API key.
+resource foundryAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
+  name: foundryAccountName
+  location: location
+  kind: 'AIServices'
+  sku: {
+    name: 'S0'
+  }
+  properties: {
+    customSubDomainName: foundryAccountName
+    publicNetworkAccess: 'Enabled'
+  }
+}
+
+resource foundryModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+  parent: foundryAccount
+  name: foundryDeploymentName
+  sku: {
+    name: 'GlobalStandard'
+    capacity: 1
+  }
+  properties: {
+    model: {
+      format: 'Microsoft'
+      name: 'Phi-4-mini-instruct'
+      version: '1'
+    }
+  }
+}
+
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   name: serviceBusName
   location: location
@@ -98,14 +156,6 @@ resource serviceBusQueue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-prev
     maxDeliveryCount: 10
     deadLetteringOnMessageExpiration: true
   }
-}
-
-// Cosmos is provisioned independently when the account lifecycle is owned by
-// the data platform. Keeping an explicit existing reference makes the
-// dependency, endpoint, and managed-identity authorization reproducible
-// without re-creating or importing the account during every app deployment.
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = {
-  name: cosmosAccountName
 }
 
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' = {
@@ -134,6 +184,12 @@ resource mockCoreBankingApp 'Microsoft.App/containerApps@2023-05-01' = {
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
+      registries: [
+        {
+          server: containerRegistry.properties.loginServer
+          identity: workloadIdentity.id
+        }
+      ]
       ingress: {
         external: false
         targetPort: 8000
@@ -177,6 +233,9 @@ resource mockCoreBankingApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
     }
   }
+  dependsOn: [
+    containerRegistryPull
+  ]
 }
 
 resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
@@ -191,6 +250,12 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
+      registries: [
+        {
+          server: containerRegistry.properties.loginServer
+          identity: workloadIdentity.id
+        }
+      ]
       ingress: {
         external: true
         targetPort: 8000
@@ -221,7 +286,27 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             }
             {
               name: 'MOCK_CORE_BANKING_BASE_URL'
-              value: 'http://${mockCoreBankingApp.name}'
+              value: 'http://${mockCoreBankingApp.properties.configuration.ingress.fqdn}'
+            }
+            {
+              name: 'AEGISBANK_FOUNDRY_ENDPOINT'
+              value: 'https://${foundryAccount.name}.cognitiveservices.azure.com/'
+            }
+            {
+              name: 'AEGISBANK_FOUNDRY_DEPLOYMENT_NAME'
+              value: foundryDeploymentName
+            }
+            {
+              name: 'AEGISBANK_ENTRA_TENANT_ID'
+              value: entraTenantId
+            }
+            {
+              name: 'AEGISBANK_ENTRA_AUDIENCE'
+              value: entraAudience
+            }
+            {
+              name: 'AEGISBANK_ENTRA_CUSTOMER_ID_CLAIM'
+              value: entraCustomerIdClaim
             }
             {
               name: 'AEGISBANK_SERVICEBUS_FQDN'
@@ -230,10 +315,6 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             {
               name: 'AEGISBANK_SERVICEBUS_QUEUE'
               value: queueName
-            }
-            {
-              name: 'COSMOS_ENDPOINT'
-              value: cosmosAccount.properties.documentEndpoint
             }
           ]
           probes: [
@@ -258,6 +339,11 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
     }
   }
+  dependsOn: [
+    containerRegistryPull
+    foundryModelDeployment
+    foundryModelUser
+  ]
 }
 
 // App Configuration Data Reader
@@ -288,6 +374,34 @@ resource keyVaultSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01
   }
 }
 
+// AcrPull
+resource containerRegistryPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(containerRegistry.id, identityName, 'AcrPull')
+  scope: containerRegistry
+  properties: {
+    principalId: workloadIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+    )
+  }
+}
+
+// Allows the runtime identity to invoke the Foundry deployment with Entra ID.
+resource foundryModelUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: foundryRoleAssignmentName
+  scope: foundryAccount
+  properties: {
+    principalId: workloadIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+    )
+  }
+}
+
 // Azure Service Bus Data Sender
 resource serviceBusDataSender 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(serviceBus.id, identityName, 'AzureServiceBusDataSender')
@@ -302,20 +416,10 @@ resource serviceBusDataSender 'Microsoft.Authorization/roleAssignments@2022-04-0
   }
 }
 
-// Cosmos DB Built-in Data Contributor (agent persistence/change-feed writes).
-resource cosmosDataContributor 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = {
-  parent: cosmosAccount
-  name: guid(cosmosAccount.id, identityName, 'CosmosDataContributor')
-  properties: {
-    principalId: workloadIdentity.properties.principalId
-    roleDefinitionId: '${cosmosAccount.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002'
-    scope: cosmosAccount.id
-  }
-}
-
 output workloadIdentityClientId string = workloadIdentity.properties.clientId
 output appConfigurationEndpoint string = appConfiguration.properties.endpoint
 output keyVaultUri string = keyVault.properties.vaultUri
 output serviceBusEndpoint string = '${serviceBus.name}.servicebus.windows.net'
 output agentFqdn string = agentApp.properties.configuration.ingress.fqdn
-output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
+output foundryEndpoint string = 'https://${foundryAccount.name}.cognitiveservices.azure.com/'
+output foundryDeploymentName string = foundryDeploymentName

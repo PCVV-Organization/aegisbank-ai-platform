@@ -127,6 +127,10 @@
       "category": "component-guide"
     },
     {
+      "path": ".github/pull_request_template.md",
+      "category": "component-guide"
+    },
+    {
       "path": "AGENTS.md",
       "category": "entrypoint"
     },
@@ -499,6 +503,10 @@
       "category": "operations-reference"
     },
     {
+      "path": "docs/operations/LOCAL-FIRST-READINESS.md",
+      "category": "operations-reference"
+    },
+    {
       "path": "docs/operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md",
       "category": "operations-reference"
     },
@@ -553,6 +561,14 @@
     {
       "path": "docs/operations/runbooks/rollback.md",
       "category": "operations-reference"
+    },
+    {
+      "path": "docs/quality/AZURE-STAGING-FOUNDATION-EVIDENCE-20261011.md",
+      "category": "quality-reference-or-dated-evidence"
+    },
+    {
+      "path": "docs/quality/AZURE-STAGING-FOUNDATION-EVIDENCE-20261012.md",
+      "category": "quality-reference-or-dated-evidence"
     },
     {
       "path": "docs/quality/E2E-MATRIX.md",

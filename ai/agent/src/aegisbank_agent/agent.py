@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, cast
 
-from aegisbank_rag.azure_foundry import create_azure_openai_client, resolve_azure_endpoint
+from aegisbank_rag.azure_foundry import create_azure_foundry_client, resolve_azure_endpoint
 from aegisbank_rag.foundry_local import DEFAULT_MODEL_ALIAS, resolve_foundry_base_url
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionToolUnionParam
@@ -190,8 +190,12 @@ class AgentOrchestrator:
             timeout = float(os.getenv("AEGISBANK_FOUNDRY_TIMEOUT_SECONDS", "45"))
             retries = int(os.getenv("AEGISBANK_FOUNDRY_MAX_RETRIES", "2"))
             if env.is_cloud:
+                self._model = os.getenv(
+                    "AEGISBANK_FOUNDRY_DEPLOYMENT_NAME",
+                    os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", model),
+                )
                 self._base_url = resolve_azure_endpoint(base_url)
-                self._client = create_azure_openai_client(
+                self._client = create_azure_foundry_client(
                     endpoint=self._base_url,
                     timeout=timeout,
                     max_retries=retries,

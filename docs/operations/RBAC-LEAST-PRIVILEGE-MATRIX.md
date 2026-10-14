@@ -1,6 +1,6 @@
 # Azure RBAC Least-Privilege Matrix (Microsoft Entra ID)
 
-> **Status:** `DOCUMENTED_LEAST_PRIVILEGE`; `CLOUD_UNVALIDATED`.
+> **Status (2026-10-11):** `DOCUMENTED_LEAST_PRIVILEGE`; `STAGING_PARTIALLY_APPLIED`.
 > **Scope:** Azure staging and production runtime design for AegisBank AI Platform. Local development and automated tests use local trust or emulators, not Azure RBAC.
 >
 > This is a proposed/documented role model, not evidence that roles or identities have been assigned in Azure.
@@ -28,7 +28,7 @@
 | Agent workload | Azure Key Vault | `Key Vault Secrets User` (`4633458b-17de-408a-b874-0445c86b69ea`) | Read-only | Resolves unavoidable secret references; no cryptographic key or certificate permissions. |
 | Agent workload | Azure Service Bus | `Azure Service Bus Data Sender` (`69a216fc-b8fb-44d8-bc22-1f3c2cd27a39`) | Send-only | Sends authorized audit events and HITL-approved service requests to permitted queues/topics. |
 | Agent workload | Azure Cosmos DB | `Cosmos DB Built-in Data Reader` (NoSQL data plane) | Read-only | Reads partitioned agent session state and events. |
-| Agent workload | Azure AI Foundry / Azure OpenAI | `Cognitive Services OpenAI User` (`5e6ce059-de30-45e8-b8e7-e898950d9990`) | Inference | Uses Entra tokens for grounded chat completion (`phi-4-mini`) rather than static API keys. |
+| Agent workload | Azure AI Foundry / Azure OpenAI | `Cognitive Services OpenAI User` (`5e0bd9bd-7b93-4f28-af87-19fc36ad61bd`) | Inference | Uses Entra tokens for grounded chat completion (`phi-4-mini`) rather than static API keys. |
 | Functions consumer | Azure Service Bus | `Azure Service Bus Data Receiver` (`4f6d3a01-b2a5-4e24-9d14-70f80761a4c6`) | Receive and settle | Receives, completes/abandons, or dead-letters service events. |
 | Functions consumer | Azure Key Vault | `Key Vault Secrets User` | Read-only | Reads secrets required by external event integrations. |
 | GitHub Actions deployer | Resource group `rg-aegisbank-<env>` | Scoped deployment role (`Deployment Operator` / ARM deployment) | Control plane | Creates or updates ARM/Bicep resources and Container Apps revisions; no banking-data or secret access. |

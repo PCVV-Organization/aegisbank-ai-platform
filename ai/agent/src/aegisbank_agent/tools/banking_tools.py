@@ -402,7 +402,7 @@ class CreateServiceRequestTool(FunctionTool):
                     method="POST",
                 )
                 try:
-                    with urllib.request.urlopen(req, timeout=10.0) as resp:
+                    with urllib.request.urlopen(req, timeout=10.0) as resp:  # nosec B310 - URL comes from validated configured endpoint
                         resp_body = resp.read().decode("utf-8")
                         return json.loads(resp_body)
                 except urllib.error.HTTPError as http_err:

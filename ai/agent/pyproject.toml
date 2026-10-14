@@ -27,6 +27,10 @@ dependencies = [
     "alembic>=1.19.0",
     "fastapi>=0.141.0",
     "uvicorn>=0.30.0",
+    # Keep transitive security fixes reproducible for local and CI audits.
+    "PyJWT>=2.15.0",
+    "urllib3>=2.8.0",
+    "Werkzeug>=3.1.9",
 ]
 
 [project.optional-dependencies]

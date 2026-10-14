@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from starlette.testclient import TestClient
 
-from aegisbank_agent.api import app, create_app
+from aegisbank_agent.api import AuthenticationProvider, PrincipalContext, app, create_app
 from aegisbank_agent.configuration.environment import RuntimeEnvironment
 
 
@@ -82,7 +82,28 @@ def test_agent_api_run_cloud_requires_auth(monkeypatch) -> None:
         assert "Bearer token missing" in response.json()["detail"]
 
 
-def test_agent_api_run_cloud_with_auth_token(monkeypatch) -> None:
+def test_agent_api_run_cloud_rejects_unconfigured_jwt_validation(monkeypatch) -> None:
+    monkeypatch.setenv("AEGISBANK_ENV", "production")
+    monkeypatch.delenv("AEGISBANK_ENTRA_TENANT_ID", raising=False)
+    monkeypatch.delenv("AEGISBANK_ENTRA_AUDIENCE", raising=False)
+
+    test_app = create_app(orchestrator=MagicMock())
+    client = TestClient(test_app)
+
+    with patch(
+        "aegisbank_agent.api.resolve_runtime_environment",
+        return_value=RuntimeEnvironment.PRODUCTION,
+    ):
+        response = client.post(
+            "/api/v1/agent/run",
+            json={"query": "Consultar saldo", "customer_id": "CUST-9999"},
+            headers={"Authorization": "Bearer arbitrary-value"},
+        )
+        assert response.status_code == 503
+        assert "JWT verification is not configured" in response.json()["detail"]
+
+
+def test_agent_api_run_cloud_uses_verified_token_identity(monkeypatch) -> None:
     monkeypatch.setenv("AEGISBANK_ENV", "production")
 
     mock_result = MagicMock()
@@ -93,7 +114,13 @@ def test_agent_api_run_cloud_with_auth_token(monkeypatch) -> None:
 
     mock_orch = MagicMock()
     mock_orch.run.return_value = mock_result
-    test_app = create_app(orchestrator=mock_orch)
+    verified_principal = PrincipalContext(
+        customer_id="CUST-0001",
+        authenticated=True,
+        claims={"auth_type": "entra-jwt", "subject": "synthetic-subject"},
+    )
+    auth_provider = AuthenticationProvider(jwt_validator=lambda _token: verified_principal)
+    test_app = create_app(orchestrator=mock_orch, auth_provider=auth_provider)
     client = TestClient(test_app)
 
     with patch(
@@ -104,7 +131,7 @@ def test_agent_api_run_cloud_with_auth_token(monkeypatch) -> None:
             "/api/v1/agent/run",
             json={
                 "query": "Consultar saldo",
-                "customer_id": "CUST-0001",
+                "customer_id": "CUST-9999",
             },
             headers={"Authorization": "Bearer fake-verified-jwt-token"},
         )
@@ -112,3 +139,5 @@ def test_agent_api_run_cloud_with_auth_token(monkeypatch) -> None:
         data = response.json()
         assert data["answer"] == "Información verificada."
         assert data["customer_id"] == "CUST-0001"
+        mock_orch.run.assert_called_once()
+        assert mock_orch.run.call_args.kwargs["customer_id"] == "CUST-0001"
