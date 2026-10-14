@@ -4,6 +4,7 @@ import {
   createRouter,
   Outlet,
   Link,
+  Navigate,
   redirect,
 } from "@tanstack/react-router";
 import { useAuth } from "../auth/use-auth";
@@ -98,7 +99,9 @@ function Page({
   );
 }
 
-const rootRoute = createRootRoute({ component: () => <Outlet /> });
+const rootRoute = createRootRoute({
+  component: () => <Navigate to="/app/overview" />,
+});
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/login",
