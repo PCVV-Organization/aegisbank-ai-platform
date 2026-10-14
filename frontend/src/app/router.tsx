@@ -100,6 +100,11 @@ function Page({
 }
 
 const rootRoute = createRootRoute({
+  component: () => <Outlet />,
+});
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
   component: () => <Navigate to="/app/overview" />,
 });
 const loginRoute = createRoute({
@@ -169,6 +174,7 @@ const serviceRequestsRoute = createRoute({
   ),
 });
 const routeTree = rootRoute.addChildren([
+  indexRoute,
   loginRoute,
   appRoute.addChildren([
     overviewRoute,
