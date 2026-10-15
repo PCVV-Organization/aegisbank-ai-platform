@@ -93,7 +93,9 @@ class CosmosAuthStore:
 
         try:
             self.container.replace_item(
-                item=item["id"], body=item, etag=etag,
+                item=item["id"],
+                body=item,
+                etag=etag,
                 match_condition=MatchConditions.IfNotModified,
             )
         except CosmosHttpResponseError as exc:
@@ -116,7 +118,11 @@ def password_hash(password: str, salt: str | None = None) -> str:
         raise ValueError("Password must contain 15 to 128 characters")
     salt = salt or secrets.token_hex(16)
     digest = hashlib.scrypt(
-        password.encode("utf-8"), salt=bytes.fromhex(salt), n=16384, r=8, p=5,
+        password.encode("utf-8"),
+        salt=bytes.fromhex(salt),
+        n=16384,
+        r=8,
+        p=5,
         maxmem=64 * 1024 * 1024,
     ).hex()
     return f"scrypt-v1${salt}${digest}"
@@ -128,7 +134,7 @@ def verify_password(password: str, encoded: str) -> bool:
         return version == "scrypt-v1" and hmac.compare_digest(
             encoded, password_hash(password, salt)
         )
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return False
 
 
@@ -139,9 +145,14 @@ def account_key(dni: str) -> str:
 
 
 def denied() -> HTTPException:
-    return HTTPException(401, "Credenciales o sesión no válidas", headers={
-        "WWW-Authenticate": "Bearer", "Cache-Control": "no-store",
-    })
+    return HTTPException(
+        401,
+        "Credenciales o sesión no válidas",
+        headers={
+            "WWW-Authenticate": "Bearer",
+            "Cache-Control": "no-store",
+        },
+    )
 
 
 class CustomerAuth:
@@ -163,11 +174,19 @@ class CustomerAuth:
             fresh = current is None or now >= current["until"]
             count = 0 if fresh else current["count"]
             if count >= limit:
-                raise HTTPException(429, "Demasiados intentos. Intenta más tarde.", headers={
-                    "Retry-After": str(max(1, current["until"] - now)),
-                })
-            item = {"id": key, "count": count + 1,
-                    "until": now + window if fresh else current["until"], "ttl": window * 2}
+                raise HTTPException(
+                    429,
+                    "Demasiados intentos. Intenta más tarde.",
+                    headers={
+                        "Retry-After": str(max(1, current["until"] - now)),
+                    },
+                )
+            item = {
+                "id": key,
+                "count": count + 1,
+                "until": now + window if fresh else current["until"],
+                "ttl": window * 2,
+            }
             try:
                 if current is None:
                     self.store.create(item)
@@ -191,12 +210,21 @@ class CustomerAuth:
             raise denied()
         token = secrets.token_urlsafe(32)
         expires = int(self.clock()) + SESSION_SECONDS
-        self.store.create({
-            "id": self._session_key(token), "account_id": key,
-            "epoch": account["epoch"], "expires": expires, "ttl": SESSION_SECONDS,
-        })
-        return {"access_token": token, "token_type": "Bearer", "expires_at": expires,
-                "customer_id": customer_id}
+        self.store.create(
+            {
+                "id": self._session_key(token),
+                "account_id": key,
+                "epoch": account["epoch"],
+                "expires": expires,
+                "ttl": SESSION_SECONDS,
+            }
+        )
+        return {
+            "access_token": token,
+            "token_type": "Bearer",
+            "expires_at": expires,
+            "customer_id": customer_id,
+        }
 
     @staticmethod
     def _session_key(token: str) -> str:
@@ -239,8 +267,14 @@ class CustomerAuth:
             raise ValueError("Account exists; use explicit rotation to revoke its sessions")
         if current and current["customer_id"] != customer_id:
             raise ValueError("Existing customer binding cannot be changed")
-        item = {"id": key, "customer_id": customer_id, "password_hash": password_hash(password),
-                "epoch": secrets.token_hex(16), "disabled": False, "ttl": -1}
+        item = {
+            "id": key,
+            "customer_id": customer_id,
+            "password_hash": password_hash(password),
+            "epoch": secrets.token_hex(16),
+            "disabled": False,
+            "ttl": -1,
+        }
         if current:
             self.store.replace(item, current["_etag"])
         else:

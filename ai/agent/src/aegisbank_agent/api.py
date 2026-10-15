@@ -79,7 +79,8 @@ class AuthenticationProvider:
     """Authentication and identity verification boundary for the HTTP API."""
 
     def __init__(
-        self, jwt_validator: Callable[[str], PrincipalContext] | None = None,
+        self,
+        jwt_validator: Callable[[str], PrincipalContext] | None = None,
         customer_auth: CustomerAuth | None = None,
     ) -> None:
         """Allow a deterministic verifier to be supplied by isolated tests."""
@@ -238,8 +239,11 @@ def create_app(
     async def redact_login_validation(request: Request, exc: RequestValidationError):
         # FastAPI validation errors otherwise echo rejected input (including passwords).
         if request.url.path.startswith("/api/v1/auth/"):
-            return JSONResponse(status_code=422, content={"detail": "Datos de acceso no válidos"},
-                                headers={"Cache-Control": "no-store"})
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "Datos de acceso no válidos"},
+                headers={"Cache-Control": "no-store"},
+            )
         return await request_validation_exception_handler(request, exc)
 
     @app.post("/api/v1/auth/login", response_model=CustomerLoginResponse, tags=["Authentication"])
@@ -272,6 +276,7 @@ def create_app(
         if not header.startswith("Bearer "):
             raise HTTPException(401, "Sesión no válida", headers={"WWW-Authenticate": "Bearer"})
         return {"customer_id": auth.customers().authenticate(header[7:].strip())}
+
     orchestrator_init_error: RuntimeError | None = None
     if orchestrator is not None:
         agent_orchestrator = orchestrator

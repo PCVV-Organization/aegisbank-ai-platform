@@ -24,6 +24,7 @@ class Store:
         current = self.items.get(item["id"])
         if not current or current.get("_etag") != etag:
             from aegisbank_agent.customer_auth import ConflictError
+
             raise ConflictError
         self.version += 1
         self.items[item["id"]] = dict(item, _etag=str(self.version))
