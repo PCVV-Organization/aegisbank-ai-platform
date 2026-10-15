@@ -1983,7 +1983,15 @@ az bicep build --file deploy/azure/main.bicep --stdout > $null
 
 The documented GitHub Actions workflow [`deploy-staging.yml`](../../.github/workflows/deploy-staging.yml) uses `azure/login@v2` with OIDC federation and no `AZURE_CLIENT_SECRET`. Workflow presence is not execution evidence.
 
-## 5. Related Operational Documents
+## 6. Azure for Students customer authentication
+
+The current Azure for Students subscription denies External ID customer tenants
+because the `Microsoft.AzureActiveDirectory/ciamDirectories` resource resolves
+to the `United States` logical location, outside the subscription policy. The
+staging laboratory therefore uses the explicit `synthetic-password` provider
+documented in [Synthetic auth staging](../operations/SYNTHETIC-AUTH-STAGING.md).
+It uses Cosmos DB data-plane RBAC and short-lived revocable sessions. This is a
+laboratory boundary and does not establish production identity readiness.
 
 - [RBAC least-privilege matrix](../operations/RBAC-LEAST-PRIVILEGE-MATRIX.md)
 - [Staging acceptance runbook](../operations/STAGING-ACCEPTANCE-RUNBOOK.md)

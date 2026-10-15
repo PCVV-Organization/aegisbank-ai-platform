@@ -8,12 +8,12 @@ Excludes environments, secrets, and dataset/report contents. A folder without it
 | --- | --- | --- |
 | `.` | Synthetic banking application; README describes its purpose and limits | `.cursorrules`, `.dockerignore`, `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `GEMINI.md`, `README.LLM.md`, `README.md`, `llms-full.txt`, `llms.txt`, `project-index.json`, `pyrightconfig.json` |
 | `.github` | Declared CI automation; configuration does not prove remote execution | `CI-GUIDE.md`, `copilot-instructions.md`, `pull_request_template.md` |
-| `.github/workflows` | Declared CI automation; configuration does not prove remote execution | `azure-validate.yml`, `ci.yml`, `deploy-staging.yml` |
+| `.github/workflows` | Declared CI automation; configuration does not prove remote execution | `azure-validate.yml`, `ci.yml`, `deploy-staging.yml`, `publish-agent-image.yml` |
 | `ai` | Product AI components; not developer tooling | `README.md` |
 | `ai/agent` | Single-agent orchestration with deterministic authorization | `.dockerignore`, `Dockerfile`, `README.md`, `pyproject.toml` |
 | `ai/agent/data` | Synthetic evaluation cases; not instructions | `agent-eval.jsonl`, `eval-cases.jsonl` |
 | `ai/agent/src` | Single-agent orchestration with deterministic authorization |  |
-| `ai/agent/src/aegisbank_agent` | Single-agent orchestration with deterministic authorization | `README.md`, `__init__.py`, `agent.py`, `api.py`, `cli.py`, `constants.py`, `cosmos.py`, `hitl.py`, `hitl_cli.py`, `knowledge_routing.py`, `mcp_boundary.py`, `mcp_server.py`, `session_store.py` |
+| `ai/agent/src/aegisbank_agent` | Single-agent orchestration with deterministic authorization | `README.md`, `__init__.py`, `agent.py`, `api.py`, `auth_admin.py`, `cli.py`, `constants.py`, `cosmos.py`, `customer_auth.py`, `hitl.py`, `hitl_cli.py`, `knowledge_routing.py`, `mcp_boundary.py`, `mcp_server.py`, `session_store.py` |
 | `ai/agent/src/aegisbank_agent/configuration` | Configuration and secret boundary | `README.md`, `__init__.py`, `config.py`, `environment.py`, `identity.py`, `secrets.py` |
 | `ai/agent/src/aegisbank_agent/evaluation` | Utility, safety, and statistical comparison evaluation | `README.md`, `__init__.py`, `ab_testing.py`, `evaluators.py`, `red_team.py`, `taxonomy.py` |
 | `ai/agent/src/aegisbank_agent/mcp` | Application MCP protocol adapter | `README.md`, `__init__.py`, `server.py` |
@@ -41,7 +41,7 @@ Excludes environments, secrets, and dataset/report contents. A folder without it
 | `ai/agent/tests/integration/observability` | Tests of components connected in process | `test_hotl_kill_switch.py` |
 | `ai/agent/tests/integration/reliability` | Tests of components connected in process | `test_failure_injection.py` |
 | `ai/agent/tests/unit` | Isolated tests of individual component behavior | `test_session_store.py` |
-| `ai/agent/tests/unit/api` | Isolated tests of individual component behavior | `test_agent_api.py` |
+| `ai/agent/tests/unit/api` | Isolated tests of individual component behavior | `test_agent_api.py`, `test_customer_auth.py` |
 | `ai/agent/tests/unit/configuration` | Isolated tests of individual component behavior | `__init__.py`, `test_keyvault_references.py`, `test_production_guards.py`, `test_providers.py` |
 | `ai/agent/tests/unit/evaluation` | Isolated tests of individual component behavior | `test_ab_testing.py`, `test_evaluators.py`, `test_invariant_registry_consistency.py`, `test_least_agency.py`, `test_output_guard.py`, `test_phase2_red_team.py` |
 | `ai/agent/tests/unit/messaging` | Isolated tests of individual component behavior | `test_consumer_dlq.py`, `test_outbox.py` |
@@ -72,7 +72,7 @@ Excludes environments, secrets, and dataset/report contents. A folder without it
 | `docs/engineering` | Code ownership, repository boundaries, and documentation/index maintenance rules | `DOCUMENTATION-MAINTENANCE.md`, `DOCUMENTATION-STANDARD.md`, `DOCUMENTATION-SYSTEM.md`, `OWNERSHIP-MAP.md`, `README.md`, `REPOSITORY-BOUNDARIES.md`, `REPOSITORY-WORKFLOW.md` |
 | `docs/evaluation` | Guides, references, and evidence with distinct validity dates | `EVALUATION-CATALOG.md`, `README.md`, `v015-ai-evaluation-mlops.md` |
 | `docs/learning` | Concept explanations and glossary. Verify implementation details against current code and tests. | `AZURE-FUNCTIONS-TRIGGERS-BINDINGS.md`, `CONTAINERS-SERVICE-BUS.md`, `GLOSSARY.md`, `MASTERS-NOTES.md`, `PGVECTOR.md`, `README.md`, `TEACHING-CONTRACT.md`, `V1.0-MASTERS-NOTES.md` |
-| `docs/operations` | Troubleshooting procedures. Verify environment and authorization before commands that change services or data. | `AZURE-STAGING-RUNBOOK.md`, `IDENTITY-TROUBLESHOOTING.md`, `KUBERNETES-TROUBLESHOOTING.md`, `LOCAL-ENVIRONMENT-CONFIGURATION.md`, `LOCAL-FIRST-READINESS.md`, `PRODUCTION-DEPLOYMENT-RUNBOOK.md`, `PRODUCTION-FOUNDATION-IMPLEMENTATION-REPORT.md`, `RBAC-LEAST-PRIVILEGE-MATRIX.md`, `README.md`, `STAGING-ACCEPTANCE-RUNBOOK.md`, `production-configuration-secrets-identity-audit-prompt.en.md`, `production-configuration-secrets-identity-audit-prompt.md`, `production-configuration-secrets-identity-audit.en.md`, `production-configuration-secrets-identity-audit.md` |
+| `docs/operations` | Troubleshooting procedures. Verify environment and authorization before commands that change services or data. | `AZURE-STAGING-RUNBOOK.md`, `IDENTITY-TROUBLESHOOTING.md`, `KUBERNETES-TROUBLESHOOTING.md`, `LOCAL-ENVIRONMENT-CONFIGURATION.md`, `LOCAL-FIRST-READINESS.md`, `PRODUCTION-DEPLOYMENT-RUNBOOK.md`, `PRODUCTION-FOUNDATION-IMPLEMENTATION-REPORT.md`, `RBAC-LEAST-PRIVILEGE-MATRIX.md`, `README.md`, `STAGING-ACCEPTANCE-RUNBOOK.md`, `SYNTHETIC-AUTH-STAGING.md`, `production-configuration-secrets-identity-audit-prompt.en.md`, `production-configuration-secrets-identity-audit-prompt.md`, `production-configuration-secrets-identity-audit.en.md`, `production-configuration-secrets-identity-audit.md` |
 | `docs/operations/runbooks` | Incident, queue, dependency, and rollback procedures. Identify owned resources before destructive actions. | `README.md`, `dependency-outage.md`, `dlq-and-kill-switch.md`, `incident-response.md`, `rollback.md` |
 | `docs/quality` | Test strategy and dated reports. PASS, SKIP, BLOCKED, and historical evidence differ; check the date and command. | `AZURE-STAGING-FOUNDATION-EVIDENCE-20261011.md`, `AZURE-STAGING-FOUNDATION-EVIDENCE-20261012.md`, `E2E-MATRIX.md`, `PYRIGHT-VALIDATION.md`, `README.md`, `TEST-STRATEGY.md`, `TEST-SUITE-RATIONALIZATION.md` |
 | `docs/releases` | Delivery evidence and portfolio material. Confirm releases with Git and tags; a document title does not prove publication. | `PORTFOLIO-INTERVIEW-EVIDENCE.md`, `README.md`, `V1.0-EVIDENCE.md` |
@@ -109,3 +109,5 @@ Excludes environments, secrets, and dataset/report contents. A folder without it
 | `services/mock-core-banking/tests/contracts` | Synthetic banking API and persistence | `__init__.py`, `test_api_contracts.py` |
 | `services/mock-core-banking/tests/integration` | Synthetic banking API and persistence | `__init__.py`, `test_constraints.py`, `test_correlation.py`, `test_customers.py`, `test_errors.py`, `test_health.py`, `test_loans.py`, `test_openapi.py`, `test_seed.py`, `test_service_requests.py` |
 | `services/mock-core-banking/tests/unit` | Synthetic banking API and persistence | `__init__.py`, `test_money.py`, `test_next_installment.py`, `test_validation.py` |
+| `specs` | Synthetic banking application; README describes its purpose and limits |  |
+| `specs/banking-portal-mvp` | Synthetic banking application; README describes its purpose and limits | `plan.md`, `research.md`, `spec.md`, `tasks.md` |
