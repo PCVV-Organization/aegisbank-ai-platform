@@ -13,6 +13,11 @@
     },
     "corsOrigins": {
       "value": "https://agreeable-smoke-0be6b411e.4.azurestaticapps.net"
-    }
+    },
+    "authMode": { "value": "synthetic-password" },
+    "authDatabaseName": { "value": "aegisbank-auth" },
+    "authContainerName": { "value": "identities" },
+    "authCosmosAccountName": { "value": "aegisbankstagingcosmos" },
+    "authSessionTtlSeconds": { "value": 900 }
   }
 }

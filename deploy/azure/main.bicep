@@ -53,6 +53,25 @@ param entraCustomerIdClaim string = 'customer_id'
 @description('Comma-separated HTTPS origins allowed to call the Agent API from browsers.')
 param corsOrigins string = ''
 
+@allowed([
+  'entra'
+  'synthetic-password'
+])
+@description('Explicit hosted authentication provider. Synthetic password is staging-laboratory only.')
+param authMode string = 'entra'
+
+@description('Pre-provisioned Cosmos DB database used by synthetic customer authentication.')
+param authDatabaseName string = 'aegisbank-auth'
+
+@description('Pre-provisioned Cosmos DB container used by synthetic customer authentication.')
+param authContainerName string = 'identities'
+
+@description('Opaque synthetic session lifetime in seconds.')
+param authSessionTtlSeconds int = 900
+
+@description('Existing Cosmos DB account used by staging authentication.')
+param authCosmosAccountName string = 'aegisbankstagingcosmos'
+
 var identityName = workloadIdentityName
 var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
@@ -314,6 +333,26 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             {
               name: 'AEGISBANK_CORS_ORIGINS'
               value: corsOrigins
+            }
+            {
+              name: 'AEGISBANK_AUTH_MODE'
+              value: authMode
+            }
+            {
+              name: 'AEGISBANK_AUTH_COSMOS_ENDPOINT'
+              value: 'https://${authCosmosAccountName}.documents.azure.com:443/'
+            }
+            {
+              name: 'AEGISBANK_AUTH_COSMOS_DATABASE'
+              value: authDatabaseName
+            }
+            {
+              name: 'AEGISBANK_AUTH_COSMOS_CONTAINER'
+              value: authContainerName
+            }
+            {
+              name: 'AEGISBANK_AUTH_SESSION_TTL_SECONDS'
+              value: string(authSessionTtlSeconds)
             }
             {
               name: 'AEGISBANK_SERVICEBUS_FQDN'

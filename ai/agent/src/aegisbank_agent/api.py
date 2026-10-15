@@ -13,9 +13,12 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 from .agent import AgentExecutionResult, AgentOrchestrator
 from .configuration.environment import (
@@ -23,8 +26,22 @@ from .configuration.environment import (
     resolve_runtime_environment,
     validate_runtime_configuration,
 )
+from .customer_auth import CosmosAuthStore, CustomerAuth
 
 logger = logging.getLogger("aegisbank.agent.api")
+
+
+class CustomerLoginRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    dni: str = Field(pattern=r"^[0-9]{8}$", max_length=8)
+    password: SecretStr = Field(min_length=15, max_length=128)
+
+
+class CustomerLoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    expires_at: int
+    customer_id: str
 
 
 class AgentRunRequest(BaseModel):
@@ -61,9 +78,27 @@ class PrincipalContext:
 class AuthenticationProvider:
     """Authentication and identity verification boundary for the HTTP API."""
 
-    def __init__(self, jwt_validator: Callable[[str], PrincipalContext] | None = None) -> None:
+    def __init__(
+        self,
+        jwt_validator: Callable[[str], PrincipalContext] | None = None,
+        customer_auth: CustomerAuth | None = None,
+    ) -> None:
         """Allow a deterministic verifier to be supplied by isolated tests."""
         self._jwt_validator = jwt_validator or self._validate_entra_jwt
+        self._customer_auth = customer_auth
+
+    def customers(self) -> CustomerAuth:
+        """Explicit staging-only mode; errors never expose storage or credential details."""
+        if os.getenv("AEGISBANK_AUTH_MODE", "entra") not in {"students", "synthetic-password"}:
+            raise HTTPException(404, "Customer password login is not enabled")
+        if resolve_runtime_environment().value == "production":
+            raise HTTPException(503, "Students authentication is restricted to the laboratory")
+        try:
+            if self._customer_auth is None:
+                self._customer_auth = CustomerAuth(CosmosAuthStore())
+            return self._customer_auth
+        except Exception as exc:
+            raise HTTPException(503, "Autenticación temporalmente no disponible") from exc
 
     @staticmethod
     def _validate_entra_jwt(token: str) -> PrincipalContext:
@@ -128,8 +163,11 @@ class AuthenticationProvider:
     ) -> PrincipalContext:
         """Resolve authenticated identity. Fails closed in cloud if unverified."""
         env = resolve_runtime_environment()
+        mode = os.getenv("AEGISBANK_AUTH_MODE", "entra")
+        if mode not in {"entra", "students", "synthetic-password"}:
+            raise HTTPException(503, "Authentication mode is invalid")
 
-        if not env.is_cloud:
+        if not env.is_cloud and mode != "students":
             # Local / development mode: permits body or header for synthetic customer simulation
             effective_customer = (
                 request_customer_id or request.headers.get("X-Customer-Id") or "CUST-0001"
@@ -160,6 +198,14 @@ class AuthenticationProvider:
 
         # In cloud, customer identity is bound only to verified token claims,
         # never to the request body or X-Customer-Id header.
+        if mode == "students":
+            try:
+                customer_id = self.customers().authenticate(token)
+            except HTTPException:
+                raise
+            except Exception as exc:
+                raise HTTPException(503, "Autenticación temporalmente no disponible") from exc
+            return PrincipalContext(customer_id, True, {"auth_type": "students-session"})
         return self._jwt_validator(token)
 
 
@@ -188,6 +234,49 @@ def create_app(
         )
 
     auth = auth_provider or AuthenticationProvider()
+
+    @app.exception_handler(RequestValidationError)
+    async def redact_login_validation(request: Request, exc: RequestValidationError):
+        # FastAPI validation errors otherwise echo rejected input (including passwords).
+        if request.url.path.startswith("/api/v1/auth/"):
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "Datos de acceso no válidos"},
+                headers={"Cache-Control": "no-store"},
+            )
+        return await request_validation_exception_handler(request, exc)
+
+    @app.post("/api/v1/auth/login", response_model=CustomerLoginResponse, tags=["Authentication"])
+    def customer_login(payload: CustomerLoginRequest, response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        try:
+            return auth.customers().login(payload.dni, payload.password.get_secret_value())
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(503, "Autenticación temporalmente no disponible") from exc
+
+    @app.post("/api/v1/auth/logout", status_code=204, tags=["Authentication"])
+    def customer_logout(request: Request):
+        customers = auth.customers()
+        header = request.headers.get("Authorization", "")
+        if not header.startswith("Bearer "):
+            raise HTTPException(401, "Sesión no válida")
+        try:
+            customers.logout(header[7:].strip())
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(503, "Autenticación temporalmente no disponible") from exc
+        return Response(status_code=204, headers={"Cache-Control": "no-store"})
+
+    @app.get("/api/v1/auth/me", tags=["Authentication"])
+    def customer_me(request: Request) -> dict[str, str]:
+        header = request.headers.get("Authorization", "")
+        if not header.startswith("Bearer "):
+            raise HTTPException(401, "Sesión no válida", headers={"WWW-Authenticate": "Bearer"})
+        return {"customer_id": auth.customers().authenticate(header[7:].strip())}
+
     orchestrator_init_error: RuntimeError | None = None
     if orchestrator is not None:
         agent_orchestrator = orchestrator
@@ -211,6 +300,16 @@ def create_app(
         env = resolve_runtime_environment()
         try:
             validate_runtime_configuration(env)
+            mode = os.getenv("AEGISBANK_AUTH_MODE", "entra")
+            if mode not in {"entra", "students"}:
+                raise EnvironmentSelectionError("Authentication mode is invalid")
+            if mode == "students":
+                try:
+                    auth.customers().store.ready()
+                except Exception as exc:
+                    raise EnvironmentSelectionError(
+                        "Authentication storage is unavailable"
+                    ) from exc
             return {"status": "ready", "environment": env.value}
         except EnvironmentSelectionError as exc:
             logger.error("Readiness check failed due to invalid configuration: %s", exc)
