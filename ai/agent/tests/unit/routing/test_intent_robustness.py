@@ -145,7 +145,7 @@ def test_malformed_function_serialization_is_not_exposed_to_customer() -> None:
     )
 
     orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
-    result = orchestrator.run("Hola, quiero orientación general", customer_id="CUST-0001")
+    result = orchestrator.run("Resume mi situación financiera", customer_id="CUST-0001")
 
     assert result.success is False
     assert "functools" not in result.answer
