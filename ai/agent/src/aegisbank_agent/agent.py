@@ -621,6 +621,59 @@ class AgentOrchestrator:
                 ]
 
                 loans = (account_result.data or {}).get("loans", [])
+                if asks_for_payment_dates(user_message) and not is_comparative_loan_query(
+                    user_message
+                ):
+                    installment_results: list[ToolResult] = []
+                    for loan in loans:
+                        loan_id = str(loan.get("loan_id", ""))
+                        if not loan_id:
+                            continue
+                        installment_result = self._registry.execute(
+                            "get_next_installment",
+                            {"loan_id": loan_id},
+                            context,
+                        )
+                        installment_results.append(installment_result)
+                        executed_records.append(
+                            ToolCallRecord(
+                                tool_name="get_next_installment",
+                                arguments={"loan_id": loan_id},
+                                result=installment_result,
+                                source="APPLICATION_PREFETCH",
+                                round_index=0,
+                            )
+                        )
+
+                    available_installments = [
+                        result.data
+                        for result in installment_results
+                        if result.success
+                        and isinstance(result.data, dict)
+                        and result.data.get("has_next_installment")
+                        and result.data.get("due_date")
+                    ]
+                    if available_installments:
+                        next_installment = min(
+                            available_installments,
+                            key=lambda item: str(item.get("due_date", "")),
+                        )
+                        return AgentExecutionResult(
+                            answer=self._format_installment_answer(next_installment),
+                            customer_id=customer_id,
+                            tool_calls=executed_records,
+                            rounds=0,
+                            success=True,
+                            correlation_id=obs_ctx.correlation_id,
+                        )
+                    return AgentExecutionResult(
+                        answer="No hay cuotas pendientes ni vencidas en tus préstamos.",
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
                 if asks_my_loan_statuses(user_message):
                     return AgentExecutionResult(
                         answer=self._format_my_loan_statuses_answer(
