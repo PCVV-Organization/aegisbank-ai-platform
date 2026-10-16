@@ -6,6 +6,7 @@ EXPECTED_OPERATIONS = {
     "/api/v1/loans/{loan_id}": {"get"},
     "/api/v1/loans/{loan_id}/installments/next": {"get"},
     "/api/v1/service-requests": {"get", "post"},
+    "/api/v1/service-requests/customer/{customer_id}": {"get"},
     "/api/v1/service-requests/{service_request_id}": {"get"},
 }
 

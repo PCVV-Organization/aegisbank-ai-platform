@@ -16,6 +16,7 @@ EXPECTED_PATHS = {
     "/api/v1/loans/{loan_id}",
     "/api/v1/loans/{loan_id}/installments/next",
     "/api/v1/service-requests",
+    "/api/v1/service-requests/customer/{customer_id}",
     "/api/v1/service-requests/{service_request_id}",
 }
 
