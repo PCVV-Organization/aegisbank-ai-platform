@@ -15,6 +15,7 @@ def test_default_tool_contracts_have_stable_names_and_schemas() -> None:
         "get_account_balance",
         "get_loan_details",
         "get_my_loans",
+        "get_my_service_requests",
         "get_next_installment",
         "search_knowledge",
     ]
