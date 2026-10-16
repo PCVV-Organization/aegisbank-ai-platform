@@ -85,6 +85,7 @@ def test_journey_b_multistep_read_routes_next_installment() -> None:
     assert [record.tool_name for record in result.tool_calls] == [
         "get_my_loans",
         "get_next_installment",
+        "get_next_installment",
     ]
     assert result.tool_calls[-1].result.success is True
 
