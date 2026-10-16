@@ -527,6 +527,10 @@
       "category": "operations-reference"
     },
     {
+      "path": "docs/operations/SYNTHETIC-AUTH-STAGING.md",
+      "category": "operations-reference"
+    },
+    {
       "path": "docs/operations/production-configuration-secrets-identity-audit-prompt.en.md",
       "category": "operations-reference"
     },
@@ -928,6 +932,22 @@
     },
     {
       "path": "services/mock-core-banking/src/mock_core_banking/schemas/README.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "specs/banking-portal-mvp/plan.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "specs/banking-portal-mvp/research.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "specs/banking-portal-mvp/spec.md",
+      "category": "component-guide"
+    },
+    {
+      "path": "specs/banking-portal-mvp/tasks.md",
       "category": "component-guide"
     }
   ],

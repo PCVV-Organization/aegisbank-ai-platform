@@ -5,7 +5,8 @@ EXPECTED_OPERATIONS = {
     "/api/v1/customers/{customer_id}/loans": {"get"},
     "/api/v1/loans/{loan_id}": {"get"},
     "/api/v1/loans/{loan_id}/installments/next": {"get"},
-    "/api/v1/service-requests": {"post"},
+    "/api/v1/service-requests": {"get", "post"},
+    "/api/v1/service-requests/customer/{customer_id}": {"get"},
     "/api/v1/service-requests/{service_request_id}": {"get"},
 }
 
@@ -20,6 +21,8 @@ def test_openapi_contains_exact_public_path_set(client) -> None:
 
 def test_openapi_documents_explicit_success_and_error_models(client) -> None:
     schema = client.get("/openapi.json").json()
+    get = schema["paths"]["/api/v1/service-requests"]["get"]
+    assert {"200", "404", "422"}.issubset(get["responses"])
     post = schema["paths"]["/api/v1/service-requests"]["post"]
     assert {"201", "404", "422"}.issubset(post["responses"])
     assert post["responses"]["201"]["content"]["application/json"]["schema"]

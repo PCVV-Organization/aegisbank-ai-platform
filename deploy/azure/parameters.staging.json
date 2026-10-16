@@ -12,7 +12,16 @@
       "value": "westus2"
     },
     "corsOrigins": {
-      "value": "https://agreeable-smoke-0be6b411e.4.azurestaticapps.net"
-    }
+      "value": "https://happy-grass-0a8a1ac1e.1.azurestaticapps.net,https://agreeable-smoke-0be6b411e.4.azurestaticapps.net"
+    },
+    "authMode": { "value": "synthetic-password" },
+    "authDatabaseName": { "value": "aegisbank-auth" },
+    "authContainerName": { "value": "identities" },
+    "authCosmosAccountName": { "value": "aegisbankstagingcosmos" },
+    "authSessionTtlSeconds": { "value": 900 },
+    "conversationDatabaseName": { "value": "aegisbank-chat" },
+    "conversationContainerName": { "value": "messages" },
+    "conversationTtlSeconds": { "value": 2592000 },
+    "foundryMaxTokens": { "value": 256 }
   }
 }

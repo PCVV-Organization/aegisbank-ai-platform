@@ -6,6 +6,7 @@ import json
 import os
 import re
 import urllib.error
+import urllib.parse
 import urllib.request
 from typing import Any
 
@@ -108,6 +109,46 @@ class GetMyLoansTool(FunctionTool):
             )
 
 
+class GetAccountBalanceTool(FunctionTool):
+    """Return the synthetic available balance for the authenticated customer."""
+
+    _BALANCES = {
+        "CUST-0001": ("12480.00", "PEN"),
+        "CUST-0002": ("8650.00", "PEN"),
+    }
+
+    @property
+    def name(self) -> str:
+        return "get_account_balance"
+
+    @property
+    def description(self) -> str:
+        return "Obtiene el saldo disponible sintético del cliente autenticado."
+
+    @property
+    def parameters_schema(self) -> dict[str, Any]:
+        return {"type": "object", "properties": {}, "additionalProperties": False}
+
+    def execute(self, arguments: dict[str, Any], context: AgentContext) -> ToolResult:
+        balance = self._BALANCES.get(context.session_customer_id)
+        if balance is None:
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error="Cliente no encontrado en el sistema bancario sintético.",
+            )
+        amount, currency = balance
+        return ToolResult(
+            tool_name=self.name,
+            success=True,
+            data={
+                "customer_id": context.session_customer_id,
+                "available_balance": amount,
+                "currency": currency,
+            },
+        )
+
+
 class GetLoanDetailsTool(FunctionTool):
     """Tool to inspect specific loan details with customer ownership validation."""
 
@@ -183,6 +224,63 @@ class GetLoanDetailsTool(FunctionTool):
                     "opened_at": loan.opened_at.isoformat(),
                 },
             )
+
+
+class GetMyServiceRequestsTool(FunctionTool):
+    """List service requests belonging only to the authenticated customer."""
+
+    def __init__(self, database: Database | None = None) -> None:
+        self._db = database or create_default_database()
+
+    @property
+    def name(self) -> str:
+        return "get_my_service_requests"
+
+    @property
+    def description(self) -> str:
+        return "Obtiene las solicitudes de servicio del cliente autenticado en la sesión."
+
+    @property
+    def parameters_schema(self) -> dict[str, Any]:
+        return {"type": "object", "properties": {}, "additionalProperties": False}
+
+    def execute(self, arguments: dict[str, Any], context: AgentContext) -> ToolResult:
+        core_banking_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
+        try:
+            if core_banking_url:
+                query = urllib.parse.urlencode({"customer_id": context.session_customer_id})
+                request = urllib.request.Request(
+                    f"{core_banking_url.rstrip('/')}/api/v1/service-requests?{query}",
+                    headers={"Accept": "application/json"},
+                    method="GET",
+                )
+                with urllib.request.urlopen(request, timeout=10.0) as response:  # nosec B310 - configured service URL
+                    records = json.loads(response.read().decode("utf-8"))
+            else:
+                with self._db.session() as session:
+                    CustomerRepository(session).get_by_id(context.session_customer_id)
+                    records = [
+                        {
+                            "service_request_id": item.service_request_id,
+                            "customer_id": item.customer_id,
+                            "category": item.category.value,
+                            "description": item.description,
+                            "status": item.status.value,
+                            "created_at": item.created_at.isoformat(),
+                        }
+                        for item in ServiceRequestRepository(session).list_by_customer(
+                            context.session_customer_id
+                        )
+                    ]
+            if not isinstance(records, list):
+                raise ValueError("Core Banking devolvió una respuesta inválida")
+            return ToolResult(
+                tool_name=self.name,
+                success=True,
+                data={"count": len(records), "service_requests": records},
+            )
+        except Exception as exc:
+            return ToolResult(tool_name=self.name, success=False, error=str(exc))
 
 
 class GetNextInstallmentTool(FunctionTool):

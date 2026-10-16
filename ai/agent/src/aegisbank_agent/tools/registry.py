@@ -6,8 +6,10 @@ from typing import Any
 
 from .banking_tools import (
     CreateServiceRequestTool,
+    GetAccountBalanceTool,
     GetLoanDetailsTool,
     GetMyLoansTool,
+    GetMyServiceRequestsTool,
     GetNextInstallmentTool,
 )
 from .base import AgentContext, FunctionTool, ToolResult
@@ -27,7 +29,9 @@ class ToolRegistry:
         if tools is None:
             default_tools: list[FunctionTool] = [
                 SearchKnowledgeTool(),
+                GetAccountBalanceTool(),
                 GetMyLoansTool(),
+                GetMyServiceRequestsTool(),
                 GetLoanDetailsTool(),
                 GetNextInstallmentTool(),
             ]

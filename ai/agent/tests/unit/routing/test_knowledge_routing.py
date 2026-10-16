@@ -153,3 +153,8 @@ def test_account_tool_allowlist_with_loan_id_and_installment_question() -> None:
     """Installment-specific query exposes get_next_installment."""
     tools = account_tool_allowlist("Muéstrame LOAN-0001 y su próxima cuota")
     assert "get_next_installment" in tools
+
+
+def test_account_tool_allowlist_for_available_balance() -> None:
+    """Balance questions route to the deterministic account-balance tool."""
+    assert account_tool_allowlist("¿Cuál es mi saldo disponible?") == ["get_account_balance"]

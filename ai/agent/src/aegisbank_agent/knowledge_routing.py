@@ -33,6 +33,8 @@ _ACCOUNT_PATTERNS = (
     r"\bmi\s+prestamo\b",
     r"\bmis\s+cuotas?\b",
     r"\bmi\s+saldo\b",
+    r"\bsaldo\s+disponible\b",
+    r"\bsaldo\s+actual\b",
     r"\bcuanto\s+debo\b",
     r"\bproxima\s+cuota\b",
     r"\bdetalle\s+de\s+mi\s+prestamo\b",
@@ -45,6 +47,8 @@ _ACCOUNT_PATTERNS = (
     r"\bfechas?\s+de\s+pago\b",
     r"\bdeudas?\s+(?:que\s+)?tengo\b",
     r"\bqu[eé]\s+(?:pr[eé]stamos?|cuotas?|deudas?)\s+tengo\b",
+    r"\bcu[aá]nt(?:os?|as?)\s+(?:request|requests|solicitudes?|tickets?)\b",
+    r"\b(?:mis|cu[aá]ntos?)\s+(?:request|requests|solicitudes?|tickets?)\b",
 )
 _LAST_LOAN_PATTERNS = (
     r"\b(?:ultimo|ultima)\s+prestamo\b",
@@ -350,6 +354,8 @@ def requires_account_data(query: str) -> bool:
 def account_tool_allowlist(query: str) -> list[str]:
     """Return the smallest READ tool set for an authenticated account query."""
     normalized = _normalize(query)
+    if any(re.search(pattern, normalized) for pattern in _ACCOUNT_PATTERNS[-2:]):
+        return ["get_my_service_requests"]
     loan_id = extract_loan_id(query)
     if is_last_loan_reference(query):
         return ["get_loan_details"]
@@ -358,6 +364,11 @@ def account_tool_allowlist(query: str) -> list[str]:
         if asks_for_payment_dates(query):
             comp_tools.append("get_next_installment")
         return comp_tools
+    if any(
+        re.search(pattern, normalized)
+        for pattern in (r"\bmi\s+saldo\b", r"\bsaldo\s+disponible\b", r"\bsaldo\s+actual\b")
+    ):
+        return ["get_account_balance"]
     tools: list[str] = []
 
     if loan_id is not None:
@@ -389,6 +400,11 @@ def account_tool_allowlist(query: str) -> list[str]:
     )
     if needs_loan_list:
         tools.append("get_my_loans")
+    if any(
+        term in normalized
+        for term in ("request", "requests", "solicitud", "solicitudes", "ticket", "tickets")
+    ):
+        tools.append("get_my_service_requests")
     if (
         "proxima cuota" in normalized
         or "cuanto debo" in normalized
@@ -502,7 +518,8 @@ def resolve_minimal_tool_allowlist(query: str, available_tools: list[str]) -> li
     - WRITE_ACTION: exposes create_service_request + referenced account tools.
     - ACCOUNT_READ: exposes strictly account allowlist (no WRITE tools).
     - KNOWLEDGE: exposes strictly search_knowledge (no account/write tools).
-    - OTHER: fallback to all available tools.
+    - OTHER: all available tools; hosted deployments may apply a separate
+      quota-saving provider policy before sending the request.
     """
     if is_greeting(query) or is_capability_query(query):
         return []

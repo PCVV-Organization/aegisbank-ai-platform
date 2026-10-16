@@ -135,6 +135,23 @@ def test_pseudo_tool_call_text_is_strictly_rejected_when_banking_data_required()
     assert metrics.get_counter("banking_tool_missed_count") >= 1
 
 
+def test_malformed_function_serialization_is_not_exposed_to_customer() -> None:
+    """Provider protocol text must never leak into a visible banking answer."""
+    db = create_default_database()
+    registry = ToolRegistry([GetMyLoansTool(db), GetLoanDetailsTool(db)])
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = _Response(
+        _Message(content='functools([{"name":"search_knowledge"}])')
+    )
+
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+    result = orchestrator.run("Resume mi situación financiera", customer_id="CUST-0001")
+
+    assert result.success is False
+    assert "functools" not in result.answer
+    assert "interpretar" in result.answer or "información suficiente" in result.answer
+
+
 def test_loan_detail_without_id_disambiguates_multi_loans() -> None:
     """Query without ID must not guess an ID when customer has multiple loans."""
     db = create_default_database()
@@ -313,6 +330,35 @@ def test_comparative_query_with_installment_dates_executes_deterministically() -
     assert mock_client.chat.completions.create.call_count == 0
 
 
+def test_next_payment_query_prefetches_installments_without_llm_call() -> None:
+    """A generic due-date question resolves the earliest real customer installment."""
+    db = create_default_database()
+    registry = ToolRegistry(
+        [
+            GetMyLoansTool(db),
+            GetLoanDetailsTool(db),
+            GetNextInstallmentTool(db),
+        ]
+    )
+    mock_client = MagicMock()
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+
+    result = orchestrator.run(
+        "¿Cuándo es mi próxima fecha de pago?",
+        customer_id="CUST-0001",
+    )
+
+    assert result.success is True
+    assert result.rounds == 0
+    assert [call.tool_name for call in result.tool_calls] == [
+        "get_my_loans",
+        "get_next_installment",
+        "get_next_installment",
+    ]
+    assert "vence" in result.answer or "venció" in result.answer
+    assert mock_client.chat.completions.create.call_count == 0
+
+
 def test_subsequent_anaphora_resolves_loan_after_comparative_query() -> None:
     """After a comparative loan query, subsequent turn resolves 'el último préstamo' to winner."""
     db = create_default_database()
@@ -457,5 +503,5 @@ def test_foundry_timeout_returns_safe_error_without_hallucination() -> None:
 
     assert result.success is False
     assert "Request timed out." in (result.error or "")
-    assert "Error al comunicar con el modelo de lenguaje local" in result.answer
+    assert "Error al comunicar con Foundry Local" in result.answer
     assert "[" not in result.answer

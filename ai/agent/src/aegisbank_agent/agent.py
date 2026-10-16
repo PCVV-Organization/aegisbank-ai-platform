@@ -253,6 +253,7 @@ class AgentOrchestrator:
                 messages=cast(Iterable[ChatCompletionMessageParam], messages),
                 tools=cast(Iterable[ChatCompletionToolUnionParam], tools),
                 tool_choice=tool_choice,
+                max_tokens=int(os.getenv("AEGISBANK_FOUNDRY_MAX_TOKENS", "256")),
             )
         create_fn = getattr(client, "create", None)
         if callable(create_fn):
@@ -261,6 +262,7 @@ class AgentOrchestrator:
                 messages=messages,
                 tools=tools,
                 tool_choice=tool_choice,
+                max_tokens=int(os.getenv("AEGISBANK_FOUNDRY_MAX_TOKENS", "256")),
             )
         raise AttributeError("LLM client does not provide a create completion interface")
 
@@ -440,6 +442,40 @@ class AgentOrchestrator:
                 correlation_id=obs_ctx.correlation_id,
             )
 
+        # Phi-4-mini can stall when it is asked to choose a function tool for
+        # deterministic account-count questions. Resolve this read-only intent
+        # through the same authorized tool registry so cloud chat remains live
+        # without fabricating banking data or trusting caller-supplied identity.
+        asks_loan_count = re.search(
+            r"\b(?:cu[aá]nt(?:os|as)|n[uú]mero|how many)\b", user_message, re.I
+        ) and re.search(r"\b(?:pr[eé]stamos?|loans?)\b", user_message, re.I)
+        if asks_loan_count:
+            tool_result = self._registry.execute(
+                "get_my_loans", {}, AgentContext(session_customer_id=customer_id)
+            )
+            if tool_result.success:
+                total = int((tool_result.data or {}).get("total_loans", 0))
+                answer = (
+                    f"Tienes {total} préstamo(s) registrado(s) en tu cuenta."
+                    if re.search(r"pr[eé]st", user_message, re.I)
+                    else f"You have {total} loan(s) registered on your account."
+                )
+                return AgentExecutionResult(
+                    answer=answer,
+                    customer_id=customer_id,
+                    tool_calls=[
+                        ToolCallRecord(
+                            tool_name="get_my_loans",
+                            arguments={},
+                            result=tool_result,
+                            source="DETERMINISTIC_INTENT",
+                            round_index=0,
+                        )
+                    ],
+                    rounds=0,
+                    correlation_id=obs_ctx.correlation_id,
+                )
+
         self._metrics.increment("request_count")
         self._audit.record(
             event_type=AuditEventType.AGENT_RUN_STARTED,
@@ -494,10 +530,18 @@ class AgentOrchestrator:
             available_tool_names = self._registry.allowed_tool_names
             account_required = requires_account_data(user_message)
             write_required = requires_write_action(user_message)
+            knowledge_required = requires_authorized_knowledge(user_message)
             account_allowlist = account_tool_allowlist(user_message) if account_required else []
 
             # Least-Agency Tool Policy: resolve minimal tool set required by intent
             allowed_tool_names = resolve_minimal_tool_allowlist(user_message, available_tool_names)
+            if (
+                os.getenv("AEGISBANK_FOUNDRY_COMPACT_TOOLS", "false").lower() == "true"
+                and not account_required
+                and not write_required
+                and not knowledge_required
+            ):
+                allowed_tool_names = []
             tools = [tool for tool in all_tools if tool["function"]["name"] in allowed_tool_names]
             if account_required:
                 self._metrics.increment("banking_data_required_count")
@@ -536,6 +580,29 @@ class AgentOrchestrator:
             current_round = 0
             account_result: ToolResult | None = None
             account_model_calls = 0
+
+            if "get_account_balance" in account_allowlist:
+                account_result = self._registry.execute("get_account_balance", {}, context)
+                executed_records.append(
+                    ToolCallRecord(
+                        tool_name="get_account_balance",
+                        arguments={},
+                        result=account_result,
+                        source="APPLICATION_PREFETCH",
+                        round_index=0,
+                    )
+                )
+                if account_result.success:
+                    data = account_result.data or {}
+                    amount = format_currency(data.get("available_balance"), data.get("currency"))
+                    return AgentExecutionResult(
+                        answer=f"Tu saldo disponible es {amount}.",
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
 
             # Resolve the account list deterministically before asking for a follow-up tool.
             if account_required and "get_my_loans" in account_allowlist:
@@ -585,6 +652,59 @@ class AgentOrchestrator:
                 ]
 
                 loans = (account_result.data or {}).get("loans", [])
+                if asks_for_payment_dates(user_message) and not is_comparative_loan_query(
+                    user_message
+                ):
+                    installment_results: list[ToolResult] = []
+                    for loan in loans:
+                        loan_id = str(loan.get("loan_id", ""))
+                        if not loan_id:
+                            continue
+                        installment_result = self._registry.execute(
+                            "get_next_installment",
+                            {"loan_id": loan_id},
+                            context,
+                        )
+                        installment_results.append(installment_result)
+                        executed_records.append(
+                            ToolCallRecord(
+                                tool_name="get_next_installment",
+                                arguments={"loan_id": loan_id},
+                                result=installment_result,
+                                source="APPLICATION_PREFETCH",
+                                round_index=0,
+                            )
+                        )
+
+                    available_installments = [
+                        result.data
+                        for result in installment_results
+                        if result.success
+                        and isinstance(result.data, dict)
+                        and result.data.get("has_next_installment")
+                        and result.data.get("due_date")
+                    ]
+                    if available_installments:
+                        next_installment = min(
+                            available_installments,
+                            key=lambda item: str(item.get("due_date", "")),
+                        )
+                        return AgentExecutionResult(
+                            answer=self._format_installment_answer(next_installment),
+                            customer_id=customer_id,
+                            tool_calls=executed_records,
+                            rounds=0,
+                            success=True,
+                            correlation_id=obs_ctx.correlation_id,
+                        )
+                    return AgentExecutionResult(
+                        answer="No hay cuotas pendientes ni vencidas en tus préstamos.",
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
                 if asks_my_loan_statuses(user_message):
                     return AgentExecutionResult(
                         answer=self._format_my_loan_statuses_answer(
@@ -819,11 +939,50 @@ class AgentOrchestrator:
                     correlation_id=obs_ctx.correlation_id,
                 )
 
+            # Customer service request counts are deterministic account data.
+            # Resolve them through Core Banking instead of spending a model turn
+            # (and never allow the browser to provide the customer identifier).
+            if account_required and account_allowlist == ["get_my_service_requests"]:
+                service_result = self._registry.execute("get_my_service_requests", {}, context)
+                executed_records.append(
+                    ToolCallRecord(
+                        tool_name="get_my_service_requests",
+                        arguments={},
+                        result=service_result,
+                        source="POLICY_FORCED",
+                        round_index=0,
+                    )
+                )
+                if not service_result.success:
+                    return AgentExecutionResult(
+                        answer="No pude consultar tus solicitudes de servicio en este momento.",
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=False,
+                        error=service_result.error,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
+                count = int((service_result.data or {}).get("count", 0))
+                answer = f"Tienes {count} solicitud(es) de servicio registrada(s) en tu cuenta."
+                return AgentExecutionResult(
+                    answer=answer,
+                    customer_id=customer_id,
+                    tool_calls=executed_records,
+                    rounds=0,
+                    success=True,
+                    correlation_id=obs_ctx.correlation_id,
+                )
+
             selected_tool = tools[0]["function"]["name"] if len(tools) == 1 else None
             effective_tool_choice: Any = (
-                {"type": "function", "function": {"name": selected_tool}}
-                if (account_required or write_required) and selected_tool
-                else "auto"
+                "auto"
+                if resolve_runtime_environment().is_cloud
+                else (
+                    {"type": "function", "function": {"name": selected_tool}}
+                    if (account_required or write_required) and selected_tool
+                    else "auto"
+                )
             )
 
             # Banking policy/product questions must be grounded before generation.
@@ -973,7 +1132,11 @@ class AgentOrchestrator:
                     )
                     return AgentExecutionResult(
                         answer=(
-                            "Error al comunicar con el modelo de lenguaje local (Foundry Local). "
+                            "No se pudo comunicar con Azure AI Foundry. "
+                            "Puedes continuar realizando consultas bancarias estructuradas "
+                            "mientras se recupera el servicio cloud."
+                            if resolve_runtime_environment().is_cloud
+                            else "Error al comunicar con Foundry Local. "
                             "Puedes continuar realizando consultas bancarias estructuradas "
                             "indicando el identificador del préstamo (ej. LOAN-0001)."
                         ),
@@ -1039,6 +1202,35 @@ class AgentOrchestrator:
                             )
                         )
                     content_str = msg.content or ""
+                    malformed_tool_output = bool(
+                        re.search(
+                            r"(?:functools\s*\(|\{\s*['\"]name['\"]\s*:\s*['\"](?:search_knowledge|get_my_loans|get_loan_details|get_next_installment|create_service_request))",
+                            content_str,
+                            re.IGNORECASE,
+                        )
+                    )
+                    if malformed_tool_output:
+                        self._metrics.increment("pseudo_tool_call_count")
+                        self._audit.record(
+                            event_type=AuditEventType.TOOL_DENIED,
+                            correlation_id=obs_ctx.correlation_id,
+                            customer_id=customer_id,
+                            actor="ROUTING_POLICY",
+                            payload={"reason": "MALFORMED_TOOL_OUTPUT"},
+                        )
+                        return AgentExecutionResult(
+                            answer=(
+                                "No pude interpretar la consulta bancaria de forma segura. "
+                                "Reformula la pregunta e inténtalo nuevamente."
+                            ),
+                            customer_id=customer_id,
+                            tool_calls=executed_records,
+                            rounds=current_round,
+                            success=False,
+                            error="Malformed tool output",
+                            correlation_id=obs_ctx.correlation_id,
+                            rounds_evidence=rounds_evidence,
+                        )
                     raw_tool_patterns = (
                         r"\bget_loan_details\s*\(",
                         r"\bget_my_loans\s*\(",
