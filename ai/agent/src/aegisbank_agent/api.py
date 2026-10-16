@@ -530,7 +530,11 @@ def create_app(
                 customer_id=principal.customer_id,
                 session_id=payload.session_id,
             )
-            if resolve_runtime_environment() is RuntimeEnvironment.PRODUCTION and result.error:
+            if (
+                resolve_runtime_environment() is RuntimeEnvironment.PRODUCTION
+                and isinstance(result.error, str)
+                and result.error
+            ):
                 raise HTTPException(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                     detail="AI provider unavailable; production fallback disabled",
