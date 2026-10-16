@@ -209,6 +209,9 @@ def test_resolve_minimal_tool_allowlist_other_intents() -> None:
     assert resolve_minimal_tool_allowlist("¿Qué puedes hacer?", available) == []
     assert resolve_minimal_tool_allowlist("¿En qué me puedes ayudar?", available) == []
     assert resolve_minimal_tool_allowlist("¿Cuáles son tus funciones?", available) == []
+    assert resolve_minimal_tool_allowlist(
+        "Explícame por qué conviene pagar antes una cuota vencida", available
+    ) == []
 
 
 def test_least_agency_intent_transitions() -> None:
