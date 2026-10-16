@@ -92,9 +92,12 @@ class ServiceRequestItem(BaseModel):
 
 
 class ServiceRequestCreateRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     category: str = Field(..., pattern=r"^(LOAN|INSTALLMENT|FEE|GENERAL)$")
     description: str = Field(..., min_length=5, max_length=240)
+    customer_id: str | None = Field(
+        None, description="Optional legacy caller hint; verified token identity takes precedence"
+    )
 
 
 class ServiceRequestListResponse(BaseModel):
@@ -480,7 +483,12 @@ def create_app(
         response_model=ServiceRequestListResponse,
         tags=["Service requests"],
     )
-    def list_my_service_requests(request: Request) -> ServiceRequestListResponse:
+    def list_my_service_requests(
+        request: Request,
+        response: Response,
+    ) -> ServiceRequestListResponse:
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
         principal = auth.authenticate(request)
         core_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
         if not core_url:
@@ -525,8 +533,10 @@ def create_app(
     def create_service_request(
         payload: ServiceRequestCreateRequest,
         request: Request,
+        response: Response,
     ) -> ServiceRequestItem:
         """Create a customer-owned request through Core Banking."""
+        response.headers["Cache-Control"] = "no-store"
         principal = auth.authenticate(request)
         core_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
         if not core_url:
