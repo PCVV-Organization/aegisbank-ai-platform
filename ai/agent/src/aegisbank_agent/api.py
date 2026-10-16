@@ -8,8 +8,11 @@ Enforces an explicit authentication boundary in cloud environments.
 from __future__ import annotations
 
 import logging
+import json
 import os
 import re
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -23,6 +26,7 @@ from .configuration.environment import (
     resolve_runtime_environment,
     validate_runtime_configuration,
 )
+from .session_store import OwnershipViolationError
 
 logger = logging.getLogger("aegisbank.agent.api")
 
@@ -47,6 +51,19 @@ class AgentRunResponse(BaseModel):
     rounds: int
     tool_calls: list[dict[str, Any]] = Field(default_factory=list)
     session_id: str | None = None
+
+
+class ConversationMessageResponse(BaseModel):
+    role: str
+    content: str
+    created_at: str
+
+
+class ServiceRequestCreateRequest(BaseModel):
+    """Customer-owned service request payload; customer identity comes from auth."""
+
+    category: str = Field(..., pattern=r"^(LOAN|INSTALLMENT|FEE|GENERAL)$")
+    description: str = Field(..., min_length=5, max_length=240)
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,9 +199,9 @@ def create_app(
         app.add_middleware(
             CORSMiddleware,
             allow_origins=list(cors_origins),
-            allow_credentials=False,
-            allow_methods=["POST", "OPTIONS"],
-            allow_headers=["Authorization", "Content-Type"],
+            allow_credentials=True,
+            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type", "X-CSRF-Token"],
         )
 
     auth = auth_provider or AuthenticationProvider()
@@ -204,6 +221,42 @@ def create_app(
     def liveness() -> dict[str, str]:
         """Liveness probe: verifies process is alive without querying external dependencies."""
         return {"status": "alive"}
+
+    @app.post("/api/v1/service-requests", status_code=status.HTTP_201_CREATED, tags=["Service requests"])
+    def create_service_request(
+        payload: ServiceRequestCreateRequest,
+        request: Request,
+    ) -> dict[str, Any]:
+        """Proxy a customer-owned request to Core Banking without trusting body identity."""
+        principal = auth.authenticate(request)
+        core_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
+        if not core_url:
+            raise HTTPException(status_code=503, detail="Core Banking service is not configured")
+
+        body = json.dumps(
+            {
+                "customer_id": principal.customer_id,
+                "category": payload.category,
+                "description": payload.description.strip(),
+            }
+        ).encode("utf-8")
+        target = f"{core_url.rstrip('/')}/api/v1/service-requests"
+        try:
+            request_to_core = urllib.request.Request(
+                target,
+                data=body,
+                headers={"Accept": "application/json", "Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(request_to_core, timeout=10.0) as response:  # nosec B310 - configured service URL
+                result = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            raise HTTPException(status_code=503, detail="Core Banking service temporarily unavailable") from exc
+        except (urllib.error.URLError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
+            raise HTTPException(status_code=503, detail="Core Banking service temporarily unavailable") from exc
+        if not isinstance(result, dict):
+            raise HTTPException(status_code=503, detail="Core Banking returned an invalid request")
+        return result
 
     @app.get("/health/ready", tags=["Health"])
     def readiness() -> dict[str, Any]:
@@ -238,6 +291,15 @@ def create_app(
                 customer_id=principal.customer_id,
                 session_id=payload.session_id,
             )
+            effective_session_id = payload.session_id or f"session-{principal.customer_id}"
+            store = getattr(agent_orchestrator, "_session_store", None)
+            if store is not None and result.success:
+                store.append_message(
+                    effective_session_id, principal.customer_id, "user", payload.query
+                )
+                store.append_message(
+                    effective_session_id, principal.customer_id, "assistant", result.answer
+                )
             return AgentRunResponse(
                 answer=result.answer,
                 customer_id=result.customer_id,
@@ -249,13 +311,45 @@ def create_app(
                     }
                     for tc in result.tool_calls
                 ],
-                session_id=payload.session_id,
+                session_id=effective_session_id,
             )
         except Exception as exc:
             logger.error("Agent execution failed: %s", exc)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Agent execution encountered an unhandled internal error",
+            ) from exc
+
+    @app.get(
+        "/api/v1/conversations/{session_id}/messages",
+        response_model=list[ConversationMessageResponse],
+        tags=["Conversations"],
+    )
+    def list_conversation_messages(
+        session_id: str, request: Request
+    ) -> list[ConversationMessageResponse]:
+        """Return the authenticated customer's transcript without exposing internal tool calls."""
+        if not re.fullmatch(r"session-[A-Za-z0-9_-]{1,96}", session_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid session identifier"
+            )
+        principal = auth.authenticate(request)
+        store = getattr(agent_orchestrator, "_session_store", None)
+        if store is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Conversation store unavailable",
+            )
+        try:
+            return [
+                ConversationMessageResponse(
+                    role=item.role, content=item.content, created_at=item.created_at
+                )
+                for item in store.list_messages(session_id, principal.customer_id)
+            ]
+        except OwnershipViolationError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Conversation access denied"
             ) from exc
 
     return app

@@ -141,3 +141,28 @@ def test_agent_api_run_cloud_uses_verified_token_identity(monkeypatch) -> None:
         assert data["customer_id"] == "CUST-0001"
         mock_orch.run.assert_called_once()
         assert mock_orch.run.call_args.kwargs["customer_id"] == "CUST-0001"
+
+
+def test_service_request_create_binds_verified_identity(monkeypatch) -> None:
+    monkeypatch.setenv("AEGISBANK_ENV", "staging")
+    monkeypatch.setenv("AEGISBANK_CORE_BANKING_URL", "http://core.test")
+    principal = PrincipalContext(customer_id="CUST-0001", authenticated=True, claims={})
+    test_app = create_app(auth_provider=AuthenticationProvider(jwt_validator=lambda _: principal))
+    client = TestClient(test_app)
+    fake_response = MagicMock()
+    fake_response.read.return_value = b'{"service_request_id":"SR-000007","customer_id":"CUST-0001","category":"LOAN","description":"Consulta","status":"OPEN","created_at":"2026-01-01T00:00:00+00:00"}'
+    fake_response.__enter__.return_value = fake_response
+    fake_response.__exit__.return_value = False
+
+    with patch("aegisbank_agent.api.urllib.request.urlopen", return_value=fake_response) as open_url:
+        response = client.post(
+            "/api/v1/service-requests",
+            json={"customer_id": "CUST-9999", "category": "LOAN", "description": "Consulta"},
+            headers={"Authorization": "Bearer verified"},
+        )
+
+    assert response.status_code == 201
+    assert response.json()["customer_id"] == "CUST-0001"
+    forwarded = open_url.call_args.args[0]
+    assert b'"customer_id": "CUST-0001"' in forwarded.data
+    assert b"CUST-9999" not in forwarded.data

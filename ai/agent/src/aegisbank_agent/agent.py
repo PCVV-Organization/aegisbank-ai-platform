@@ -504,8 +504,29 @@ class AgentOrchestrator:
                 self._metrics.increment("forced_routing_count")
             active_approval_cb = approval_callback or self._approval_callback
 
+            stored_messages = self._session_store.list_messages(
+                effective_session_id, customer_id, limit=12
+            )
+            clean_history: list[dict[str, Any]] = []
+            for item in stored_messages:
+                # Do not prime the model with historical pseudo-tool calls or raw tool leaks
+                if item.role == "assistant" and any(
+                    tok in item.content
+                    for tok in (
+                        "functools(",
+                        "search_knowledge",
+                        "get_loan_details",
+                        "get_my_loans",
+                        "get_next_installment",
+                        "create_service_request",
+                    )
+                ):
+                    continue
+                clean_history.append({"role": item.role, "content": item.content})
+
             messages: list[dict[str, Any]] = [
                 {"role": "system", "content": self._system_prompt},
+                *clean_history,
                 {"role": "user", "content": user_message},
             ]
 
@@ -1023,10 +1044,27 @@ class AgentOrchestrator:
                         r"\bget_my_loans\s*\(",
                         r"\bget_next_installment\s*\(",
                         r"\bcreate_service_request\s*\(",
+                        r"\bsearch_knowledge\s*\(",
+                        r"\bfunctools\s*\(",
+                        r"\[\s*\{\s*[\"']name[\"']\s*:",
                     )
-                    is_pseudo_tool = account_required and (
-                        any(name in content_str for name in account_allowlist)
+                    json_tool_shape = False
+                    try:
+                        parsed_content = json.loads(content_str)
+                        json_tool_shape = isinstance(parsed_content, dict) and (
+                            parsed_content.get("type") == "function"
+                            or isinstance(parsed_content.get("function"), dict)
+                            and parsed_content["function"].get("name") in account_allowlist
+                        )
+                    except json.JSONDecodeError, TypeError:
+                        pass
+                    is_pseudo_tool = (
+                        (
+                            account_required
+                            and any(name in content_str for name in account_allowlist)
+                        )
                         or any(re.search(pat, content_str) for pat in raw_tool_patterns)
+                        or json_tool_shape
                     )
                     if is_pseudo_tool:
                         self._metrics.increment("pseudo_tool_call_count")

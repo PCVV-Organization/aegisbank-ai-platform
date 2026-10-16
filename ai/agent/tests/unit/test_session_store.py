@@ -36,6 +36,20 @@ def test_session_store_ownership_boundary(tmp_path):
         store.get_or_create("sess-cust1", "CUST-0002")
 
 
+def test_conversation_messages_are_durable_and_customer_scoped(tmp_path):
+    store = SQLiteSessionStore(tmp_path / "sessions.db")
+    store.append_message("sess-cust1", "CUST-0001", "user", "¿Cuántos préstamos tengo?")
+    store.append_message("sess-cust1", "CUST-0001", "assistant", "Tienes 2 préstamos.")
+
+    messages = store.list_messages("sess-cust1", "CUST-0001")
+    assert [(item.role, item.content) for item in messages] == [
+        ("user", "¿Cuántos préstamos tengo?"),
+        ("assistant", "Tienes 2 préstamos."),
+    ]
+    with pytest.raises(OwnershipViolationError):
+        store.list_messages("sess-cust1", "CUST-0002")
+
+
 def test_session_store_update_ownership_check(tmp_path):
     db_file = tmp_path / "sessions.db"
     store = SQLiteSessionStore(db_file)
