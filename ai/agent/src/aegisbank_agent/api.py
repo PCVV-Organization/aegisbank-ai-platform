@@ -533,7 +533,10 @@ def create_app(
             if resolve_runtime_environment() is RuntimeEnvironment.PRODUCTION and result.error:
                 raise HTTPException(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail="AI provider temporarily unavailable; no fallback is enabled in production",
+                    detail=(
+                        "AI provider temporarily unavailable; no fallback is enabled "
+                        "in production"
+                    ),
                 )
             effective_session_id = payload.session_id or f"session-{principal.customer_id}"
             if result.error and "Azure AI Foundry" in result.answer:
@@ -596,7 +599,10 @@ def create_app(
             if resolve_runtime_environment() is RuntimeEnvironment.PRODUCTION:
                 raise HTTPException(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail="AI provider temporarily unavailable; no fallback is enabled in production",
+                    detail=(
+                        "AI provider temporarily unavailable; no fallback is enabled "
+                        "in production"
+                    ),
                 ) from exc
             # Keep the HTTP contract usable during transient Foundry/Cosmos
             # failures. Never fabricate banking data or expose provider errors;
