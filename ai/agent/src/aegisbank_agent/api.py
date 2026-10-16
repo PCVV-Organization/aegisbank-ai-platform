@@ -382,7 +382,9 @@ def create_app(
         try:
             return [
                 ConversationSummary(**item)
-                for item in conversation_store.list_sessions(principal.customer_id)
+                for item in conversation_store.list_sessions(
+                    principal.customer_id
+                )
             ]
         except Exception as exc:
             logger.error("Conversation listing failed: %s", type(exc).__name__)
@@ -402,7 +404,9 @@ def create_app(
         try:
             return [
                 ConversationTurn(**item)
-                for item in conversation_store.get_session(principal.customer_id, session_id)
+                for item in conversation_store.get_session(
+                    principal.customer_id, session_id
+                )
             ]
         except Exception as exc:
             logger.error("Conversation retrieval failed: %s", type(exc).__name__)
