@@ -405,6 +405,55 @@ def create_app(
             result["csrf_token"] = csrf
         return result
 
+    @app.post("/api/v1/auth/refresh", tags=["Authentication"])
+    def customer_refresh(request: Request, response: Response) -> dict[str, Any]:
+        response.headers["Cache-Control"] = "no-store"
+        header = request.headers.get("Authorization", "")
+        token = (
+            header[7:].strip()
+            if header.startswith("Bearer ")
+            else request.cookies.get("aegisbank_session", "")
+        )
+        if not token:
+            raise HTTPException(401, "Sesión no válida", headers={"WWW-Authenticate": "Bearer"})
+        if not header.startswith("Bearer "):
+            csrf_cookie = request.cookies.get("aegisbank_csrf", "")
+            csrf_header = request.headers.get("X-CSRF-Token", "")
+            if not csrf_cookie or not hmac.compare_digest(csrf_cookie, csrf_header):
+                raise HTTPException(403, "CSRF validation failed")
+        try:
+            new_expires = auth.customers().refresh(token)
+            csrf = request.cookies.get("aegisbank_csrf", "") or secrets.token_urlsafe(32)
+            if not header.startswith("Bearer "):
+                response.set_cookie(
+                    "aegisbank_session",
+                    token,
+                    max_age=900,
+                    httponly=True,
+                    secure=True,
+                    samesite="none",
+                    path="/",
+                )
+                response.set_cookie(
+                    "aegisbank_csrf",
+                    csrf,
+                    max_age=900,
+                    httponly=False,
+                    secure=True,
+                    samesite="none",
+                    path="/",
+                )
+            return {
+                "status": "ok",
+                "expires_at": new_expires,
+                "expires_in": 900,
+                "csrf_token": csrf,
+            }
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(503, "Autenticación temporalmente no disponible") from exc
+
     @app.get(
         "/api/v1/conversations",
         response_model=list[ConversationSummary],
