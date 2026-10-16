@@ -908,6 +908,41 @@ class AgentOrchestrator:
                     correlation_id=obs_ctx.correlation_id,
                 )
 
+            # Customer service request counts are deterministic account data.
+            # Resolve them through Core Banking instead of spending a model turn
+            # (and never allow the browser to provide the customer identifier).
+            if account_required and account_allowlist == ["get_my_service_requests"]:
+                service_result = self._registry.execute("get_my_service_requests", {}, context)
+                executed_records.append(
+                    ToolCallRecord(
+                        tool_name="get_my_service_requests",
+                        arguments={},
+                        result=service_result,
+                        source="POLICY_FORCED",
+                        round_index=0,
+                    )
+                )
+                if not service_result.success:
+                    return AgentExecutionResult(
+                        answer="No pude consultar tus solicitudes de servicio en este momento.",
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=False,
+                        error=service_result.error,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
+                count = int((service_result.data or {}).get("count", 0))
+                answer = f"Tienes {count} solicitud(es) de servicio registrada(s) en tu cuenta."
+                return AgentExecutionResult(
+                    answer=answer,
+                    customer_id=customer_id,
+                    tool_calls=executed_records,
+                    rounds=0,
+                    success=True,
+                    correlation_id=obs_ctx.correlation_id,
+                )
+
             selected_tool = tools[0]["function"]["name"] if len(tools) == 1 else None
             effective_tool_choice: Any = (
                 {"type": "function", "function": {"name": selected_tool}}

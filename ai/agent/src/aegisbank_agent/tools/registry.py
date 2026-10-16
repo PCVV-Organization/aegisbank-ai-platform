@@ -9,6 +9,7 @@ from .banking_tools import (
     GetAccountBalanceTool,
     GetLoanDetailsTool,
     GetMyLoansTool,
+    GetMyServiceRequestsTool,
     GetNextInstallmentTool,
 )
 from .base import AgentContext, FunctionTool, ToolResult
@@ -30,6 +31,7 @@ class ToolRegistry:
                 SearchKnowledgeTool(),
                 GetAccountBalanceTool(),
                 GetMyLoansTool(),
+                GetMyServiceRequestsTool(),
                 GetLoanDetailsTool(),
                 GetNextInstallmentTool(),
             ]

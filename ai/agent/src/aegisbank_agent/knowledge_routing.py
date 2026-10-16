@@ -47,6 +47,8 @@ _ACCOUNT_PATTERNS = (
     r"\bfechas?\s+de\s+pago\b",
     r"\bdeudas?\s+(?:que\s+)?tengo\b",
     r"\bqu[eé]\s+(?:pr[eé]stamos?|cuotas?|deudas?)\s+tengo\b",
+    r"\bcu[aá]nt(?:os?|as?)\s+(?:request|requests|solicitudes?|tickets?)\b",
+    r"\b(?:mis|cu[aá]ntos?)\s+(?:request|requests|solicitudes?|tickets?)\b",
 )
 _LAST_LOAN_PATTERNS = (
     r"\b(?:ultimo|ultima)\s+prestamo\b",
@@ -352,6 +354,8 @@ def requires_account_data(query: str) -> bool:
 def account_tool_allowlist(query: str) -> list[str]:
     """Return the smallest READ tool set for an authenticated account query."""
     normalized = _normalize(query)
+    if any(re.search(pattern, normalized) for pattern in _ACCOUNT_PATTERNS[-2:]):
+        return ["get_my_service_requests"]
     loan_id = extract_loan_id(query)
     if is_last_loan_reference(query):
         return ["get_loan_details"]
@@ -396,6 +400,11 @@ def account_tool_allowlist(query: str) -> list[str]:
     )
     if needs_loan_list:
         tools.append("get_my_loans")
+    if any(
+        term in normalized
+        for term in ("request", "requests", "solicitud", "solicitudes", "ticket", "tickets")
+    ):
+        tools.append("get_my_service_requests")
     if (
         "proxima cuota" in normalized
         or "cuanto debo" in normalized
