@@ -440,6 +440,39 @@ class AgentOrchestrator:
                 correlation_id=obs_ctx.correlation_id,
             )
 
+        # Phi-4-mini can stall when it is asked to choose a function tool for
+        # deterministic account-count questions. Resolve this read-only intent
+        # through the same authorized tool registry so cloud chat remains live
+        # without fabricating banking data or trusting caller-supplied identity.
+        if re.search(r"\\b(?:cu[aá]nt(?:os|as)|n[uú]mero|how many)\\b", user_message, re.I) and re.search(
+            r"\\b(?:pr[eé]stamos?|loans?)\\b", user_message, re.I
+        ):
+            tool_result = self._registry.execute(
+                "get_my_loans", {}, AgentContext(session_customer_id=customer_id)
+            )
+            if tool_result.success:
+                total = int((tool_result.data or {}).get("total_loans", 0))
+                answer = (
+                    f"Tienes {total} préstamo(s) registrado(s) en tu cuenta."
+                    if re.search(r"pr[eé]st", user_message, re.I)
+                    else f"You have {total} loan(s) registered on your account."
+                )
+                return AgentExecutionResult(
+                    answer=answer,
+                    customer_id=customer_id,
+                    tool_calls=[
+                        ToolCallRecord(
+                            tool_name="get_my_loans",
+                            arguments={},
+                            result=tool_result,
+                            source="DETERMINISTIC_INTENT",
+                            round_index=0,
+                        )
+                    ],
+                    rounds=0,
+                    correlation_id=obs_ctx.correlation_id,
+                )
+
         self._metrics.increment("request_count")
         self._audit.record(
             event_type=AuditEventType.AGENT_RUN_STARTED,
