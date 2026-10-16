@@ -525,6 +525,29 @@ class AgentOrchestrator:
                     correlation_id=obs_ctx.correlation_id,
                 )
 
+            # Creating a claim/request is a state-changing operation.  A short
+            # command such as "Quiero registrar un reclamo" does not contain
+            # the category or description required to build an exact HITL
+            # proposal, so keep it deterministic and ask for the missing data
+            # instead of sending it to Foundry (or showing a cloud fallback).
+            if requires_write_action(user_message):
+                total_dur_ms = (time.perf_counter() - start_time) * 1000.0
+                self._metrics.record_latency("agent_run_latencies_ms", total_dur_ms)
+                return AgentExecutionResult(
+                    answer=(
+                        "Puedo ayudarte a registrar un reclamo o solicitud, pero necesito "
+                        "dos datos: la categoría (por ejemplo, préstamos, pagos o cuentas) "
+                        "y una descripción breve del caso. No se ha creado ninguna solicitud. "
+                        "Cuando me des esos datos te mostraré una propuesta para tu aprobación "
+                        "explícita antes de enviarla a Core Banking."
+                    ),
+                    customer_id=customer_id,
+                    tool_calls=[],
+                    rounds=0,
+                    success=True,
+                    correlation_id=obs_ctx.correlation_id,
+                )
+
             context = AgentContext(session_customer_id=customer_id)
             all_tools = self._registry.export_openai_tools()
             available_tool_names = self._registry.allowed_tool_names
