@@ -12,7 +12,7 @@
       "value": "westus2"
     },
     "corsOrigins": {
-      "value": "https://agreeable-smoke-0be6b411e.4.azurestaticapps.net"
+      "value": "https://happy-grass-0a8a1ac1e.1.azurestaticapps.net"
     },
     "authMode": { "value": "synthetic-password" },
     "authDatabaseName": { "value": "aegisbank-auth" },
