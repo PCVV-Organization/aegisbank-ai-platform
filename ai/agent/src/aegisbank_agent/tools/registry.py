@@ -6,6 +6,7 @@ from typing import Any
 
 from .banking_tools import (
     CreateServiceRequestTool,
+    GetAccountBalanceTool,
     GetLoanDetailsTool,
     GetMyLoansTool,
     GetNextInstallmentTool,
@@ -27,6 +28,7 @@ class ToolRegistry:
         if tools is None:
             default_tools: list[FunctionTool] = [
                 SearchKnowledgeTool(),
+                GetAccountBalanceTool(),
                 GetMyLoansTool(),
                 GetLoanDetailsTool(),
                 GetNextInstallmentTool(),

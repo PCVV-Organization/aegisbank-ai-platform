@@ -33,6 +33,8 @@ _ACCOUNT_PATTERNS = (
     r"\bmi\s+prestamo\b",
     r"\bmis\s+cuotas?\b",
     r"\bmi\s+saldo\b",
+    r"\bsaldo\s+disponible\b",
+    r"\bsaldo\s+actual\b",
     r"\bcuanto\s+debo\b",
     r"\bproxima\s+cuota\b",
     r"\bdetalle\s+de\s+mi\s+prestamo\b",
@@ -358,6 +360,11 @@ def account_tool_allowlist(query: str) -> list[str]:
         if asks_for_payment_dates(query):
             comp_tools.append("get_next_installment")
         return comp_tools
+    if any(
+        re.search(pattern, normalized)
+        for pattern in (r"\bmi\s+saldo\b", r"\bsaldo\s+disponible\b", r"\bsaldo\s+actual\b")
+    ):
+        return ["get_account_balance"]
     tools: list[str] = []
 
     if loan_id is not None:
