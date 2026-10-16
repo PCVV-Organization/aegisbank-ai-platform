@@ -7,9 +7,11 @@ Enforces an explicit authentication boundary in cloud environments.
 
 from __future__ import annotations
 
+import hmac
 import logging
 import os
 import re
+import secrets
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -38,7 +40,7 @@ class CustomerLoginRequest(BaseModel):
 
 
 class CustomerLoginResponse(BaseModel):
-    access_token: str
+    access_token: str | None = None
     token_type: str
     expires_at: int
     customer_id: str
@@ -181,20 +183,24 @@ class AuthenticationProvider:
         # Cloud mode (staging / production): MUST have valid Bearer token
         # Never trust arbitrary customer_id from request body or X-Customer-Id alone!
         auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
+        token = (
+            auth_header[7:].strip()
+            if auth_header.startswith("Bearer ")
+            else request.cookies.get("aegisbank_session", "")
+        )
+        cookie_auth = not auth_header.startswith("Bearer ") and bool(token)
+        if not token:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authentication required: valid Bearer token missing in cloud environment",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        token = auth_header[7:].strip()
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid Bearer token",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        if cookie_auth and request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+            csrf_cookie = request.cookies.get("aegisbank_csrf", "")
+            csrf_header = request.headers.get("X-CSRF-Token", "")
+            if not csrf_cookie or not hmac.compare_digest(csrf_cookie, csrf_header):
+                raise HTTPException(status_code=403, detail="CSRF validation failed")
 
         # In cloud, customer identity is bound only to verified token claims,
         # never to the request body or X-Customer-Id header.
@@ -228,9 +234,9 @@ def create_app(
         app.add_middleware(
             CORSMiddleware,
             allow_origins=list(cors_origins),
-            allow_credentials=False,
+            allow_credentials=True,
             allow_methods=["POST", "OPTIONS"],
-            allow_headers=["Authorization", "Content-Type"],
+            allow_headers=["Authorization", "Content-Type", "X-CSRF-Token"],
         )
 
     auth = auth_provider or AuthenticationProvider()
@@ -246,11 +252,38 @@ def create_app(
             )
         return await request_validation_exception_handler(request, exc)
 
-    @app.post("/api/v1/auth/login", response_model=CustomerLoginResponse, tags=["Authentication"])
+    @app.post(
+        "/api/v1/auth/login",
+        response_model=CustomerLoginResponse,
+        response_model_exclude_none=True,
+        tags=["Authentication"],
+    )
     def customer_login(payload: CustomerLoginRequest, response: Response):
         response.headers["Cache-Control"] = "no-store"
         try:
-            return auth.customers().login(payload.dni, payload.password.get_secret_value())
+            result = auth.customers().login(payload.dni, payload.password.get_secret_value())
+            token = result.pop("access_token")
+            csrf = secrets.token_urlsafe(32)
+            response.set_cookie(
+                "aegisbank_session",
+                token,
+                max_age=900,
+                httponly=True,
+                secure=True,
+                samesite="none",
+                path="/",
+            )
+            response.set_cookie(
+                "aegisbank_csrf",
+                csrf,
+                max_age=900,
+                httponly=False,
+                secure=True,
+                samesite="none",
+                path="/",
+            )
+            result["token_type"] = "Cookie"
+            return result
         except HTTPException:
             raise
         except Exception as exc:
@@ -260,22 +293,40 @@ def create_app(
     def customer_logout(request: Request):
         customers = auth.customers()
         header = request.headers.get("Authorization", "")
-        if not header.startswith("Bearer "):
+        token = (
+            header[7:].strip()
+            if header.startswith("Bearer ")
+            else request.cookies.get("aegisbank_session", "")
+        )
+        if not token:
             raise HTTPException(401, "Sesión no válida")
+        if not header.startswith("Bearer "):
+            csrf_cookie = request.cookies.get("aegisbank_csrf", "")
+            csrf_header = request.headers.get("X-CSRF-Token", "")
+            if not csrf_cookie or not hmac.compare_digest(csrf_cookie, csrf_header):
+                raise HTTPException(403, "CSRF validation failed")
         try:
-            customers.logout(header[7:].strip())
+            customers.logout(token)
         except HTTPException:
             raise
         except Exception as exc:
             raise HTTPException(503, "Autenticación temporalmente no disponible") from exc
-        return Response(status_code=204, headers={"Cache-Control": "no-store"})
+        result = Response(status_code=204, headers={"Cache-Control": "no-store"})
+        result.delete_cookie("aegisbank_session", path="/")
+        result.delete_cookie("aegisbank_csrf", path="/")
+        return result
 
     @app.get("/api/v1/auth/me", tags=["Authentication"])
     def customer_me(request: Request) -> dict[str, str]:
         header = request.headers.get("Authorization", "")
-        if not header.startswith("Bearer "):
+        token = (
+            header[7:].strip()
+            if header.startswith("Bearer ")
+            else request.cookies.get("aegisbank_session", "")
+        )
+        if not token:
             raise HTTPException(401, "Sesión no válida", headers={"WWW-Authenticate": "Bearer"})
-        return {"customer_id": auth.customers().authenticate(header[7:].strip())}
+        return {"customer_id": auth.customers().authenticate(token)}
 
     orchestrator_init_error: RuntimeError | None = None
     if orchestrator is not None:
