@@ -61,3 +61,25 @@ def test_invalid_customer_binding_is_rejected():
         auth.enroll("12345678", "synthetic-password", "CUST-999")
     with pytest.raises(ValueError):
         account_key("1234")
+
+
+def test_refresh_extends_session_lifetime():
+    current_time = 1000
+    store = Store()
+    auth = CustomerAuth(store, clock=lambda: current_time)
+    auth.enroll("12345678", "synthetic-password", "CUST-0001")
+    result = auth.login("12345678", "synthetic-password")
+    token = result["access_token"]
+    assert result["expires_at"] == 1900
+
+    # Advance clock to near expiration (1850s, 50s left)
+    current_time = 1850
+    assert auth.authenticate(token) == "CUST-0001"
+
+    # Refresh session
+    new_expires = auth.refresh(token)
+    assert new_expires == 1850 + 900  # 2750
+
+    # Advance clock past original 1900s expiration (e.g. 2000s)
+    current_time = 2000
+    assert auth.authenticate(token) == "CUST-0001"

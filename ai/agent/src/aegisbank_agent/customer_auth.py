@@ -254,6 +254,25 @@ class CustomerAuth:
                 continue
         raise HTTPException(503, "Autenticación temporalmente no disponible")
 
+    def refresh(self, token: str) -> int:
+        """Extend the active session window by SESSION_SECONDS."""
+        for _ in range(8):
+            session = self.store.read(self._session_key(token))
+            if not session or self.clock() >= session["expires"]:
+                raise denied()
+            account = self.store.read(session["account_id"])
+            if not account or account.get("disabled") or account["epoch"] != session["epoch"]:
+                raise denied()
+            new_expires = int(self.clock()) + SESSION_SECONDS
+            session["expires"] = new_expires
+            session["ttl"] = SESSION_SECONDS
+            try:
+                self.store.replace(session, session["_etag"])
+                return new_expires
+            except ConflictError:
+                continue
+        raise HTTPException(503, "Autenticación temporalmente no disponible")
+
     def logout(self, token: str) -> None:
         self.store.delete(self._session_key(token))
 
