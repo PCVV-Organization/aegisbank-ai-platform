@@ -86,3 +86,19 @@ laboratory boundary and does not establish production identity readiness.
 - [RBAC least-privilege matrix](../operations/RBAC-LEAST-PRIVILEGE-MATRIX.md)
 - [Staging acceptance runbook](../operations/STAGING-ACCEPTANCE-RUNBOOK.md)
 - [Production deployment runbook](../operations/PRODUCTION-DEPLOYMENT-RUNBOOK.md)
+
+## 7. Low-cost conversation history and execution evidence
+
+The staging API stores synthetic conversation turns in the existing Cosmos DB
+account, partitioned by `customer_id`, with a 30-day TTL. Assistant turns store
+only bounded operational metadata: `execution_mode`, round count, tool count,
+and request latency. Passwords, bearer tokens, prompts containing secrets, and
+model payloads are never persisted.
+
+The API response exposes the same metadata so the frontend can distinguish a
+real Foundry response (`azure-foundry`), a deterministic banking operation
+(`deterministic`), and a provider failure (`cloud-fallback`). No new Azure
+resource is required for this feature. The compact-tools policy and bounded
+token budget reduce Foundry consumption; Cosmos TTL limits storage growth. Cost
+and quota remain external Azure for Students constraints and must be monitored
+before each staging exercise.

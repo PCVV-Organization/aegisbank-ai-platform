@@ -38,6 +38,7 @@ class ConversationStore:
         session_id: str,
         role: str,
         content: str,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         if role not in {"user", "assistant"}:
             raise ValueError("Unsupported conversation role")
@@ -45,6 +46,9 @@ class ConversationStore:
             raise ValueError("Conversation content is invalid")
         if not customer_id or not session_id:
             raise ValueError("Conversation ownership fields are required")
+        safe_metadata = metadata or {}
+        if len(safe_metadata) > 32:
+            raise ValueError("Conversation metadata is invalid")
         self._repository.create_item(
             {
                 "id": f"turn:{session_id}:{uuid.uuid4().hex}",
@@ -52,6 +56,7 @@ class ConversationStore:
                 "session_id": session_id,
                 "role": role,
                 "content": content,
+                "metadata": safe_metadata,
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "ttl": self._ttl,
             }
@@ -72,7 +77,7 @@ class ConversationStore:
     ) -> list[dict[str, Any]]:
         safe_limit = max(1, min(limit, 200))
         items = self._repository.query_items(
-            "SELECT c.session_id, c.role, c.content, c.created_at FROM c "
+            "SELECT c.session_id, c.role, c.content, c.metadata, c.created_at FROM c "
             "WHERE c.customer_id = @customer_id AND c.session_id = @session_id "
             "ORDER BY c.created_at ASC",
             [

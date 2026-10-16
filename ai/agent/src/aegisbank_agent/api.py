@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import secrets
+import time
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -74,6 +75,8 @@ class AgentRunResponse(BaseModel):
     execution_mode: str = Field(
         description="Observed execution path: azure-foundry, deterministic, or cloud-fallback"
     )
+    latency_ms: float = Field(ge=0)
+    tool_count: int = Field(ge=0)
 
 
 class ConversationSummary(BaseModel):
@@ -86,6 +89,7 @@ class ConversationTurn(BaseModel):
     session_id: str
     role: str
     content: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: str
 
 
@@ -462,6 +466,7 @@ def create_app(
             ) from orchestrator_init_error
         principal = auth.authenticate(request, request_customer_id=payload.customer_id)
 
+        started_at = time.perf_counter()
         try:
             result: AgentExecutionResult = agent_orchestrator.run(
                 user_message=payload.query,
@@ -469,6 +474,12 @@ def create_app(
                 session_id=payload.session_id,
             )
             effective_session_id = payload.session_id or f"session-{principal.customer_id}"
+            if result.error and "Azure AI Foundry" in result.answer:
+                execution_mode = "cloud-fallback"
+            elif result.rounds > 0:
+                execution_mode = "azure-foundry"
+            else:
+                execution_mode = "deterministic"
             if conversation_store is not None:
                 conversation_store.append_turn(
                     customer_id=principal.customer_id,
@@ -481,13 +492,14 @@ def create_app(
                     session_id=effective_session_id,
                     role="assistant",
                     content=result.answer,
+                    metadata={
+                        "execution_mode": execution_mode,
+                        "rounds": result.rounds,
+                        "tool_count": len(result.tool_calls),
+                        "latency_ms": round((time.perf_counter() - started_at) * 1000, 2),
+                    },
                 )
-            if result.error and "Azure AI Foundry" in result.answer:
-                execution_mode = "cloud-fallback"
-            elif result.rounds > 0:
-                execution_mode = "azure-foundry"
-            else:
-                execution_mode = "deterministic"
+            latency_ms = round((time.perf_counter() - started_at) * 1000, 2)
             return AgentRunResponse(
                 answer=result.answer,
                 customer_id=result.customer_id,
@@ -501,6 +513,8 @@ def create_app(
                 ],
                 session_id=effective_session_id,
                 execution_mode=execution_mode,
+                latency_ms=latency_ms,
+                tool_count=len(result.tool_calls),
             )
         except Exception as exc:
             logger.error("Agent execution failed: %s", exc)

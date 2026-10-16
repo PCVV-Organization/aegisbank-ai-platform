@@ -23,12 +23,19 @@ class FakeRepository:
 def test_conversation_store_partitions_turns_by_customer():
     repository = FakeRepository()
     store = ConversationStore(repository)
-    store.append_turn(customer_id="CUST-0001", session_id="session-a", role="user", content="Hola")
+    store.append_turn(
+        customer_id="CUST-0001",
+        session_id="session-a",
+        role="user",
+        content="Hola",
+        metadata={"execution_mode": "deterministic", "tool_count": 1, "latency_ms": 12.5},
+    )
     store.append_turn(customer_id="CUST-0002", session_id="session-b", role="user", content="Hola")
 
     turns = store.get_session("CUST-0001", "session-a")
     assert len(turns) == 1
     assert turns[0]["customer_id"] == "CUST-0001"
+    assert turns[0]["metadata"]["tool_count"] == 1
 
 
 def test_conversation_store_rejects_invalid_roles_and_empty_content():

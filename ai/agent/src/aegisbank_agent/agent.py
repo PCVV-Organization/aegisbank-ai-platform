@@ -1177,6 +1177,35 @@ class AgentOrchestrator:
                             )
                         )
                     content_str = msg.content or ""
+                    malformed_tool_output = bool(
+                        re.search(
+                            r"(?:functools\s*\(|\{\s*['\"]name['\"]\s*:\s*['\"](?:search_knowledge|get_my_loans|get_loan_details|get_next_installment|create_service_request))",
+                            content_str,
+                            re.IGNORECASE,
+                        )
+                    )
+                    if malformed_tool_output:
+                        self._metrics.increment("pseudo_tool_call_count")
+                        self._audit.record(
+                            event_type=AuditEventType.TOOL_DENIED,
+                            correlation_id=obs_ctx.correlation_id,
+                            customer_id=customer_id,
+                            actor="ROUTING_POLICY",
+                            payload={"reason": "MALFORMED_TOOL_OUTPUT"},
+                        )
+                        return AgentExecutionResult(
+                            answer=(
+                                "No pude interpretar la consulta bancaria de forma segura. "
+                                "Reformula la pregunta e inténtalo nuevamente."
+                            ),
+                            customer_id=customer_id,
+                            tool_calls=executed_records,
+                            rounds=current_round,
+                            success=False,
+                            error="Malformed tool output",
+                            correlation_id=obs_ctx.correlation_id,
+                            rounds_evidence=rounds_evidence,
+                        )
                     raw_tool_patterns = (
                         r"\bget_loan_details\s*\(",
                         r"\bget_my_loans\s*\(",
