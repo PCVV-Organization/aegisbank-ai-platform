@@ -1,0 +1,19 @@
+feat(service-requests): expose authenticated core banking feed
+
+Purpose
+Replace the missing service-request read boundary with an authenticated Agent API route that derives customer identity from the verified principal and reads authoritative records from Core Banking.
+
+Changes
+- add GET /api/v1/me/service-requests with fail-closed upstream handling
+- add Core Banking customer feed route backed by ServiceRequestRepository
+- allow GET and CSRF headers through the configured CORS boundary
+- add coverage for verified identity binding and customer-id isolation
+
+Validation
+- python -m compileall -q ai/agent/src services/mock-core-banking/src: PASS
+- git diff --check: PASS
+- pytest: unavailable in this environment (pytest command not installed)
+
+Remaining limits
+- deployment and cloud acceptance require CI and staging configuration for AEGISBANK_CORE_BANKING_URL
+- service-request creation remains HITL-gated and is not simulated by the browser

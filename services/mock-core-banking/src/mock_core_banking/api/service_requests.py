@@ -29,6 +29,25 @@ def list_service_requests(
     return [ServiceRequestResponse.model_validate(record) for record in records]
 
 
+@router.get(
+    "/customer/{customer_id}",
+    response_model=list[ServiceRequestResponse],
+    responses={404: {"model": ErrorEnvelope, "description": "Synthetic customer not found"}},
+)
+def list_customer_service_requests(
+    customer_id: str,
+    session: SessionDependency,
+) -> list[ServiceRequestResponse]:
+    """Return the authoritative request feed for one synthetic customer.
+
+    The Agent API is the authenticated caller of this internal boundary; the
+    browser must never call this route or choose the customer identity.
+    """
+    CustomerRepository(session).get_by_id(customer_id)
+    records = ServiceRequestRepository(session).list_by_customer(customer_id)
+    return [ServiceRequestResponse.model_validate(record) for record in records]
+
+
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
