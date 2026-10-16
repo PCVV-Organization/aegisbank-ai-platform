@@ -196,7 +196,7 @@ def test_agent_api_run_rejects_fallback_in_production(monkeypatch) -> None:
         )
 
     assert response.status_code == 503
-    assert "no fallback" in response.json()["detail"]
+    assert "fallback disabled" in response.json()["detail"]
 
 
 def test_conversation_history_dependency_failure_degrades_to_empty_result(monkeypatch) -> None:
