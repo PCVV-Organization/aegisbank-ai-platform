@@ -239,7 +239,7 @@ def create_app(
             CORSMiddleware,
             allow_origins=list(cors_origins),
             allow_credentials=True,
-            allow_methods=["POST", "OPTIONS"],
+            allow_methods=["GET", "POST", "OPTIONS"],
             allow_headers=["Authorization", "Content-Type", "X-CSRF-Token"],
         )
 
@@ -322,7 +322,8 @@ def create_app(
         return result
 
     @app.get("/api/v1/auth/me", tags=["Authentication"])
-    def customer_me(request: Request) -> dict[str, str]:
+    def customer_me(request: Request, response: Response) -> dict[str, str]:
+        response.headers["Cache-Control"] = "no-store"
         header = request.headers.get("Authorization", "")
         token = (
             header[7:].strip()
@@ -331,7 +332,23 @@ def create_app(
         )
         if not token:
             raise HTTPException(401, "Sesión no válida", headers={"WWW-Authenticate": "Bearer"})
-        return {"customer_id": auth.customers().authenticate(token)}
+        customer_id = auth.customers().authenticate(token)
+        csrf = request.cookies.get("aegisbank_csrf", "")
+        if not csrf and not header.startswith("Bearer "):
+            csrf = secrets.token_urlsafe(32)
+            response.set_cookie(
+                "aegisbank_csrf",
+                csrf,
+                max_age=900,
+                httponly=False,
+                secure=True,
+                samesite="none",
+                path="/",
+            )
+        result = {"customer_id": customer_id}
+        if csrf:
+            result["csrf_token"] = csrf
+        return result
 
     orchestrator_init_error: RuntimeError | None = None
     if orchestrator is not None:
