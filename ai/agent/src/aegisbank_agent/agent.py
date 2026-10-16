@@ -955,9 +955,13 @@ class AgentOrchestrator:
 
             selected_tool = tools[0]["function"]["name"] if len(tools) == 1 else None
             effective_tool_choice: Any = (
-                {"type": "function", "function": {"name": selected_tool}}
-                if (account_required or write_required) and selected_tool
-                else "auto"
+                "auto"
+                if resolve_runtime_environment().is_cloud
+                else (
+                    {"type": "function", "function": {"name": selected_tool}}
+                    if (account_required or write_required) and selected_tool
+                    else "auto"
+                )
             )
 
             # Banking policy/product questions must be grounded before generation.
