@@ -1009,7 +1009,11 @@ class AgentOrchestrator:
                     )
                     return AgentExecutionResult(
                         answer=(
-                            "Error al comunicar con el modelo de lenguaje local (Foundry Local). "
+                            "No se pudo comunicar con Azure AI Foundry. "
+                            "Puedes continuar realizando consultas bancarias estructuradas "
+                            "mientras se recupera el servicio cloud."
+                            if resolve_runtime_environment().is_cloud
+                            else "Error al comunicar con Foundry Local. "
                             "Puedes continuar realizando consultas bancarias estructuradas "
                             "indicando el identificador del préstamo (ej. LOAN-0001)."
                         ),

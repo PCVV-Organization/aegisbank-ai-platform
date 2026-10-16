@@ -457,5 +457,5 @@ def test_foundry_timeout_returns_safe_error_without_hallucination() -> None:
 
     assert result.success is False
     assert "Request timed out." in (result.error or "")
-    assert "Error al comunicar con el modelo de lenguaje local" in result.answer
+    assert "Error al comunicar con Foundry Local" in result.answer
     assert "[" not in result.answer
