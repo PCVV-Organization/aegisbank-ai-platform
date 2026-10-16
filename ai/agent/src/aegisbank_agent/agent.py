@@ -253,6 +253,7 @@ class AgentOrchestrator:
                 messages=cast(Iterable[ChatCompletionMessageParam], messages),
                 tools=cast(Iterable[ChatCompletionToolUnionParam], tools),
                 tool_choice=tool_choice,
+                max_tokens=int(os.getenv("AEGISBANK_FOUNDRY_MAX_TOKENS", "256")),
             )
         create_fn = getattr(client, "create", None)
         if callable(create_fn):
@@ -261,6 +262,7 @@ class AgentOrchestrator:
                 messages=messages,
                 tools=tools,
                 tool_choice=tool_choice,
+                max_tokens=int(os.getenv("AEGISBANK_FOUNDRY_MAX_TOKENS", "256")),
             )
         raise AttributeError("LLM client does not provide a create completion interface")
 

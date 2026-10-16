@@ -29,6 +29,7 @@ from .configuration.environment import (
     validate_runtime_configuration,
 )
 from .customer_auth import CosmosAuthStore, CustomerAuth
+from .conversation_store import ConversationStore
 
 logger = logging.getLogger("aegisbank.agent.api")
 
@@ -70,6 +71,22 @@ class AgentRunResponse(BaseModel):
     rounds: int
     tool_calls: list[dict[str, Any]] = Field(default_factory=list)
     session_id: str | None = None
+    execution_mode: str = Field(
+        description="Observed execution path: azure-foundry, deterministic, or cloud-fallback"
+    )
+
+
+class ConversationSummary(BaseModel):
+    session_id: str
+    updated_at: str | None = None
+    turn_count: int = 0
+
+
+class ConversationTurn(BaseModel):
+    session_id: str
+    role: str
+    content: str
+    created_at: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -244,6 +261,9 @@ def create_app(
         )
 
     auth = auth_provider or AuthenticationProvider()
+    conversation_store: ConversationStore | None = None
+    if os.getenv("CONVERSATION_PERSISTENCE_ENABLED", "false").lower() == "true":
+        conversation_store = ConversationStore()
 
     @app.exception_handler(RequestValidationError)
     async def redact_login_validation(request: Request, exc: RequestValidationError):
@@ -350,6 +370,34 @@ def create_app(
             result["csrf_token"] = csrf
         return result
 
+    @app.get("/api/v1/conversations", response_model=list[ConversationSummary], tags=["Conversations"])
+    def list_conversations(request: Request) -> list[ConversationSummary]:
+        if conversation_store is None:
+            raise HTTPException(503, "Conversation history is not configured")
+        principal = auth.authenticate(request)
+        try:
+            return [ConversationSummary(**item) for item in conversation_store.list_sessions(principal.customer_id)]
+        except Exception as exc:
+            logger.error("Conversation listing failed: %s", type(exc).__name__)
+            raise HTTPException(503, "Conversation history temporarily unavailable") from exc
+
+    @app.get(
+        "/api/v1/conversations/{session_id}",
+        response_model=list[ConversationTurn],
+        tags=["Conversations"],
+    )
+    def get_conversation(session_id: str, request: Request) -> list[ConversationTurn]:
+        if conversation_store is None:
+            raise HTTPException(503, "Conversation history is not configured")
+        principal = auth.authenticate(request)
+        if len(session_id) > 128 or not re.fullmatch(r"[A-Za-z0-9_-]+", session_id):
+            raise HTTPException(400, "Invalid conversation identifier")
+        try:
+            return [ConversationTurn(**item) for item in conversation_store.get_session(principal.customer_id, session_id)]
+        except Exception as exc:
+            logger.error("Conversation retrieval failed: %s", type(exc).__name__)
+            raise HTTPException(503, "Conversation history temporarily unavailable") from exc
+
     orchestrator_init_error: RuntimeError | None = None
     if orchestrator is not None:
         agent_orchestrator = orchestrator
@@ -410,6 +458,26 @@ def create_app(
                 customer_id=principal.customer_id,
                 session_id=payload.session_id,
             )
+            effective_session_id = payload.session_id or f"session-{principal.customer_id}"
+            if conversation_store is not None:
+                conversation_store.append_turn(
+                    customer_id=principal.customer_id,
+                    session_id=effective_session_id,
+                    role="user",
+                    content=payload.query,
+                )
+                conversation_store.append_turn(
+                    customer_id=principal.customer_id,
+                    session_id=effective_session_id,
+                    role="assistant",
+                    content=result.answer,
+                )
+            if result.error and "Azure AI Foundry" in result.answer:
+                execution_mode = "cloud-fallback"
+            elif result.rounds > 0:
+                execution_mode = "azure-foundry"
+            else:
+                execution_mode = "deterministic"
             return AgentRunResponse(
                 answer=result.answer,
                 customer_id=result.customer_id,
@@ -421,7 +489,8 @@ def create_app(
                     }
                     for tc in result.tool_calls
                 ],
-                session_id=payload.session_id,
+                session_id=effective_session_id,
+                execution_mode=execution_mode,
             )
         except Exception as exc:
             logger.error("Agent execution failed: %s", exc)

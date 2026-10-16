@@ -18,6 +18,10 @@
     "authDatabaseName": { "value": "aegisbank-auth" },
     "authContainerName": { "value": "identities" },
     "authCosmosAccountName": { "value": "aegisbankstagingcosmos" },
-    "authSessionTtlSeconds": { "value": 900 }
+    "authSessionTtlSeconds": { "value": 900 },
+    "conversationDatabaseName": { "value": "aegisbank-chat" },
+    "conversationContainerName": { "value": "messages" },
+    "conversationTtlSeconds": { "value": 2592000 },
+    "foundryMaxTokens": { "value": 256 }
   }
 }

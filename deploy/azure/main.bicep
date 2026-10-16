@@ -72,6 +72,18 @@ param authSessionTtlSeconds int = 900
 @description('Existing Cosmos DB account used by staging authentication.')
 param authCosmosAccountName string = 'aegisbankstagingcosmos'
 
+@description('Maximum generated tokens per Foundry request to control Students quota consumption.')
+param foundryMaxTokens int = 256
+
+@description('Cosmos DB database used for durable synthetic chat history.')
+param conversationDatabaseName string = 'aegisbank-chat'
+
+@description('Cosmos DB container used for durable synthetic chat messages.')
+param conversationContainerName string = 'messages'
+
+@description('TTL for chat messages in seconds. Keeps staging storage bounded.')
+param conversationTtlSeconds int = 2592000
+
 var identityName = workloadIdentityName
 var appConfigName = '${namePrefix}-${environment}-config'
 var vaultName = '${namePrefix}-${environment}-kv'
@@ -81,6 +93,47 @@ var serviceBusName = '${namePrefix}-${environment}-bus'
 var queueName = 'aegisbank-events'
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
   name: registryName
+}
+
+resource conversationCosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = {
+  name: authCosmosAccountName
+}
+
+resource conversationDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
+  parent: conversationCosmosAccount
+  name: conversationDatabaseName
+  properties: {
+    resource: {
+      id: conversationDatabaseName
+    }
+  }
+}
+
+resource conversationContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
+  parent: conversationDatabase
+  name: conversationContainerName
+  properties: {
+    resource: {
+      id: conversationContainerName
+      partitionKey: {
+        paths: [
+          '/customer_id'
+        ]
+        kind: 'Hash'
+      }
+      defaultTtl: conversationTtlSeconds
+    }
+  }
+}
+
+resource conversationDataContributor 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = {
+  parent: conversationCosmosAccount
+  name: guid(conversationCosmosAccount.id, identityName, 'conversation-data-contributor')
+  properties: {
+    principalId: workloadIdentity.properties.principalId
+    roleDefinitionId: '${conversationCosmosAccount.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002'
+    scope: conversationContainer.id
+  }
 }
 
 resource workloadIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
@@ -319,6 +372,10 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
               value: foundryDeploymentName
             }
             {
+              name: 'AEGISBANK_FOUNDRY_MAX_TOKENS'
+              value: string(foundryMaxTokens)
+            }
+            {
               name: 'AEGISBANK_ENTRA_TENANT_ID'
               value: entraTenantId
             }
@@ -353,6 +410,26 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             {
               name: 'AEGISBANK_AUTH_SESSION_TTL_SECONDS'
               value: string(authSessionTtlSeconds)
+            }
+            {
+              name: 'CONVERSATION_COSMOS_DATABASE'
+              value: conversationDatabaseName
+            }
+            {
+              name: 'CONVERSATION_COSMOS_ENDPOINT'
+              value: 'https://${authCosmosAccountName}.documents.azure.com:443/'
+            }
+            {
+              name: 'CONVERSATION_COSMOS_CONTAINER'
+              value: conversationContainerName
+            }
+            {
+              name: 'CONVERSATION_PERSISTENCE_ENABLED'
+              value: 'true'
+            }
+            {
+              name: 'CONVERSATION_TTL_SECONDS'
+              value: string(conversationTtlSeconds)
             }
             {
               name: 'AEGISBANK_SERVICEBUS_FQDN'
