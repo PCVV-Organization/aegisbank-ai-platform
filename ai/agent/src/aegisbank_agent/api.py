@@ -198,7 +198,7 @@ class AuthenticationProvider:
 
         # In cloud, customer identity is bound only to verified token claims,
         # never to the request body or X-Customer-Id header.
-        if mode == "students":
+        if mode in {"students", "synthetic-password"}:
             try:
                 customer_id = self.customers().authenticate(token)
             except HTTPException:
@@ -301,9 +301,9 @@ def create_app(
         try:
             validate_runtime_configuration(env)
             mode = os.getenv("AEGISBANK_AUTH_MODE", "entra")
-            if mode not in {"entra", "students"}:
+            if mode not in {"entra", "students", "synthetic-password"}:
                 raise EnvironmentSelectionError("Authentication mode is invalid")
-            if mode == "students":
+            if mode in {"students", "synthetic-password"}:
                 try:
                     auth.customers().store.ready()
                 except Exception as exc:
