@@ -239,8 +239,8 @@ def create_app(
             CORSMiddleware,
             allow_origins=list(cors_origins),
             allow_credentials=True,
-            allow_methods=["GET", "POST", "OPTIONS"],
-            allow_headers=["Authorization", "Content-Type", "X-CSRF-Token"],
+            allow_methods=["*"],
+            allow_headers=["*"],
         )
 
     auth = auth_provider or AuthenticationProvider()
