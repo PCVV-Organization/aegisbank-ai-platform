@@ -481,24 +481,34 @@ def create_app(
             else:
                 execution_mode = "deterministic"
             if conversation_store is not None:
-                conversation_store.append_turn(
-                    customer_id=principal.customer_id,
-                    session_id=effective_session_id,
-                    role="user",
-                    content=payload.query,
-                )
-                conversation_store.append_turn(
-                    customer_id=principal.customer_id,
-                    session_id=effective_session_id,
-                    role="assistant",
-                    content=result.answer,
-                    metadata={
-                        "execution_mode": execution_mode,
-                        "rounds": result.rounds,
-                        "tool_count": len(result.tool_calls),
-                        "latency_ms": round((time.perf_counter() - started_at) * 1000, 2),
-                    },
-                )
+                try:
+                    conversation_store.append_turn(
+                        customer_id=principal.customer_id,
+                        session_id=effective_session_id,
+                        role="user",
+                        content=payload.query,
+                    )
+                    conversation_store.append_turn(
+                        customer_id=principal.customer_id,
+                        session_id=effective_session_id,
+                        role="assistant",
+                        content=result.answer,
+                        metadata={
+                            "execution_mode": execution_mode,
+                            "rounds": result.rounds,
+                            "tool_count": len(result.tool_calls),
+                            "latency_ms": round((time.perf_counter() - started_at) * 1000, 2),
+                        },
+                    )
+                except Exception as persistence_error:
+                    # A Cosmos outage must not turn an otherwise valid banking
+                    # answer into a misleading agent 500. Retrieval remains
+                    # explicitly 503, while this request returns the answer
+                    # and records a redacted operational signal for repair.
+                    logger.error(
+                        "Conversation persistence failed; answer returned without history: %s",
+                        type(persistence_error).__name__,
+                    )
             latency_ms = round((time.perf_counter() - started_at) * 1000, 2)
             return AgentRunResponse(
                 answer=result.answer,

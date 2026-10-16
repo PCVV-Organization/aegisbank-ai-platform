@@ -132,7 +132,11 @@ resource conversationDataContributor 'Microsoft.DocumentDB/databaseAccounts/sqlR
   properties: {
     principalId: workloadIdentity.properties.principalId
     roleDefinitionId: '${conversationCosmosAccount.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002'
-    scope: conversationContainer.id
+    // Cosmos SDK requests database metadata before operating on a container.
+    // Keep the assignment database-scoped (rather than account-scoped) so the
+    // workload identity can resolve that metadata while retaining least
+    // privilege for the conversation database.
+    scope: conversationDatabase.id
   }
 }
 
