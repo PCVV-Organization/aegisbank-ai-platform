@@ -108,6 +108,46 @@ class GetMyLoansTool(FunctionTool):
             )
 
 
+class GetAccountBalanceTool(FunctionTool):
+    """Return the synthetic available balance for the authenticated customer."""
+
+    _BALANCES = {
+        "CUST-0001": ("12480.00", "PEN"),
+        "CUST-0002": ("8650.00", "PEN"),
+    }
+
+    @property
+    def name(self) -> str:
+        return "get_account_balance"
+
+    @property
+    def description(self) -> str:
+        return "Obtiene el saldo disponible sintético del cliente autenticado."
+
+    @property
+    def parameters_schema(self) -> dict[str, Any]:
+        return {"type": "object", "properties": {}, "additionalProperties": False}
+
+    def execute(self, arguments: dict[str, Any], context: AgentContext) -> ToolResult:
+        balance = self._BALANCES.get(context.session_customer_id)
+        if balance is None:
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error="Cliente no encontrado en el sistema bancario sintético.",
+            )
+        amount, currency = balance
+        return ToolResult(
+            tool_name=self.name,
+            success=True,
+            data={
+                "customer_id": context.session_customer_id,
+                "available_balance": amount,
+                "currency": currency,
+            },
+        )
+
+
 class GetLoanDetailsTool(FunctionTool):
     """Tool to inspect specific loan details with customer ownership validation."""
 

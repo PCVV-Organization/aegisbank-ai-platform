@@ -550,6 +550,29 @@ class AgentOrchestrator:
             account_result: ToolResult | None = None
             account_model_calls = 0
 
+            if "get_account_balance" in account_allowlist:
+                account_result = self._registry.execute("get_account_balance", {}, context)
+                executed_records.append(
+                    ToolCallRecord(
+                        tool_name="get_account_balance",
+                        arguments={},
+                        result=account_result,
+                        source="APPLICATION_PREFETCH",
+                        round_index=0,
+                    )
+                )
+                if account_result.success:
+                    data = account_result.data or {}
+                    amount = format_currency(data.get("available_balance"), data.get("currency"))
+                    return AgentExecutionResult(
+                        answer=f"Tu saldo disponible es {amount}.",
+                        customer_id=customer_id,
+                        tool_calls=executed_records,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
+
             # Resolve the account list deterministically before asking for a follow-up tool.
             if account_required and "get_my_loans" in account_allowlist:
                 with trace_span(

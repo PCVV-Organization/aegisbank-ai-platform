@@ -61,6 +61,7 @@ def test_default_tools_are_registered() -> None:
     """Default registry exposes canonical read-only tools."""
     registry = ToolRegistry()
     assert set(registry.allowed_tool_names) == {
+        "get_account_balance",
         "get_loan_details",
         "get_my_loans",
         "get_next_installment",
@@ -124,7 +125,7 @@ def test_export_openai_tools_format() -> None:
     exported = registry.export_openai_tools()
 
     assert isinstance(exported, list)
-    assert len(exported) == 4
+    assert len(exported) == 5
     for tool_def in exported:
         assert tool_def["type"] == "function"
         fn = tool_def["function"]
