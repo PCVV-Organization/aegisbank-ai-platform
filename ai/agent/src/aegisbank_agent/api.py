@@ -29,6 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from .agent import AgentExecutionResult, AgentOrchestrator
 from .configuration.environment import (
     EnvironmentSelectionError,
+    RuntimeEnvironment,
     resolve_runtime_environment,
     validate_runtime_configuration,
 )
@@ -529,6 +530,15 @@ def create_app(
                 customer_id=principal.customer_id,
                 session_id=payload.session_id,
             )
+            if (
+                resolve_runtime_environment() is RuntimeEnvironment.PRODUCTION
+                and isinstance(result.error, str)
+                and result.error
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="AI provider unavailable; production fallback disabled",
+                )
             effective_session_id = payload.session_id or f"session-{principal.customer_id}"
             if result.error and "Azure AI Foundry" in result.answer:
                 execution_mode = "cloud-fallback"
@@ -587,6 +597,11 @@ def create_app(
                 "Agent execution failed; returning safe degraded response: %s",
                 type(exc).__name__,
             )
+            if resolve_runtime_environment() is RuntimeEnvironment.PRODUCTION:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="AI provider unavailable; production fallback disabled",
+                ) from exc
             # Keep the HTTP contract usable during transient Foundry/Cosmos
             # failures. Never fabricate banking data or expose provider errors;
             # the explicit mode lets the UI distinguish this from an AI answer.
