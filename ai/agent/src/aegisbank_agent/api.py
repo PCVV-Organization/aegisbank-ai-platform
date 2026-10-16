@@ -27,6 +27,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 from .agent import AgentExecutionResult, AgentOrchestrator
+from .tools.base import AgentContext
 from .configuration.environment import (
     EnvironmentSelectionError,
     RuntimeEnvironment,
@@ -81,6 +82,7 @@ class AgentRunResponse(BaseModel):
     )
     latency_ms: float = Field(ge=0)
     tool_count: int = Field(ge=0)
+    approval_requests: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class ServiceRequestItem(BaseModel):
@@ -102,6 +104,10 @@ class ServiceRequestCreateRequest(BaseModel):
 
 class ServiceRequestListResponse(BaseModel):
     items: list[ServiceRequestItem]
+
+
+class ApprovalDecisionRequest(BaseModel):
+    approved: bool
 
 
 class ConversationSummary(BaseModel):
@@ -572,6 +578,44 @@ def create_app(
             raise HTTPException(status_code=503, detail="Core Banking returned an invalid request")
         return ServiceRequestItem(**result)
 
+    @app.post("/api/v1/approvals/{approval_id}", tags=["Agent approvals"])
+    def decide_approval(
+        approval_id: str,
+        payload: ApprovalDecisionRequest,
+        request: Request,
+    ) -> dict[str, Any]:
+        """Approve/reject a pending chat WRITE proposal and execute only after approval."""
+        if agent_orchestrator is None:
+            raise HTTPException(status_code=503, detail="Agent model provider is not configured")
+        principal = auth.authenticate(request)
+        manager = agent_orchestrator.hitl_manager
+        try:
+            current = manager.get_request(approval_id)
+            if current.synthetic_customer_id != principal.customer_id:
+                raise HTTPException(status_code=404, detail="Approval request not found")
+            if not payload.approved:
+                result = manager.reject(approval_id, principal.customer_id, "Rechazado por el cliente")
+                return {"approval": result.as_dict(), "executed": False}
+            approved = manager.approve(approval_id, principal.customer_id)
+            tool_result = agent_orchestrator.registry.execute(
+                approved.tool_name,
+                approved.normalized_arguments,
+                AgentContext(session_customer_id=principal.customer_id),
+            )
+            if not tool_result.success:
+                raise HTTPException(status_code=503, detail="Core Banking service temporarily unavailable")
+            executed = manager.verify_and_mark_executed(
+                approval_id,
+                principal.customer_id,
+                approved.normalized_arguments,
+                tool_result.data or {},
+            )
+            return {"approval": executed.as_dict(), "executed": True}
+        except HTTPException:
+            raise
+        except Exception as exc:
+            raise HTTPException(status_code=404, detail="Approval request not found") from exc
+
     @app.post("/api/v1/agent/run", response_model=AgentRunResponse, tags=["Agent"])
     def run_agent(
         payload: AgentRunRequest,
@@ -653,6 +697,7 @@ def create_app(
                 execution_mode=execution_mode,
                 latency_ms=latency_ms,
                 tool_count=len(result.tool_calls),
+                approval_requests=[req.as_dict() for req in result.approval_requests],
             )
         except Exception as exc:
             logger.error(

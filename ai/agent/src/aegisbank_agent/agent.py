@@ -1690,6 +1690,21 @@ class AgentOrchestrator:
                                 self._metrics.increment("tool_call_failure_count")
                                 call_entry["authorization_outcome"] = "DENIED"
                                 call_entry["denial_reason"] = tool_result.error
+                        elif active_approval_cb is None:
+                            # Hosted HTTP requests cannot synchronously approve
+                            # a WRITE operation. Keep the proposal pending so
+                            # the browser can present an explicit approval UI.
+                            created_approvals.append(approval_req)
+                            tool_result = ToolResult(
+                                tool_name=fn_name,
+                                success=False,
+                                error=(
+                                    "Aprobación humana requerida. La propuesta quedó pendiente; "
+                                    "no se modificó Core Banking."
+                                ),
+                            )
+                            call_entry["authorization_outcome"] = "PENDING_APPROVAL"
+                            call_entry["denial_reason"] = tool_result.error
                         else:
                             self._metrics.increment("hitl_rejected_count")
                             rejected_req = self._hitl_manager.reject(
