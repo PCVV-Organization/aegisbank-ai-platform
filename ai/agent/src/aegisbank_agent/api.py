@@ -10,6 +10,9 @@ from __future__ import annotations
 import logging
 import os
 import re
+import json
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -47,6 +50,18 @@ class AgentRunResponse(BaseModel):
     rounds: int
     tool_calls: list[dict[str, Any]] = Field(default_factory=list)
     session_id: str | None = None
+
+
+class ServiceRequestItem(BaseModel):
+    service_request_id: str
+    category: str
+    description: str
+    status: str
+    created_at: str
+
+
+class ServiceRequestListResponse(BaseModel):
+    items: list[ServiceRequestItem]
 
 
 @dataclass(frozen=True, slots=True)
@@ -183,8 +198,8 @@ def create_app(
             CORSMiddleware,
             allow_origins=list(cors_origins),
             allow_credentials=False,
-            allow_methods=["POST", "OPTIONS"],
-            allow_headers=["Authorization", "Content-Type"],
+            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type", "X-CSRF-Token"],
         )
 
     auth = auth_provider or AuthenticationProvider()
@@ -218,6 +233,72 @@ def create_app(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Service unready: runtime configuration invalid or incomplete",
             ) from exc
+
+    @app.get(
+        "/api/v1/me/service-requests",
+        response_model=ServiceRequestListResponse,
+        tags=["Service requests"],
+    )
+    def list_my_service_requests(request: Request) -> ServiceRequestListResponse:
+        """Read the authenticated customer's requests from Core Banking.
+
+        Customer identity is derived exclusively from the verified principal;
+        no browser-supplied customer ID is accepted. A missing or unavailable
+        Core Banking dependency fails closed instead of returning mock data.
+        """
+        principal = auth.authenticate(request)
+        core_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
+        if not core_url:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Core Banking service is not configured",
+            )
+        target = (
+            f"{core_url.rstrip('/')}/api/v1/service-requests/customer/"
+            f"{principal.customer_id}"
+        )
+        try:
+            with urllib.request.urlopen(  # nosec B310 - configured service URL only
+                urllib.request.Request(target, headers={"Accept": "application/json"}),
+                timeout=10.0,
+            ) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            logger.warning("Core Banking request feed failed with status %s", exc.code)
+            detail = (
+                "Core Banking customer not found"
+                if exc.code == status.HTTP_404_NOT_FOUND
+                else "Core Banking service temporarily unavailable"
+            )
+            raise HTTPException(
+                status_code=(status.HTTP_404_NOT_FOUND if exc.code == 404 else 503),
+                detail=detail,
+            ) from exc
+        except (urllib.error.URLError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
+            logger.warning("Core Banking request feed unavailable: %s", type(exc).__name__)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Core Banking service temporarily unavailable",
+            ) from exc
+
+        if not isinstance(payload, list):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Core Banking returned an invalid request feed",
+            )
+        return ServiceRequestListResponse(
+            items=[
+                ServiceRequestItem(
+                    service_request_id=item["service_request_id"],
+                    category=item["category"],
+                    description=item["description"],
+                    status=item["status"],
+                    created_at=item["created_at"],
+                )
+                for item in payload
+                if isinstance(item, dict)
+            ]
+        )
 
     @app.post("/api/v1/agent/run", response_model=AgentRunResponse, tags=["Agent"])
     def run_agent(
