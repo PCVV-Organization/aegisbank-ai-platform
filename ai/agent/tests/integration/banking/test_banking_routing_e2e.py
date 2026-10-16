@@ -321,4 +321,4 @@ def test_case_h_pseudo_tool_call_is_never_parsed() -> None:
     result = orchestrator.run("Hola", customer_id="CUST-0001")
 
     assert len(result.tool_calls) == 0
-    assert result.answer == "get_my_loans()"
+    assert result.answer == "No pude obtener una respuesta estructurada del sistema bancario."

@@ -91,6 +91,12 @@ class ServiceRequestItem(BaseModel):
     created_at: str
 
 
+class ServiceRequestCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    category: str = Field(..., pattern=r"^(LOAN|INSTALLMENT|FEE|GENERAL)$")
+    description: str = Field(..., min_length=5, max_length=240)
+
+
 class ServiceRequestListResponse(BaseModel):
     items: list[ServiceRequestItem]
 
@@ -509,6 +515,52 @@ def create_app(
         return ServiceRequestListResponse(
             items=[ServiceRequestItem(**item) for item in payload if isinstance(item, dict)]
         )
+
+    @app.post(
+        "/api/v1/service-requests",
+        response_model=ServiceRequestItem,
+        status_code=status.HTTP_201_CREATED,
+        tags=["Service requests"],
+    )
+    def create_service_request(
+        payload: ServiceRequestCreateRequest,
+        request: Request,
+    ) -> ServiceRequestItem:
+        """Create a customer-owned request through Core Banking."""
+        principal = auth.authenticate(request)
+        core_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
+        if not core_url:
+            raise HTTPException(status_code=503, detail="Core Banking service is not configured")
+        body = json.dumps(
+            {
+                "customer_id": principal.customer_id,
+                "category": payload.category,
+                "description": payload.description.strip(),
+            }
+        ).encode("utf-8")
+        target = f"{core_url.rstrip('/')}/api/v1/service-requests"
+        try:
+            request_to_core = urllib.request.Request(
+                target,
+                data=body,
+                headers={"Accept": "application/json", "Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(request_to_core, timeout=10.0) as response:  # nosec B310
+                result = json.loads(response.read().decode("utf-8"))
+        except (
+            urllib.error.HTTPError,
+            urllib.error.URLError,
+            TimeoutError,
+            ValueError,
+            json.JSONDecodeError,
+        ) as exc:
+            raise HTTPException(
+                status_code=503, detail="Core Banking service temporarily unavailable"
+            ) from exc
+        if not isinstance(result, dict):
+            raise HTTPException(status_code=503, detail="Core Banking returned an invalid request")
+        return ServiceRequestItem(**result)
 
     @app.post("/api/v1/agent/run", response_model=AgentRunResponse, tags=["Agent"])
     def run_agent(

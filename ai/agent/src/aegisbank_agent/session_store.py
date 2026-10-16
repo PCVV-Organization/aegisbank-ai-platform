@@ -34,6 +34,18 @@ class SessionData:
     updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+@dataclass(frozen=True, slots=True)
+class ConversationMessage:
+    """A user-visible message owned by one authenticated customer session."""
+
+    message_id: int
+    session_id: str
+    customer_id: str
+    role: str
+    content: str
+    created_at: str
+
+
 def _resolve_db_path(custom_path: Path | str | None = None) -> Path:
     if custom_path is not None:
         if str(custom_path) == ":memory:":
@@ -84,6 +96,25 @@ class SQLiteSessionStore:
                         created_at TEXT NOT NULL,
                         updated_at TEXT NOT NULL
                     )
+                    """
+                )
+                conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS agent_messages (
+                        message_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        session_id TEXT NOT NULL,
+                        customer_id TEXT NOT NULL,
+                        role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+                        content TEXT NOT NULL,
+                        created_at TEXT NOT NULL,
+                        FOREIGN KEY (session_id) REFERENCES agent_sessions(session_id)
+                    )
+                    """
+                )
+                conn.execute(
+                    """
+                    CREATE INDEX IF NOT EXISTS idx_messages_session
+                    ON agent_messages(session_id, message_id)
                     """
                 )
                 conn.execute(
@@ -223,3 +254,68 @@ class SQLiteSessionStore:
         session.last_loan_id = loan_id
         session.last_intent = intent
         self.update(session)
+
+    def append_message(
+        self, session_id: str, customer_id: str, role: str, content: str
+    ) -> ConversationMessage:
+        """Append a redacted user-visible message after verifying ownership."""
+        if role not in {"user", "assistant"}:
+            raise ValueError("Conversation role must be user or assistant")
+        clean_content = content.strip()
+        if not clean_content:
+            raise ValueError("Conversation content cannot be empty")
+        self.get_or_create(session_id, customer_id)
+        now = datetime.now(timezone.utc).isoformat()
+        conn = self._get_connection()
+        try:
+            with conn:
+                cursor = conn.execute(
+                    """
+                    INSERT INTO agent_messages(session_id, customer_id, role, content, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (session_id, customer_id, role, clean_content[:8000], now),
+                )
+                return ConversationMessage(
+                    message_id=int(cursor.lastrowid),
+                    session_id=session_id,
+                    customer_id=customer_id,
+                    role=role,
+                    content=clean_content[:8000],
+                    created_at=now,
+                )
+        finally:
+            if str(self._path) != ":memory:":
+                conn.close()
+
+    def list_messages(
+        self, session_id: str, customer_id: str, *, limit: int = 40
+    ) -> list[ConversationMessage]:
+        """Return only messages owned by the authenticated customer."""
+        self.get_or_create(session_id, customer_id)
+        bounded_limit = max(1, min(limit, 100))
+        conn = self._get_connection()
+        try:
+            rows = conn.execute(
+                """
+                SELECT message_id, session_id, customer_id, role, content, created_at
+                FROM agent_messages
+                WHERE session_id = ? AND customer_id = ?
+                ORDER BY message_id DESC LIMIT ?
+                """,
+                (session_id, customer_id, bounded_limit),
+            ).fetchall()
+            return [
+                ConversationMessage(
+                    message_id=int(row["message_id"]),
+                    session_id=row["session_id"],
+                    customer_id=row["customer_id"],
+                    role=row["role"],
+                    content=row["content"],
+                    created_at=row["created_at"],
+                )
+                for row in reversed(rows)
+            ]
+        finally:
+            if str(self._path) != ":memory:":
+                conn.close()
