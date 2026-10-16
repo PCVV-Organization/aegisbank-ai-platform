@@ -44,6 +44,10 @@ class CustomerLoginResponse(BaseModel):
     token_type: str
     expires_at: int
     customer_id: str
+    # Cross-origin SPAs cannot read a non-HttpOnly cookie on the API origin.
+    # Returning this CSRF nonce lets the browser send the double-submit header
+    # without exposing the session cookie.
+    csrf_token: str | None = None
 
 
 class AgentRunRequest(BaseModel):
@@ -282,6 +286,7 @@ def create_app(
                 samesite="none",
                 path="/",
             )
+            result["csrf_token"] = csrf
             result["token_type"] = "Cookie"
             return result
         except HTTPException:
