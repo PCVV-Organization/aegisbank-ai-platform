@@ -530,10 +530,18 @@ class AgentOrchestrator:
             available_tool_names = self._registry.allowed_tool_names
             account_required = requires_account_data(user_message)
             write_required = requires_write_action(user_message)
+            knowledge_required = requires_authorized_knowledge(user_message)
             account_allowlist = account_tool_allowlist(user_message) if account_required else []
 
             # Least-Agency Tool Policy: resolve minimal tool set required by intent
             allowed_tool_names = resolve_minimal_tool_allowlist(user_message, available_tool_names)
+            if (
+                os.getenv("AEGISBANK_FOUNDRY_COMPACT_TOOLS", "false").lower() == "true"
+                and not account_required
+                and not write_required
+                and not knowledge_required
+            ):
+                allowed_tool_names = []
             tools = [tool for tool in all_tools if tool["function"]["name"] in allowed_tool_names]
             if account_required:
                 self._metrics.increment("banking_data_required_count")

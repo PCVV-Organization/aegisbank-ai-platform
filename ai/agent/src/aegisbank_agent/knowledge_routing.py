@@ -518,8 +518,8 @@ def resolve_minimal_tool_allowlist(query: str, available_tools: list[str]) -> li
     - WRITE_ACTION: exposes create_service_request + referenced account tools.
     - ACCOUNT_READ: exposes strictly account allowlist (no WRITE tools).
     - KNOWLEDGE: exposes strictly search_knowledge (no account/write tools).
-    - OTHER: no tools; open-ended conversation must not spend Azure quota on
-      large tool schemas or gain unnecessary banking agency.
+    - OTHER: all available tools; hosted deployments may apply a separate
+      quota-saving provider policy before sending the request.
     """
     if is_greeting(query) or is_capability_query(query):
         return []
@@ -546,7 +546,7 @@ def resolve_minimal_tool_allowlist(query: str, available_tools: list[str]) -> li
     if knowledge_required:
         return [t for t in available_tools if t == "search_knowledge"]
 
-    return []
+    return list(available_tools)
 
 
 def redact_foreign_customer_ids(
