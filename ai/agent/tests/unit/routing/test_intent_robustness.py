@@ -135,6 +135,23 @@ def test_pseudo_tool_call_text_is_strictly_rejected_when_banking_data_required()
     assert metrics.get_counter("banking_tool_missed_count") >= 1
 
 
+def test_malformed_function_serialization_is_not_exposed_to_customer() -> None:
+    """Provider protocol text must never leak into a visible banking answer."""
+    db = create_default_database()
+    registry = ToolRegistry([GetMyLoansTool(db), GetLoanDetailsTool(db)])
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = _Response(
+        _Message(content='functools([{"name":"search_knowledge"}])')
+    )
+
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+    result = orchestrator.run("¿Qué estados puede tener un préstamo?", customer_id="CUST-0001")
+
+    assert result.success is False
+    assert "functools" not in result.answer
+    assert "interpretar" in result.answer
+
+
 def test_loan_detail_without_id_disambiguates_multi_loans() -> None:
     """Query without ID must not guess an ID when customer has multiple loans."""
     db = create_default_database()
