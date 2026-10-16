@@ -365,7 +365,11 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
             }
             {
               name: 'MOCK_CORE_BANKING_BASE_URL'
-              value: 'http://${mockCoreBankingApp.properties.configuration.ingress.fqdn}'
+              value: 'https://${mockCoreBankingApp.properties.configuration.ingress.fqdn}'
+            }
+            {
+              name: 'AEGISBANK_CORE_BANKING_URL'
+              value: 'https://${mockCoreBankingApp.properties.configuration.ingress.fqdn}'
             }
             {
               name: 'AEGISBANK_FOUNDRY_ENDPOINT'
