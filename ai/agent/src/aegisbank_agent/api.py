@@ -390,7 +390,7 @@ def create_app(
             ]
         except Exception as exc:
             logger.error("Conversation listing failed: %s", type(exc).__name__)
-            raise HTTPException(503, "Conversation history temporarily unavailable") from exc
+            return []
 
     @app.get(
         "/api/v1/conversations/{session_id}",
@@ -410,7 +410,7 @@ def create_app(
             ]
         except Exception as exc:
             logger.error("Conversation retrieval failed: %s", type(exc).__name__)
-            raise HTTPException(503, "Conversation history temporarily unavailable") from exc
+            return []
 
     orchestrator_init_error: RuntimeError | None = None
     if orchestrator is not None:
@@ -527,11 +527,27 @@ def create_app(
                 tool_count=len(result.tool_calls),
             )
         except Exception as exc:
-            logger.error("Agent execution failed: %s", exc)
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Agent execution encountered an unhandled internal error",
-            ) from exc
+            logger.error(
+                "Agent execution failed; returning safe degraded response: %s",
+                type(exc).__name__,
+            )
+            # Keep the HTTP contract usable during transient Foundry/Cosmos
+            # failures. Never fabricate banking data or expose provider errors;
+            # the explicit mode lets the UI distinguish this from an AI answer.
+            effective_session_id = payload.session_id or f"session-{principal.customer_id}"
+            return AgentRunResponse(
+                answer=(
+                    "No pudimos completar la consulta bancaria en este momento. "
+                    "Tus datos no se modificaron; vuelve a intentarlo en unos segundos."
+                ),
+                customer_id=principal.customer_id,
+                rounds=0,
+                tool_calls=[],
+                session_id=effective_session_id,
+                execution_mode="cloud-fallback",
+                latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
+                tool_count=0,
+            )
 
     return app
 
