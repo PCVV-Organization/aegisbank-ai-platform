@@ -376,6 +376,10 @@ resource agentApp 'Microsoft.App/containerApps@2023-05-01' = {
               value: string(foundryMaxTokens)
             }
             {
+              name: 'AEGISBANK_FOUNDRY_COMPACT_TOOLS'
+              value: 'true'
+            }
+            {
               name: 'AEGISBANK_ENTRA_TENANT_ID'
               value: entraTenantId
             }
