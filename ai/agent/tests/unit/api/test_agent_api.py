@@ -141,3 +141,67 @@ def test_agent_api_run_cloud_uses_verified_token_identity(monkeypatch) -> None:
         assert data["customer_id"] == "CUST-0001"
         mock_orch.run.assert_called_once()
         assert mock_orch.run.call_args.kwargs["customer_id"] == "CUST-0001"
+
+
+def test_agent_api_run_returns_safe_degraded_response_on_orchestrator_failure(monkeypatch) -> None:
+    monkeypatch.setenv("AEGISBANK_ENV", "staging")
+    mock_orch = MagicMock()
+    mock_orch.run.side_effect = RuntimeError("provider unavailable")
+    verified_principal = PrincipalContext(
+        customer_id="CUST-0001",
+        authenticated=True,
+        claims={"auth_type": "entra-jwt", "subject": "synthetic-subject"},
+    )
+    auth_provider = AuthenticationProvider(jwt_validator=lambda _token: verified_principal)
+    test_app = create_app(orchestrator=mock_orch, auth_provider=auth_provider)
+    client = TestClient(test_app)
+
+    with patch(
+        "aegisbank_agent.api.resolve_runtime_environment",
+        return_value=RuntimeEnvironment.STAGING,
+    ):
+        response = client.post(
+            "/api/v1/agent/run",
+            json={"query": "Consultar saldo", "session_id": "session-123"},
+            headers={"Authorization": "Bearer verified-token"},
+        )
+
+    assert response.status_code == 200
+    assert response.json()["execution_mode"] == "cloud-fallback"
+    assert "No pudimos completar" in response.json()["answer"]
+    assert response.json()["session_id"] == "session-123"
+
+
+def test_conversation_history_dependency_failure_degrades_to_empty_result(monkeypatch) -> None:
+    monkeypatch.setenv("CONVERSATION_PERSISTENCE_ENABLED", "true")
+    verified_principal = PrincipalContext(
+        customer_id="CUST-0001",
+        authenticated=True,
+        claims={"auth_type": "entra-jwt", "subject": "synthetic-subject"},
+    )
+    auth_provider = AuthenticationProvider(jwt_validator=lambda _token: verified_principal)
+
+    class BrokenConversationStore:
+        def list_sessions(self, _customer_id: str):
+            raise RuntimeError("cosmos unavailable")
+
+        def get_session(self, _customer_id: str, _session_id: str):
+            raise RuntimeError("cosmos unavailable")
+
+    with patch("aegisbank_agent.api.ConversationStore", return_value=BrokenConversationStore()):
+        test_app = create_app(orchestrator=MagicMock(), auth_provider=auth_provider)
+    client = TestClient(test_app)
+
+    assert (
+        client.get(
+            "/api/v1/conversations", headers={"Authorization": "Bearer verified-token"}
+        ).json()
+        == []
+    )
+    assert (
+        client.get(
+            "/api/v1/conversations/session-123",
+            headers={"Authorization": "Bearer verified-token"},
+        ).json()
+        == []
+    )
