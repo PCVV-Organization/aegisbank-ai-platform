@@ -136,7 +136,7 @@ resource conversationDataContributor 'Microsoft.DocumentDB/databaseAccounts/sqlR
     // Keep the assignment database-scoped (rather than account-scoped) so the
     // workload identity can resolve that metadata while retaining least
     // privilege for the conversation database.
-    scope: '/dbs/${conversationDatabaseName}'
+    scope: '${conversationCosmosAccount.id}/dbs/${conversationDatabaseName}'
   }
 }
 
