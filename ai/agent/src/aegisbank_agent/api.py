@@ -27,7 +27,6 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 from .agent import AgentExecutionResult, AgentOrchestrator
-from .tools.base import AgentContext
 from .configuration.environment import (
     EnvironmentSelectionError,
     RuntimeEnvironment,
@@ -36,6 +35,7 @@ from .configuration.environment import (
 )
 from .conversation_store import ConversationStore
 from .customer_auth import CosmosAuthStore, CustomerAuth
+from .tools.base import AgentContext
 
 logger = logging.getLogger("aegisbank.agent.api")
 
