@@ -594,7 +594,9 @@ def create_app(
             if current.synthetic_customer_id != principal.customer_id:
                 raise HTTPException(status_code=404, detail="Approval request not found")
             if not payload.approved:
-                result = manager.reject(approval_id, principal.customer_id, "Rechazado por el cliente")
+                result = manager.reject(
+                    approval_id, principal.customer_id, "Rechazado por el cliente"
+                )
                 return {"approval": result.as_dict(), "executed": False}
             approved = manager.approve(approval_id, principal.customer_id)
             tool_result = agent_orchestrator.registry.execute(
@@ -603,7 +605,9 @@ def create_app(
                 AgentContext(session_customer_id=principal.customer_id),
             )
             if not tool_result.success:
-                raise HTTPException(status_code=503, detail="Core Banking service temporarily unavailable")
+                raise HTTPException(
+                    status_code=503, detail="Core Banking service temporarily unavailable"
+                )
             executed = manager.verify_and_mark_executed(
                 approval_id,
                 principal.customer_id,
