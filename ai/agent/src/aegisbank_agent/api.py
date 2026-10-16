@@ -28,8 +28,8 @@ from .configuration.environment import (
     resolve_runtime_environment,
     validate_runtime_configuration,
 )
-from .customer_auth import CosmosAuthStore, CustomerAuth
 from .conversation_store import ConversationStore
+from .customer_auth import CosmosAuthStore, CustomerAuth
 
 logger = logging.getLogger("aegisbank.agent.api")
 
@@ -370,13 +370,18 @@ def create_app(
             result["csrf_token"] = csrf
         return result
 
-    @app.get("/api/v1/conversations", response_model=list[ConversationSummary], tags=["Conversations"])
+    @app.get(
+        "/api/v1/conversations", response_model=list[ConversationSummary], tags=["Conversations"]
+    )
     def list_conversations(request: Request) -> list[ConversationSummary]:
         if conversation_store is None:
             raise HTTPException(503, "Conversation history is not configured")
         principal = auth.authenticate(request)
         try:
-            return [ConversationSummary(**item) for item in conversation_store.list_sessions(principal.customer_id)]
+            return [
+                ConversationSummary(**item)
+                for item in conversation_store.list_sessions(principal.customer_id)
+            ]
         except Exception as exc:
             logger.error("Conversation listing failed: %s", type(exc).__name__)
             raise HTTPException(503, "Conversation history temporarily unavailable") from exc
@@ -393,7 +398,10 @@ def create_app(
         if len(session_id) > 128 or not re.fullmatch(r"[A-Za-z0-9_-]+", session_id):
             raise HTTPException(400, "Invalid conversation identifier")
         try:
-            return [ConversationTurn(**item) for item in conversation_store.get_session(principal.customer_id, session_id)]
+            return [
+                ConversationTurn(**item)
+                for item in conversation_store.get_session(principal.customer_id, session_id)
+            ]
         except Exception as exc:
             logger.error("Conversation retrieval failed: %s", type(exc).__name__)
             raise HTTPException(503, "Conversation history temporarily unavailable") from exc

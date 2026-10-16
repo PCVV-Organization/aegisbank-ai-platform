@@ -67,7 +67,9 @@ class ConversationStore:
         )
         return sorted(items, key=lambda item: item.get("updated_at", ""), reverse=True)[:safe_limit]
 
-    def get_session(self, customer_id: str, session_id: str, limit: int = 100) -> list[dict[str, Any]]:
+    def get_session(
+        self, customer_id: str, session_id: str, limit: int = 100
+    ) -> list[dict[str, Any]]:
         safe_limit = max(1, min(limit, 200))
         items = self._repository.query_items(
             "SELECT c.session_id, c.role, c.content, c.created_at FROM c "
