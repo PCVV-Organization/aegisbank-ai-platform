@@ -444,9 +444,10 @@ class AgentOrchestrator:
         # deterministic account-count questions. Resolve this read-only intent
         # through the same authorized tool registry so cloud chat remains live
         # without fabricating banking data or trusting caller-supplied identity.
-        if re.search(r"\\b(?:cu[aá]nt(?:os|as)|n[uú]mero|how many)\\b", user_message, re.I) and re.search(
-            r"\\b(?:pr[eé]stamos?|loans?)\\b", user_message, re.I
-        ):
+        asks_loan_count = re.search(
+            r"\\b(?:cu[aá]nt(?:os|as)|n[uú]mero|how many)\\b", user_message, re.I
+        ) and re.search(r"\\b(?:pr[eé]stamos?|loans?)\\b", user_message, re.I)
+        if asks_loan_count:
             tool_result = self._registry.execute(
                 "get_my_loans", {}, AgentContext(session_customer_id=customer_id)
             )
