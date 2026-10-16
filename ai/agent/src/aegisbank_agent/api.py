@@ -481,14 +481,9 @@ def create_app(
                 status_code=503,
                 detail="Core Banking service is not configured",
             )
-        target = (
-            f"{core_url.rstrip('/')}/api/v1/service-requests/customer/"
-            f"{principal.customer_id}"
-        )
+        target = f"{core_url.rstrip('/')}/api/v1/service-requests/customer/{principal.customer_id}"
         try:
-            request_to_core = urllib.request.Request(
-                target, headers={"Accept": "application/json"}
-            )
+            request_to_core = urllib.request.Request(target, headers={"Accept": "application/json"})
             with urllib.request.urlopen(  # nosec B310 - configured service URL
                 request_to_core, timeout=10.0
             ) as response:
@@ -511,11 +506,7 @@ def create_app(
                 detail="Core Banking returned an invalid request feed",
             )
         return ServiceRequestListResponse(
-            items=[
-                ServiceRequestItem(**item)
-                for item in payload
-                if isinstance(item, dict)
-            ]
+            items=[ServiceRequestItem(**item) for item in payload if isinstance(item, dict)]
         )
 
     @app.post("/api/v1/agent/run", response_model=AgentRunResponse, tags=["Agent"])
