@@ -13,6 +13,9 @@ import os
 import re
 import secrets
 import time
+import json
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -77,6 +80,18 @@ class AgentRunResponse(BaseModel):
     )
     latency_ms: float = Field(ge=0)
     tool_count: int = Field(ge=0)
+
+
+class ServiceRequestItem(BaseModel):
+    service_request_id: str
+    category: str
+    description: str
+    status: str
+    created_at: str
+
+
+class ServiceRequestListResponse(BaseModel):
+    items: list[ServiceRequestItem]
 
 
 class ConversationSummary(BaseModel):
@@ -452,6 +467,26 @@ def create_app(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Service unready: runtime configuration invalid or incomplete",
             ) from exc
+
+    @app.get("/api/v1/me/service-requests", response_model=ServiceRequestListResponse, tags=["Service requests"])
+    def list_my_service_requests(request: Request) -> ServiceRequestListResponse:
+        principal = auth.authenticate(request)
+        core_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
+        if not core_url:
+            raise HTTPException(status_code=503, detail="Core Banking service is not configured")
+        target = f"{core_url.rstrip('/')}/api/v1/service-requests/customer/{principal.customer_id}"
+        try:
+            with urllib.request.urlopen(urllib.request.Request(target, headers={"Accept": "application/json"}), timeout=10.0) as response:  # nosec B310 - configured service URL
+                payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                return ServiceRequestListResponse(items=[])
+            raise HTTPException(status_code=503, detail="Core Banking service temporarily unavailable") from exc
+        except (urllib.error.URLError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
+            raise HTTPException(status_code=503, detail="Core Banking service temporarily unavailable") from exc
+        if not isinstance(payload, list):
+            raise HTTPException(status_code=503, detail="Core Banking returned an invalid request feed")
+        return ServiceRequestListResponse(items=[ServiceRequestItem(**item) for item in payload if isinstance(item, dict)])
 
     @app.post("/api/v1/agent/run", response_model=AgentRunResponse, tags=["Agent"])
     def run_agent(
