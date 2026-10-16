@@ -478,7 +478,8 @@ def create_app(
         core_url = os.getenv("AEGISBANK_CORE_BANKING_URL") or os.getenv("CORE_BANKING_URL")
         if not core_url:
             raise HTTPException(
-                status_code=503, detail="Core Banking service is not configured"
+                status_code=503,
+                detail="Core Banking service is not configured",
             )
         target = (
             f"{core_url.rstrip('/')}/api/v1/service-requests/customer/"
