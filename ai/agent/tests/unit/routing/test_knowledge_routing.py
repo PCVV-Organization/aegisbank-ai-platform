@@ -165,6 +165,15 @@ def test_other_reason_accepts_description_when_provided() -> None:
     assert draft["description"]
 
 
+def test_other_reason_label_is_enough_to_select_the_canonical_reason() -> None:
+    draft = extract_service_request_draft(
+        "Selecciono el motivo: Otro motivo. Mi detalle es: me han estafado"
+    )
+
+    assert draft["reason_code"] == "GENERAL_OTHER"
+    assert draft["reason_label"] == "Otro motivo"
+
+
 @pytest.mark.parametrize(
     "text",
     [

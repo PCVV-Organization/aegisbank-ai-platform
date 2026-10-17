@@ -372,6 +372,8 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
             "no reconozco": "FEE_UNRECOGNIZED",
             "comision": "FEE_UNRECOGNIZED",
             "cargo": "FEE_UNRECOGNIZED",
+            "otro motivo": "GENERAL_OTHER",
+            "otro": "GENERAL_OTHER",
         }
         reason = next(
             (get_reason(code) for term, code in reason_terms.items() if term in normalized), None
