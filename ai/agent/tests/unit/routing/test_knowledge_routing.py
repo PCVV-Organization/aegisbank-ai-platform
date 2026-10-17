@@ -157,6 +157,14 @@ def test_fraud_signal_enters_guided_flow_without_foundry() -> None:
     assert draft == {"needs_reason": "true", "category": "GENERAL"}
 
 
+def test_other_reason_accepts_description_when_provided() -> None:
+    draft = extract_service_request_draft(
+        "Selecciono el motivo GENERAL_OTHER: me han estafado en una transferencia"
+    )
+    assert draft["reason_code"] == "GENERAL_OTHER"
+    assert draft["description"]
+
+
 @pytest.mark.parametrize(
     "text",
     [

@@ -406,7 +406,7 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         return {"needs_category": "true"}
     if reason is None:
         return {"needs_reason": "true", "category": category}
-    if len(substantive) < 2 or reason.requires_description:
+    if len(substantive) < 2:
         return {
             "needs_description": "true",
             "category": category,
