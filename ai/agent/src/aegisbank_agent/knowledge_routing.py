@@ -348,14 +348,32 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         return None
     normalized = _normalize(query)
     category = ""
-    if any(term in normalized for term in ("cuota", "cuotas", "pago", "vencida", "vencimiento")):
+    if any(
+        term in normalized
+        for term in ("cuota", "cuotas", "pago", "vencida", "vencimiento", "installment")
+    ):
         category = "INSTALLMENT"
-    elif any(term in normalized for term in ("prestamo", "prestamos", "reprogram")):
+    elif any(term in normalized for term in ("prestamo", "prestamos", "loan", "reprogram")):
         category = "LOAN"
-    elif any(term in normalized for term in ("comision", "cargo", "interes")):
+    elif any(
+        term in normalized
+        for term in ("comision", "comisiones", "cargo", "cargos", "fee", "interes")
+    ):
         category = "FEE"
-    elif any(term in normalized for term in ("estafa", "estafaron", "fraude", "me enganaron")):
+    elif any(
+        term in normalized
+        for term in ("general", "consulta general", "estafa", "estafaron", "fraude", "me enganaron")
+    ):
         category = "GENERAL"
+
+    category_chip_selection = normalized in {
+        "quiero registrar un reclamo sobre prestamos",
+        "quiero registrar un reclamo sobre cuotas y pagos",
+        "quiero registrar un reclamo sobre comisiones y cargos",
+        "quiero registrar un reclamo sobre consulta general",
+    }
+    if category_chip_selection and category:
+        return {"needs_reason": "true", "category": category}
 
     reason = next(
         (get_reason(code) for code in get_reason_codes() if code.lower() in normalized), None
