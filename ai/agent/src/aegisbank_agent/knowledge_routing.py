@@ -348,9 +348,26 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         category = "INSTALLMENT"
 
     trigger_words = {
-        "quiero", "deseo", "registrar", "registro", "registrar", "crear", "crea",
-        "solicitar", "solicitud", "presentar", "presenta", "reclamo", "reclamacion",
-        "queja", "servicio", "un", "una", "de", "mi", "un", "nuevo", "nueva",
+        "quiero",
+        "deseo",
+        "registrar",
+        "registro",
+        "crear",
+        "crea",
+        "solicitar",
+        "solicitud",
+        "presentar",
+        "presenta",
+        "reclamo",
+        "reclamacion",
+        "queja",
+        "servicio",
+        "un",
+        "una",
+        "de",
+        "mi",
+        "nuevo",
+        "nueva",
     }
     substantive = [word for word in normalized.split() if word not in trigger_words]
     if len(substantive) < 2:

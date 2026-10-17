@@ -160,8 +160,7 @@ def test_malformed_normalizer_function_serialization_is_not_exposed() -> None:
     mock_client.chat.completions.create.return_value = _Response(
         _Message(
             content=(
-                'Funcion normalizar::{"type":"function","function":'
-                '{"name":".","arguments":{}}}'
+                'Funcion normalizar::{"type":"function","function":{"name":".","arguments":{}}}'
             )
         )
     )
