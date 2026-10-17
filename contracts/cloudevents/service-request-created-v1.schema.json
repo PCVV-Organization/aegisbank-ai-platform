@@ -88,6 +88,7 @@
             "INSTALLMENT_AMOUNT_DISPUTE",
             "FEE_UNRECOGNIZED",
             "FEE_DUPLICATE_CHARGE",
+            "GENERAL_FRAUD",
             "GENERAL_OTHER"
           ]
         },
