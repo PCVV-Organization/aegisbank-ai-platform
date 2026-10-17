@@ -138,7 +138,9 @@ def test_extract_service_request_draft_is_deterministic_and_bounded() -> None:
 
     assert draft == {
         "category": "LOAN",
-        "description": "Quiero registrar un reclamo de préstamo por una cuota cobrada incorrectamente",
+        "description": (
+            "Quiero registrar un reclamo de préstamo por una cuota cobrada incorrectamente"
+        ),
     }
 
 
