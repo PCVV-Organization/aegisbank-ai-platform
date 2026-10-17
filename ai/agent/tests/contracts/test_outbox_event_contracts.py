@@ -33,6 +33,8 @@ def test_service_request_created_event_matches_contract_schema() -> None:
     res = tool.execute(
         {
             "category": "LOAN",
+            "reason_code": "LOAN_BALANCE_DISPUTE",
+            "reason_label": "Saldo o detalle del préstamo",
             "description": "Contract validation service request",
             "idempotency_key": "IDEMP-CONTRACT-001",
         },

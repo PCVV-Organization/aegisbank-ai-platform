@@ -7,6 +7,8 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Any
 
+from .service_request_catalog import get_reason
+
 _LOAN_STATUS_KNOWLEDGE_PATTERNS = (
     r"\bque\s+(?:es|significa)\s+(?:el\s+)?(?:estado\s+)?delinquent\b",
     r"\bdefinicion\s+de\s+(?:estado\s+)?delinquent\b",
@@ -339,13 +341,35 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
     if not requires_write_action(query):
         return None
     normalized = _normalize(query)
-    category = "GENERAL"
-    if any(term in normalized for term in ("prestamo", "prestamos", "cuota", "reprogram")):
+    category = ""
+    if any(term in normalized for term in ("cuota", "cuotas", "pago", "vencida", "vencimiento")):
+        category = "INSTALLMENT"
+    elif any(term in normalized for term in ("prestamo", "prestamos", "reprogram")):
         category = "LOAN"
     elif any(term in normalized for term in ("comision", "cargo", "interes")):
         category = "FEE"
-    elif any(term in normalized for term in ("pago", "vencida", "vencimiento", "cuota")):
-        category = "INSTALLMENT"
+
+    reason = next(
+        (get_reason(code) for code in get_reason_codes() if code.lower() in normalized), None
+    )
+    if reason is None:
+        reason_terms = {
+            "reprogram": "LOAN_RESTRUCTURING",
+            "saldo": "LOAN_BALANCE_DISPUTE",
+            "fecha": "INSTALLMENT_DATE",
+            "duplicado": "INSTALLMENT_DUPLICATE_CHARGE",
+            "importe": "INSTALLMENT_AMOUNT_DISPUTE",
+            "incorrect": "INSTALLMENT_AMOUNT_DISPUTE",
+            "no reconocido": "FEE_UNRECOGNIZED",
+            "no reconozco": "FEE_UNRECOGNIZED",
+            "comision": "FEE_UNRECOGNIZED",
+            "cargo": "FEE_UNRECOGNIZED",
+        }
+        reason = next(
+            (get_reason(code) for term, code in reason_terms.items() if term in normalized), None
+        )
+    if reason is not None:
+        category = reason.category
 
     trigger_words = {
         "quiero",
@@ -370,9 +394,30 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         "nueva",
     }
     substantive = [word for word in normalized.split() if word not in trigger_words]
-    if len(substantive) < 2:
-        return {"needs_clarification": "true", "category": category}
-    return {"category": category, "description": query.strip()}
+    if not category:
+        return {"needs_category": "true"}
+    if reason is None:
+        return {"needs_reason": "true", "category": category}
+    if len(substantive) < 2 or reason.requires_description:
+        return {
+            "needs_description": "true",
+            "category": category,
+            "reason_code": reason.code,
+            "reason_label": reason.label,
+        }
+    return {
+        "category": category,
+        "reason_code": reason.code,
+        "reason_label": reason.label,
+        "description": query.strip(),
+    }
+
+
+def get_reason_codes() -> tuple[str, ...]:
+    """Return stable catalog codes without exposing mutable registry state."""
+    from .service_request_catalog import REASON_BY_CODE
+
+    return tuple(REASON_BY_CODE)
 
 
 def requires_authorized_knowledge(query: str) -> bool:

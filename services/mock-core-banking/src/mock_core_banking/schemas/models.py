@@ -11,6 +11,7 @@ from ..domain.enums import (
     InstallmentStatus,
     LoanStatus,
     ServiceRequestCategory,
+    ServiceRequestReason,
     ServiceRequestStatus,
 )
 
@@ -71,6 +72,8 @@ class ServiceRequestCreate(ApiModel):
     customer_id: CustomerId
     category: ServiceRequestCategory
     description: Description
+    reason_code: ServiceRequestReason = ServiceRequestReason.GENERAL_OTHER
+    reason_label: str = Field("Otro motivo", min_length=3, max_length=120)
 
 
 class ServiceRequestResponse(OrmResponseModel):
@@ -78,6 +81,8 @@ class ServiceRequestResponse(OrmResponseModel):
     customer_id: CustomerId
     category: ServiceRequestCategory
     description: str
+    reason_code: ServiceRequestReason = ServiceRequestReason.GENERAL_OTHER
+    reason_label: str = "Otro motivo"
     status: ServiceRequestStatus
     created_at: datetime
 

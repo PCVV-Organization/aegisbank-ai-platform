@@ -30,6 +30,8 @@ def test_service_request_strips_description() -> None:
             "customer_id": "CUST-0001",
             "category": "GENERAL",
             "description": "  Synthetic request  ",
+            "reason_code": "GENERAL_OTHER",
+            "reason_label": "Otro motivo",
         }
     )
     assert request.description == "Synthetic request"

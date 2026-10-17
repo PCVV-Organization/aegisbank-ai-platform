@@ -8,6 +8,7 @@ from ..domain.enums import (
     InstallmentStatus,
     LoanStatus,
     ServiceRequestCategory,
+    ServiceRequestReason,
     ServiceRequestStatus,
 )
 from ..domain.money import calculate_total_due
@@ -222,6 +223,8 @@ def build_seed_data() -> tuple[
             customer_id="CUST-0001",
             category=ServiceRequestCategory.LOAN,
             description="Review the synthetic loan summary.",
+            reason_code=ServiceRequestReason.LOAN_BALANCE_DISPUTE,
+            reason_label="Saldo o detalle del préstamo",
             status=ServiceRequestStatus.OPEN,
             created_at=SEED_TIMESTAMP,
         ),
@@ -230,6 +233,8 @@ def build_seed_data() -> tuple[
             customer_id="CUST-0002",
             category=ServiceRequestCategory.INSTALLMENT,
             description="Review the synthetic installment schedule.",
+            reason_code=ServiceRequestReason.INSTALLMENT_DATE,
+            reason_label="Fecha de vencimiento",
             status=ServiceRequestStatus.IN_REVIEW,
             created_at=SEED_TIMESTAMP,
         ),

@@ -146,6 +146,12 @@ class ServiceRequestEventHandler:
                 if isinstance(raw_event, Mapping)
                 else cloud_event_from_sdk(raw_event)
             )
+            # Accept pre-reason legacy events during the contract migration.
+            # New producers always emit the required canonical fields.
+            data = dict(event.get("data", {}))
+            data.setdefault("reason_code", "GENERAL_OTHER")
+            data.setdefault("reason_label", "Otro motivo")
+            event["data"] = data
             self._validate_supported_event(event)
         except (CloudEventValidationError, PermanentEventError) as exc:
             self._record_rejection(exc, started_at)

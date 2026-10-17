@@ -137,7 +137,9 @@ def test_extract_service_request_draft_is_deterministic_and_bounded() -> None:
     )
 
     assert draft == {
-        "category": "LOAN",
+        "category": "INSTALLMENT",
+        "reason_code": "INSTALLMENT_AMOUNT_DISPUTE",
+        "reason_label": "Importe de cuota incorrecto",
         "description": (
             "Quiero registrar un reclamo de préstamo por una cuota cobrada incorrectamente"
         ),
@@ -146,8 +148,7 @@ def test_extract_service_request_draft_is_deterministic_and_bounded() -> None:
 
 def test_extract_service_request_draft_requires_detail_for_generic_request() -> None:
     assert extract_service_request_draft("Quiero registrar un reclamo de servicio") == {
-        "needs_clarification": "true",
-        "category": "GENERAL",
+        "needs_category": "true",
     }
 
 

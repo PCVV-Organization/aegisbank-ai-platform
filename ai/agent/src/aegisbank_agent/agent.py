@@ -48,6 +48,7 @@ from .observability.logging import StructuredLogger, get_logger
 from .observability.metrics import OperationalMetrics, get_metrics
 from .observability.tracer import trace_span
 from .reliability.retry import RetryPolicy
+from .service_request_catalog import options_for_category
 from .session_store import OwnershipViolationError, SQLiteSessionStore
 from .tools.base import AgentContext, ToolResult
 from .tools.registry import ToolRegistry
@@ -82,6 +83,7 @@ class AgentExecutionResult:
     correlation_id: str = ""
     citations: list[dict[str, Any]] = field(default_factory=list)
     rounds_evidence: list[dict[str, Any]] = field(default_factory=list)
+    guided_request: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -104,6 +106,7 @@ class AgentExecutionResult:
             "correlation_id": self.correlation_id,
             "citations": self.citations,
             "rounds_evidence": self.rounds_evidence,
+            "guided_request": self.guided_request,
         }
 
 
@@ -560,20 +563,64 @@ class AgentOrchestrator:
                 and active_approval_cb is None
                 and self._hotl.is_write_allowed
             ):
-                if service_draft.get("needs_clarification") == "true":
+                if service_draft.get("needs_category") == "true":
                     return AgentExecutionResult(
                         answer=(
-                            "Puedo registrar el reclamo, pero necesito una descripción breve "
-                            "del motivo. Indica qué ocurrió y, si aplica, el préstamo, cuota, "
-                            "comisión o cargo relacionado."
+                            "Para registrar el reclamo, selecciona primero la "
+                            "categoría correspondiente."
                         ),
                         customer_id=customer_id,
                         rounds=0,
                         success=True,
                         correlation_id=obs_ctx.correlation_id,
+                        guided_request={
+                            "step": "CATEGORY",
+                            "options": [
+                                {"category": category, "label": label}
+                                for category, label in (
+                                    ("LOAN", "Préstamos"),
+                                    ("INSTALLMENT", "Cuotas y pagos"),
+                                    ("FEE", "Comisiones y cargos"),
+                                    ("GENERAL", "Consulta general"),
+                                )
+                            ],
+                        },
+                    )
+                if service_draft.get("needs_reason") == "true":
+                    category = service_draft["category"]
+                    return AgentExecutionResult(
+                        answer="Selecciona el motivo que mejor describe tu reclamo.",
+                        customer_id=customer_id,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                        guided_request={
+                            "step": "REASON",
+                            "category": category,
+                            "options": options_for_category(category),
+                        },
+                    )
+                if service_draft.get("needs_description") == "true":
+                    return AgentExecutionResult(
+                        answer=(
+                            f"Describe brevemente el motivo: "
+                            f"{service_draft.get('reason_label', 'otro motivo')}."
+                        ),
+                        customer_id=customer_id,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                        guided_request={
+                            "step": "DESCRIPTION",
+                            "category": service_draft["category"],
+                            "reason_code": service_draft.get("reason_code"),
+                            "reason_label": service_draft.get("reason_label"),
+                        },
                     )
                 normalized_arguments = {
                     "category": service_draft["category"],
+                    "reason_code": service_draft["reason_code"],
+                    "reason_label": service_draft["reason_label"],
                     "description": service_draft["description"],
                 }
                 approval_req = self._hitl_manager.create_request(

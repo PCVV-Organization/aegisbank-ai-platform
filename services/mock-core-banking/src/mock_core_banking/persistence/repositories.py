@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..domain.enums import ServiceRequestCategory, ServiceRequestStatus
+from ..domain.enums import ServiceRequestCategory, ServiceRequestReason, ServiceRequestStatus
 from ..domain.errors import (
     CustomerNotFoundError,
     LoanNotFoundError,
@@ -90,6 +90,8 @@ class ServiceRequestRepository:
         customer_id: str,
         category: ServiceRequestCategory,
         description: str,
+        reason_code: ServiceRequestReason = ServiceRequestReason.GENERAL_OTHER,
+        reason_label: str = "Otro motivo",
     ) -> ServiceRequest:
         latest_id = self._session.scalar(
             select(ServiceRequest.service_request_id)
@@ -106,6 +108,8 @@ class ServiceRequestRepository:
             customer_id=customer_id,
             category=category,
             description=description,
+            reason_code=reason_code,
+            reason_label=reason_label,
             status=ServiceRequestStatus.OPEN,
             created_at=now,
         )
@@ -124,6 +128,8 @@ class ServiceRequestRepository:
                     "customer_id": customer_id,
                     "category": cat_str,
                     "description": description,
+                    "reason_code": reason_code.value,
+                    "reason_label": reason_label,
                     "status": sr.status.value,
                     "created_at": now.isoformat(),
                 },

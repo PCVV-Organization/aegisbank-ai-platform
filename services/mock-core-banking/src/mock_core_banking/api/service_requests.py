@@ -69,6 +69,8 @@ def create_service_request(
             customer_id=payload.customer_id,
             category=payload.category,
             description=payload.description,
+            reason_code=payload.reason_code,
+            reason_label=payload.reason_label,
         )
         result = ServiceRequestResponse.model_validate(record)
 

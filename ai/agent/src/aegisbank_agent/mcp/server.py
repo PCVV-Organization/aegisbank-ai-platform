@@ -122,6 +122,8 @@ def create_aegisbank_mcp_server(
         category: str,
         description: str,
         customer_id: str,
+        reason_code: str = "GENERAL_OTHER",
+        reason_label: str = "Otro motivo",
         approval_id: str | None = None,
     ) -> str:
         try:
@@ -138,10 +140,19 @@ def create_aegisbank_mcp_server(
                 )
 
             # Verify through HITL approval manager
-            arguments_to_verify = {"category": category, "description": description}
+            arguments_to_verify = {
+                "category": category,
+                "reason_code": reason_code,
+                "reason_label": reason_label,
+                "description": description,
+            }
             try:
                 # Pre-execution check
-                _ = approval_mgr.get_request(approval_id)
+                approved_request = approval_mgr.get_request(approval_id)
+                if "reason_code" not in approved_request.normalized_arguments:
+                    arguments_to_verify["reason_code"] = "GENERAL_OTHER"
+                if "reason_label" not in approved_request.normalized_arguments:
+                    arguments_to_verify["reason_label"] = "Otro motivo"
             except Exception as e:
                 return json.dumps({"success": False, "error": str(e)}, ensure_ascii=False)
 
@@ -151,10 +162,13 @@ def create_aegisbank_mcp_server(
             )
 
             if res.success:
+                verification_arguments = arguments_to_verify
+                if "reason_code" not in approved_request.normalized_arguments:
+                    verification_arguments = approved_request.normalized_arguments
                 approval_mgr.verify_and_mark_executed(
                     approval_id=approval_id,
                     customer_id=customer_id,
-                    arguments_to_execute=arguments_to_verify,
+                    arguments_to_execute=verification_arguments,
                     execution_result=res.data or {},
                 )
 

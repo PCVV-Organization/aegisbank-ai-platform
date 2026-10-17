@@ -11,6 +11,8 @@ def _payload(description: str = "Synthetic fee review") -> dict[str, str]:
     return {
         "customer_id": "CUST-0001",
         "category": "FEE",
+        "reason_code": "FEE_UNRECOGNIZED",
+        "reason_label": "Comisión o cargo no reconocido",
         "description": description,
     }
 
@@ -24,6 +26,8 @@ def test_valid_service_request_is_created_and_retrievable(client) -> None:
         "customer_id": "CUST-0001",
         "category": "FEE",
         "description": "Synthetic fee review",
+        "reason_code": "FEE_UNRECOGNIZED",
+        "reason_label": "Comisión o cargo no reconocido",
         "status": "OPEN",
         "created_at": response.json()["created_at"],
     }
@@ -65,12 +69,16 @@ def test_write_transaction_rolls_back_on_failure(client, database, monkeypatch) 
         customer_id: str,
         category: ServiceRequestCategory,
         description: str,
+        reason_code,
+        reason_label: str,
     ) -> ServiceRequest:
         record = ServiceRequest(
             service_request_id="SR-999998",
             customer_id=customer_id,
             category=category,
             description=description,
+            reason_code=reason_code,
+            reason_label=reason_label,
             status=ServiceRequestStatus.OPEN,
             created_at=datetime.now(timezone.utc),
         )

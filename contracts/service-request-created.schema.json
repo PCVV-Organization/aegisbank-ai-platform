@@ -24,6 +24,8 @@
         "service_request_id",
         "customer_id",
         "category",
+        "reason_code",
+        "reason_label",
         "description",
         "status"
       ],
@@ -31,6 +33,8 @@
         "service_request_id": { "type": "string" },
         "customer_id": { "type": "string" },
         "category": { "type": "string" },
+        "reason_code": { "type": "string" },
+        "reason_label": { "type": "string" },
         "description": { "type": "string" },
         "status": { "type": "string" }
       }

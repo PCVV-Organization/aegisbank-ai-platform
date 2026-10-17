@@ -10,7 +10,7 @@ import urllib.parse
 import urllib.request
 from typing import Any
 
-from mock_core_banking.domain.enums import ServiceRequestCategory
+from mock_core_banking.domain.enums import ServiceRequestCategory, ServiceRequestReason
 from mock_core_banking.domain.errors import CustomerNotFoundError, LoanNotFoundError
 from mock_core_banking.domain.next_installment import select_next_installment
 from mock_core_banking.persistence.database import Database
@@ -410,18 +410,29 @@ class CreateServiceRequestTool(FunctionTool):
                     "type": "string",
                     "description": "Detalle descriptivo del reclamo o solicitud del cliente.",
                 },
+                "reason_code": {
+                    "type": "string",
+                    "enum": [reason.value for reason in ServiceRequestReason],
+                    "description": "Motivo canónico seleccionado del catálogo de reclamos.",
+                },
+                "reason_label": {
+                    "type": "string",
+                    "description": "Etiqueta canónica del motivo seleccionado.",
+                },
                 "idempotency_key": {
                     "type": "string",
                     "description": "Llave única para garantizar que la solicitud no se duplique.",
                 },
             },
-            "required": ["category", "description"],
+            "required": ["category", "reason_code", "reason_label", "description"],
             "additionalProperties": False,
         }
 
     def execute(self, arguments: dict[str, Any], context: AgentContext) -> ToolResult:
         raw_category = arguments.get("category")
         description = arguments.get("description")
+        reason_code = arguments.get("reason_code")
+        reason_label = arguments.get("reason_label")
         idempotency_key = arguments.get("idempotency_key")
 
         if not isinstance(raw_category, str) or not raw_category.strip():
@@ -468,9 +479,27 @@ class CreateServiceRequestTool(FunctionTool):
                 ),
             )
 
+        try:
+            reason_enum = ServiceRequestReason(str(reason_code or "GENERAL_OTHER").strip().upper())
+        except ValueError, AttributeError:
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error="El parámetro 'reason_code' no pertenece al catálogo autorizado.",
+            )
+        reason_label = reason_label or "Otro motivo"
+        if not isinstance(reason_label, str) or len(reason_label.strip()) < 3:
+            return ToolResult(
+                tool_name=self.name,
+                success=False,
+                error="El parámetro 'reason_label' es obligatorio.",
+            )
+
         # Normalize arguments for idempotency checking
         normalized_args = {
             "category": category_enum.value,
+            "reason_code": reason_enum.value,
+            "reason_label": reason_label.strip(),
             "description": description.strip(),
         }
         effective_key = (
@@ -487,6 +516,8 @@ class CreateServiceRequestTool(FunctionTool):
                 payload_dict = {
                     "customer_id": context.session_customer_id,
                     "category": category_enum.value,
+                    "reason_code": reason_enum.value,
+                    "reason_label": reason_label.strip(),
                     "description": description.strip(),
                 }
                 req_data = json.dumps(payload_dict).encode("utf-8")
@@ -534,6 +565,8 @@ class CreateServiceRequestTool(FunctionTool):
                     customer_id=context.session_customer_id,
                     category=category_enum,
                     description=description.strip(),
+                    reason_code=reason_enum,
+                    reason_label=reason_label.strip(),
                 )
                 session.commit()
                 return {
@@ -541,6 +574,8 @@ class CreateServiceRequestTool(FunctionTool):
                     "customer_id": sr.customer_id,
                     "category": sr.category.value,
                     "description": sr.description,
+                    "reason_code": sr.reason_code.value,
+                    "reason_label": sr.reason_label,
                     "status": sr.status.value,
                     "created_at": sr.created_at.isoformat(),
                 }
