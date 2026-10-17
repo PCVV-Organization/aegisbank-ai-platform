@@ -180,6 +180,16 @@ def test_human_category_selection_advances_to_reason_choices() -> None:
     assert draft == {"needs_reason": "true", "category": "LOAN"}
 
 
+def test_human_category_labels_cover_installments_and_fees() -> None:
+    assert extract_service_request_draft("Quiero registrar un reclamo sobre Cuotas y pagos") == {
+        "needs_reason": "true",
+        "category": "INSTALLMENT",
+    }
+    assert extract_service_request_draft(
+        "Quiero registrar un reclamo sobre Comisiones y cargos"
+    ) == {"needs_reason": "true", "category": "FEE"}
+
+
 @pytest.mark.parametrize(
     "text",
     [

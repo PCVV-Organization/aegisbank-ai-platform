@@ -369,6 +369,15 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
     ):
         category = "GENERAL"
 
+    category_chip_selection = normalized in {
+        "quiero registrar un reclamo sobre prestamos",
+        "quiero registrar un reclamo sobre cuotas y pagos",
+        "quiero registrar un reclamo sobre comisiones y cargos",
+        "quiero registrar un reclamo sobre consulta general",
+    }
+    if category_chip_selection and category:
+        return {"needs_reason": "true", "category": category}
+
     reason = next(
         (get_reason(code) for code in get_reason_codes() if code.lower() in normalized), None
     )
