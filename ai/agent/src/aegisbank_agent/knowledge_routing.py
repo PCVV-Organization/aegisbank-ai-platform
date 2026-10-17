@@ -329,6 +329,35 @@ def requires_write_action(query: str) -> bool:
     return any(re.search(pattern, normalized) for pattern in _WRITE_ACTION_PATTERNS)
 
 
+def extract_service_request_draft(query: str) -> dict[str, str] | None:
+    """Build a bounded service-request draft without asking the LLM.
+
+    This is intentionally only a proposal parser: it never authorizes or writes
+    to Core Banking.  A short generic request returns ``needs_clarification`` so
+    the user can provide a useful description before HITL approval.
+    """
+    if not requires_write_action(query):
+        return None
+    normalized = _normalize(query)
+    category = "GENERAL"
+    if any(term in normalized for term in ("prestamo", "prestamos", "cuota", "reprogram")):
+        category = "LOAN"
+    elif any(term in normalized for term in ("comision", "cargo", "interes")):
+        category = "FEE"
+    elif any(term in normalized for term in ("pago", "vencida", "vencimiento", "cuota")):
+        category = "INSTALLMENT"
+
+    trigger_words = {
+        "quiero", "deseo", "registrar", "registro", "registrar", "crear", "crea",
+        "solicitar", "solicitud", "presentar", "presenta", "reclamo", "reclamacion",
+        "queja", "servicio", "un", "una", "de", "mi", "un", "nuevo", "nueva",
+    }
+    substantive = [word for word in normalized.split() if word not in trigger_words]
+    if len(substantive) < 2:
+        return {"needs_clarification": "true", "category": category}
+    return {"category": category, "description": query.strip()}
+
+
 def requires_authorized_knowledge(query: str) -> bool:
     """Return true only for factual banking policy/product questions."""
     if requires_write_action(query):

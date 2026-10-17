@@ -27,6 +27,7 @@ from .knowledge_routing import (
     classify_service_inquiry,
     extract_customer_ids,
     extract_loan_id,
+    extract_service_request_draft,
     has_fake_tool_claim,
     has_placeholder_leak,
     has_process_hallucination,
@@ -547,6 +548,74 @@ class AgentOrchestrator:
                 self._metrics.increment("banking_data_required_count")
                 self._metrics.increment("forced_routing_count")
             active_approval_cb = approval_callback or self._approval_callback
+
+            # Service-request writes do not need a model turn to become a safe
+            # proposal.  In hosted HTTP mode, route the explicit intent directly
+            # to HITL so Foundry rate limits cannot prevent the banking workflow.
+            # The write still requires the same approval endpoint and deterministic
+            # Core Banking tool execution; no state is changed in this branch.
+            service_draft = extract_service_request_draft(user_message)
+            if service_draft is not None and active_approval_cb is None:
+                if service_draft.get("needs_clarification") == "true":
+                    return AgentExecutionResult(
+                        answer=(
+                            "Puedo registrar el reclamo, pero necesito una descripción breve "
+                            "del motivo. Indica qué ocurrió y, si aplica, el préstamo, cuota, "
+                            "comisión o cargo relacionado."
+                        ),
+                        customer_id=customer_id,
+                        rounds=0,
+                        success=True,
+                        correlation_id=obs_ctx.correlation_id,
+                    )
+                normalized_arguments = {
+                    "category": service_draft["category"],
+                    "description": service_draft["description"],
+                }
+                approval_req = self._hitl_manager.create_request(
+                    tool_name="create_service_request",
+                    customer_id=customer_id,
+                    arguments=normalized_arguments,
+                )
+                pending_result = ToolResult(
+                    tool_name="create_service_request",
+                    success=False,
+                    error=(
+                        "Aprobación humana requerida. La propuesta quedó pendiente; "
+                        "no se modificó Core Banking."
+                    ),
+                )
+                self._audit.record(
+                    event_type=AuditEventType.HITL_REQUESTED,
+                    correlation_id=obs_ctx.correlation_id,
+                    customer_id=customer_id,
+                    actor="SYSTEM",
+                    payload={
+                        "approval_id": approval_req.approval_id,
+                        "tool_name": "create_service_request",
+                    },
+                )
+                self._metrics.increment("hitl_requested_count")
+                return AgentExecutionResult(
+                    answer=(
+                        "He preparado tu solicitud de servicio para revisión. "
+                        "Confirma explícitamente para registrarla en Core Banking."
+                    ),
+                    customer_id=customer_id,
+                    rounds=0,
+                    success=True,
+                    tool_calls=[
+                        ToolCallRecord(
+                            tool_name="create_service_request",
+                            arguments=normalized_arguments,
+                            result=pending_result,
+                            source="DETERMINISTIC_INTENT",
+                            round_index=0,
+                        )
+                    ],
+                    approval_requests=[approval_req],
+                    correlation_id=obs_ctx.correlation_id,
+                )
 
             stored_messages = self._session_store.list_messages(
                 effective_session_id, customer_id, limit=12
@@ -1204,7 +1273,14 @@ class AgentOrchestrator:
                     content_str = msg.content or ""
                     malformed_tool_output = bool(
                         re.search(
-                            r"(?:functools\s*\(|\{\s*['\"]name['\"]\s*:\s*['\"](?:search_knowledge|get_my_loans|get_loan_details|get_next_installment|create_service_request))",
+                            r"(?:functools\s*\(|funci[oó]n\s+normalizar\b|\{\s*['\"]name['\"]\s*:\s*['\"](?:search_knowledge|get_my_loans|get_loan_details|get_next_installment|create_service_request))",
+                            content_str,
+                            re.IGNORECASE,
+                        )
+                    )
+                    malformed_tool_output = malformed_tool_output or bool(
+                        re.search(
+                            r"\"type\"\s*:\s*\"function\".*\"function\"\s*:\s*\{.*\"name\"\s*:\s*\"[^\"]+\"",
                             content_str,
                             re.IGNORECASE,
                         )

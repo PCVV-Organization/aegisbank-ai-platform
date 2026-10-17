@@ -8,6 +8,8 @@ import pytest
 
 from aegisbank_agent.agent import AgentOrchestrator
 from aegisbank_agent.session_store import OwnershipViolationError, SQLiteSessionStore
+from aegisbank_agent.tools.banking_tools import CreateServiceRequestTool
+from aegisbank_agent.tools.registry import ToolRegistry
 
 pytestmark = pytest.mark.unit
 
@@ -82,6 +84,28 @@ def test_cross_customer_inquiry_deterministically_denied(tool_registry) -> None:
     assert result.rounds == 0
     assert len(result.tool_calls) == 0
     assert "No puedo consultar información bancaria de otro cliente" in result.answer
+    client.chat.completions.create.assert_not_called()
+
+
+def test_service_request_write_is_proposed_without_foundry(in_memory_db) -> None:
+    client = MagicMock()
+    registry = ToolRegistry(tools=[CreateServiceRequestTool(in_memory_db)])
+    orchestrator = AgentOrchestrator(
+        client=client,
+        registry=registry,
+        session_store=SQLiteSessionStore(":memory:"),
+    )
+
+    result = orchestrator.run(
+        "Quiero registrar un reclamo de préstamo por una cuota cobrada incorrectamente",
+        customer_id="CUST-0001",
+    )
+
+    assert result.success
+    assert result.rounds == 0
+    assert len(result.approval_requests) == 1
+    assert result.approval_requests[0].status.value == "PENDING"
+    assert result.tool_calls[0].source == "DETERMINISTIC_INTENT"
     client.chat.completions.create.assert_not_called()
 
 
