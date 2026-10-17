@@ -152,6 +152,11 @@ def test_extract_service_request_draft_requires_detail_for_generic_request() -> 
     }
 
 
+def test_fraud_signal_enters_guided_flow_without_foundry() -> None:
+    draft = extract_service_request_draft("estafa")
+    assert draft == {"needs_reason": "true", "category": "GENERAL"}
+
+
 @pytest.mark.parametrize(
     "text",
     [

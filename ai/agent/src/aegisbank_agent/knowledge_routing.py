@@ -328,6 +328,12 @@ def requires_write_action(query: str) -> bool:
         )
     ):
         return False
+    # Fraud/unauthorized-activity language is a banking claim signal even
+    # when the customer has not yet used the word "reclamo". Keep it in the
+    # deterministic guided flow so Foundry cannot answer from an unrelated
+    # general-knowledge domain.
+    if any(term in normalized for term in ("estafa", "estafaron", "fraude", "me engañaron")):
+        return True
     return any(re.search(pattern, normalized) for pattern in _WRITE_ACTION_PATTERNS)
 
 
@@ -348,6 +354,8 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         category = "LOAN"
     elif any(term in normalized for term in ("comision", "cargo", "interes")):
         category = "FEE"
+    elif any(term in normalized for term in ("estafa", "estafaron", "fraude", "me enganaron")):
+        category = "GENERAL"
 
     reason = next(
         (get_reason(code) for code in get_reason_codes() if code.lower() in normalized), None
