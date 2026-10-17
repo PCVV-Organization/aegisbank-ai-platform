@@ -157,6 +157,18 @@ def test_fraud_signal_enters_guided_flow_without_foundry() -> None:
     assert draft == {"needs_reason": "true", "category": "GENERAL"}
 
 
+def test_general_category_exposes_fraud_and_other_reason_options() -> None:
+    from aegisbank_agent.service_request_catalog import options_for_category
+
+    options = options_for_category("GENERAL")
+
+    assert [option["reason_code"] for option in options] == [
+        "GENERAL_FRAUD",
+        "GENERAL_OTHER",
+    ]
+    assert options[0]["requires_description"] is True
+
+
 def test_other_reason_accepts_description_when_provided() -> None:
     draft = extract_service_request_draft(
         "Selecciono el motivo GENERAL_OTHER: me han estafado en una transferencia"

@@ -62,6 +62,13 @@ REASON_OPTIONS: tuple[ServiceRequestReasonOption, ...] = (
         "FEE_DUPLICATE_CHARGE", "FEE", "Comisión o cargo duplicado", "Reportar un cargo repetido."
     ),
     ServiceRequestReasonOption(
+        "GENERAL_FRAUD",
+        "GENERAL",
+        "Fraude o estafa",
+        "Reportar una posible estafa o actividad fraudulenta.",
+        True,
+    ),
+    ServiceRequestReasonOption(
         "GENERAL_OTHER",
         "GENERAL",
         "Otro motivo",
