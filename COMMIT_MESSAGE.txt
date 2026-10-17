@@ -1,0 +1,10 @@
+chore(repo): remove temporary commit message artifact
+
+Problem/purpose: the UTF-8 commit message file was only needed while creating
+the previous commit and must not remain in the application checkout.
+
+Changes:
+- remove COMMIT_MESSAGE.txt
+
+Validation:
+- git diff --check (passed)
