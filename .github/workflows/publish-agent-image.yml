@@ -41,3 +41,11 @@ jobs:
           image="aegisbankstagingacr.azurecr.io/aegisbank-agent:${IMAGE_TAG}"
           docker build --file ai/agent/Dockerfile --tag "$image" .
           docker push "$image"
+
+      - name: Build and Push Immutable Core Banking Image
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          image="aegisbankstagingacr.azurecr.io/mock-core-banking:${IMAGE_TAG}"
+          docker build --file services/mock-core-banking/Dockerfile --tag "$image" services/mock-core-banking
+          docker push "$image"
