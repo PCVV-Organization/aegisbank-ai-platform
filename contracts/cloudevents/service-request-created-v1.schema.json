@@ -83,12 +83,21 @@
           "enum": [
             "LOAN_RESTRUCTURING",
             "LOAN_BALANCE_DISPUTE",
+            "LOAN_INTEREST_RATE",
+            "LOAN_PAYMENT_DIFFICULTY",
             "INSTALLMENT_DATE",
             "INSTALLMENT_DUPLICATE_CHARGE",
             "INSTALLMENT_AMOUNT_DISPUTE",
+            "INSTALLMENT_PAYMENT_NOT_REFLECTED",
+            "INSTALLMENT_OVERDUE_DISPUTE",
             "FEE_UNRECOGNIZED",
             "FEE_DUPLICATE_CHARGE",
+            "FEE_AMOUNT_DISPUTE",
+            "FEE_REFUND_REQUEST",
             "GENERAL_FRAUD",
+            "GENERAL_ACCOUNT_ACCESS",
+            "GENERAL_DATA_UPDATE",
+            "GENERAL_STATUS",
             "GENERAL_OTHER"
           ]
         },
