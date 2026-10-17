@@ -104,6 +104,18 @@ REASON_OPTIONS: tuple[ServiceRequestReasonOption, ...] = (
         "Reportar una diferencia en el saldo o detalle del préstamo.",
     ),
     ServiceRequestReasonOption(
+        "LOAN_INTEREST_RATE",
+        "LOAN",
+        "Tasa de interés del préstamo",
+        "Consultar o reclamar la tasa aplicada al préstamo.",
+    ),
+    ServiceRequestReasonOption(
+        "LOAN_PAYMENT_DIFFICULTY",
+        "LOAN",
+        "Dificultad para pagar",
+        "Solicitar orientación por dificultad temporal de pago.",
+    ),
+    ServiceRequestReasonOption(
         "INSTALLMENT_DATE",
         "INSTALLMENT",
         "Fecha de vencimiento",
@@ -122,6 +134,18 @@ REASON_OPTIONS: tuple[ServiceRequestReasonOption, ...] = (
         "Reportar que el importe cobrado no coincide.",
     ),
     ServiceRequestReasonOption(
+        "INSTALLMENT_PAYMENT_NOT_REFLECTED",
+        "INSTALLMENT",
+        "Pago no reflejado",
+        "Reportar un pago de cuota que aún no aparece aplicado.",
+    ),
+    ServiceRequestReasonOption(
+        "INSTALLMENT_OVERDUE_DISPUTE",
+        "INSTALLMENT",
+        "Mora o vencimiento incorrecto",
+        "Reportar una cuota marcada como vencida de forma incorrecta.",
+    ),
+    ServiceRequestReasonOption(
         "FEE_UNRECOGNIZED",
         "FEE",
         "Comisión o cargo no reconocido",
@@ -131,11 +155,42 @@ REASON_OPTIONS: tuple[ServiceRequestReasonOption, ...] = (
         "FEE_DUPLICATE_CHARGE", "FEE", "Comisión o cargo duplicado", "Reportar un cargo repetido."
     ),
     ServiceRequestReasonOption(
+        "FEE_AMOUNT_DISPUTE",
+        "FEE",
+        "Importe de comisión incorrecto",
+        "Reportar que el importe de una comisión no coincide.",
+    ),
+    ServiceRequestReasonOption(
+        "FEE_REFUND_REQUEST",
+        "FEE",
+        "Solicitud de devolución",
+        "Solicitar revisión de una comisión para posible devolución.",
+    ),
+    ServiceRequestReasonOption(
         "GENERAL_FRAUD",
         "GENERAL",
         "Fraude o estafa",
         "Reportar una posible estafa o actividad fraudulenta.",
         True,
+    ),
+    ServiceRequestReasonOption(
+        "GENERAL_ACCOUNT_ACCESS",
+        "GENERAL",
+        "Acceso o seguridad de cuenta",
+        "Reportar un problema de acceso o seguridad.",
+        True,
+    ),
+    ServiceRequestReasonOption(
+        "GENERAL_DATA_UPDATE",
+        "GENERAL",
+        "Actualización de datos",
+        "Solicitar orientación para actualizar datos del cliente.",
+    ),
+    ServiceRequestReasonOption(
+        "GENERAL_STATUS",
+        "GENERAL",
+        "Estado de una solicitud",
+        "Consultar el estado de un reclamo o solicitud existente.",
     ),
     ServiceRequestReasonOption(
         "GENERAL_OTHER",
