@@ -742,6 +742,9 @@ def create_app(
                         type(persistence_error).__name__,
                     )
             latency_ms = round((time.perf_counter() - started_at) * 1000, 2)
+            guided_request = getattr(result, "guided_request", None)
+            if not isinstance(guided_request, dict):
+                guided_request = None
             return AgentRunResponse(
                 answer=result.answer,
                 customer_id=result.customer_id,
@@ -758,7 +761,7 @@ def create_app(
                 latency_ms=latency_ms,
                 tool_count=len(result.tool_calls),
                 approval_requests=[req.as_dict() for req in result.approval_requests],
-                guided_request=result.guided_request,
+                guided_request=guided_request,
             )
         except Exception as exc:
             logger.error(
