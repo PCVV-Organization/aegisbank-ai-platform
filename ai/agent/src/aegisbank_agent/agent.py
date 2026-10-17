@@ -578,6 +578,9 @@ class AgentOrchestrator:
                             "options": [
                                 {"category": category, "label": label}
                                 for category, label in (
+                                    ("ACCOUNT", "Cuentas"),
+                                    ("CARD", "Tarjetas"),
+                                    ("PAYMENT", "Pagos y transferencias"),
                                     ("LOAN", "Préstamos"),
                                     ("INSTALLMENT", "Cuotas y pagos"),
                                     ("FEE", "Comisiones y cargos"),

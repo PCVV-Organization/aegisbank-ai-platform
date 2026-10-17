@@ -68,14 +68,25 @@ def _create_orchestrator(
 def test_taxonomy_query_contains_exact_canonical_categories() -> None:
     """Verify that taxonomy query grounded in schema contains all canonical enum categories."""
     canonical_categories = {c.value for c in ServiceRequestCategory}
-    assert canonical_categories == {"LOAN", "INSTALLMENT", "FEE", "GENERAL"}
+    assert canonical_categories == {
+        "ACCOUNT",
+        "CARD",
+        "PAYMENT",
+        "LOAN",
+        "INSTALLMENT",
+        "FEE",
+        "GENERAL",
+    }
 
     expected_answer = (
         "Los tipos de reclamos o solicitudes que soporta AegisBank son:\n"
-        "1. LOAN (Préstamos)\n"
-        "2. INSTALLMENT (Cuotas)\n"
-        "3. FEE (Comisiones)\n"
-        "4. GENERAL (Consultas generales)"
+        "1. ACCOUNT (Cuentas)\n"
+        "2. CARD (Tarjetas)\n"
+        "3. PAYMENT (Pagos y transferencias)\n"
+        "4. LOAN (Préstamos)\n"
+        "5. INSTALLMENT (Cuotas)\n"
+        "6. FEE (Comisiones)\n"
+        "7. GENERAL (Consultas generales)"
     )
     mock_client = MagicMock()
     mock_client.chat.completions.create.return_value = DummyResponse(
@@ -97,12 +108,21 @@ def test_taxonomy_query_contains_exact_canonical_categories() -> None:
 
 def test_taxonomy_query_repeated_yields_consistent_factual_set() -> None:
     """Verify repeated queries across multiple runs preserve exact factual categories."""
-    canonical_categories = {"LOAN", "INSTALLMENT", "FEE", "GENERAL"}
+    canonical_categories = {
+        "ACCOUNT",
+        "CARD",
+        "PAYMENT",
+        "LOAN",
+        "INSTALLMENT",
+        "FEE",
+        "GENERAL",
+    }
     mock_client = MagicMock()
     mock_client.chat.completions.create.return_value = DummyResponse(
         DummyMessage(
             content=(
-                "En AegisBank, las categorías soportadas son: LOAN, INSTALLMENT, FEE y GENERAL."
+                "En AegisBank, las categorías soportadas son: ACCOUNT, CARD, PAYMENT, "
+                "LOAN, INSTALLMENT, FEE y GENERAL."
             )
         )
     )
@@ -124,10 +144,23 @@ def test_paraphrased_taxonomy_queries_preserve_factual_consistency() -> None:
         "¿cuáles son los tipos de solicitudes que se pueden registrar?",
         "¿qué reclamos soporta AegisBank?",
     ]
-    canonical_categories = {"LOAN", "INSTALLMENT", "FEE", "GENERAL"}
+    canonical_categories = {
+        "ACCOUNT",
+        "CARD",
+        "PAYMENT",
+        "LOAN",
+        "INSTALLMENT",
+        "FEE",
+        "GENERAL",
+    }
     mock_client = MagicMock()
     mock_client.chat.completions.create.return_value = DummyResponse(
-        DummyMessage(content="Las categorías de AegisBank son: LOAN, INSTALLMENT, FEE y GENERAL.")
+        DummyMessage(
+            content=(
+                "Las categorías de AegisBank son: ACCOUNT, CARD, PAYMENT, LOAN, "
+                "INSTALLMENT, FEE y GENERAL."
+            )
+        )
     )
 
     db = create_default_database()
@@ -141,10 +174,11 @@ def test_paraphrased_taxonomy_queries_preserve_factual_consistency() -> None:
 
 
 def test_negative_acceptance_unsupported_categories_rejected() -> None:
-    """Verify unsupported fabricated categories (PAYMENT, TRANSFER, CARD, FRAUD) are absent."""
-    unsupported_categories = ["PAYMENT", "TRANSFER", "CARD", "FRAUD"]
+    """Verify unsupported fabricated categories are absent from the catalog."""
+    unsupported_categories = ["TRANSFER", "FRAUD", "CRYPTO", "INVESTMENT"]
     grounded_answer = (
-        "En AegisBank, las categorías oficiales son: LOAN, INSTALLMENT, FEE y GENERAL."
+        "En AegisBank, las categorías oficiales son: ACCOUNT, CARD, PAYMENT, LOAN, "
+        "INSTALLMENT, FEE y GENERAL."
     )
 
     for unsupp in unsupported_categories:
@@ -190,7 +224,7 @@ def test_taxonomy_query_causes_no_unnecessary_write_or_hitl() -> None:
     db = create_default_database()
     mock_client = MagicMock()
     mock_client.chat.completions.create.return_value = DummyResponse(
-        DummyMessage(content="Categorías: LOAN, INSTALLMENT, FEE, GENERAL.")
+        DummyMessage(content="Categorías: ACCOUNT, CARD, PAYMENT, LOAN, INSTALLMENT, FEE, GENERAL.")
     )
     hitl_mgr = HITLApprovalManager()
     orchestrator = _create_orchestrator(db, mock_client, hitl_mgr=hitl_mgr)

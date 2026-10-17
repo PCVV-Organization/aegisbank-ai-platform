@@ -98,7 +98,7 @@ class ServiceRequestItem(BaseModel):
 
 class ServiceRequestCreateRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
-    category: str = Field(..., pattern=r"^(LOAN|INSTALLMENT|FEE|GENERAL)$")
+    category: str = Field(..., pattern=r"^(ACCOUNT|CARD|PAYMENT|LOAN|INSTALLMENT|FEE|GENERAL)$")
     description: str = Field(..., min_length=5, max_length=240)
     reason_code: str = Field(..., min_length=3, max_length=64)
     reason_label: str = Field(..., min_length=3, max_length=120)
