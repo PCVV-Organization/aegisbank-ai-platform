@@ -334,6 +334,8 @@ def requires_write_action(query: str) -> bool:
     # general-knowledge domain.
     if any(term in normalized for term in ("estafa", "estafaron", "fraude", "me engañaron")):
         return True
+    if normalized.startswith("selecciono el motivo"):
+        return True
     return any(re.search(pattern, normalized) for pattern in _WRITE_ACTION_PATTERNS)
 
 
@@ -398,6 +400,19 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         )
     if reason is not None:
         category = reason.category
+
+    # A guided reason chip is a selection, not a complete claim description.
+    # Keep this deterministic so the UI can advance immediately without
+    # accidentally creating an approval with the chip label as the description.
+    if reason is not None and normalized.startswith("selecciono el motivo"):
+        selected_text = normalized.removeprefix("selecciono el motivo").strip(" :.")
+        if selected_text in {_normalize(reason.label), reason.code.lower()}:
+            return {
+                "needs_description": "true",
+                "category": reason.category,
+                "reason_code": reason.code,
+                "reason_label": reason.label,
+            }
 
     trigger_words = {
         "quiero",
