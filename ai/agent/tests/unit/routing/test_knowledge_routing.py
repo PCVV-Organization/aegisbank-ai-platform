@@ -164,6 +164,9 @@ def test_general_category_exposes_fraud_and_other_reason_options() -> None:
 
     assert [option["reason_code"] for option in options] == [
         "GENERAL_FRAUD",
+        "GENERAL_ACCOUNT_ACCESS",
+        "GENERAL_DATA_UPDATE",
+        "GENERAL_STATUS",
         "GENERAL_OTHER",
     ]
     assert options[0]["requires_description"] is True

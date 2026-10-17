@@ -588,6 +588,25 @@ class AgentOrchestrator:
                     )
                 if service_draft.get("needs_reason") == "true":
                     category = service_draft["category"]
+                    reason_options = options_for_category(category)
+                    if not reason_options:
+                        return AgentExecutionResult(
+                            answer=(
+                                "No hay motivos disponibles para esta categoría en el "
+                                "catálogo autorizado. Puedo orientarte con los canales "
+                                "oficiales de atención al cliente; no mostraré ni solicitaré "
+                                "datos personales de otros clientes."
+                            ),
+                            customer_id=customer_id,
+                            rounds=0,
+                            success=True,
+                            correlation_id=obs_ctx.correlation_id,
+                            guided_request={
+                                "step": "CONTACT_SUPPORT",
+                                "category": category,
+                                "options": [],
+                            },
+                        )
                     return AgentExecutionResult(
                         answer=(
                             "Estos son los motivos disponibles para tu categoría. "
@@ -600,7 +619,7 @@ class AgentOrchestrator:
                         guided_request={
                             "step": "REASON",
                             "category": category,
-                            "options": options_for_category(category),
+                            "options": reason_options,
                         },
                     )
                 if service_draft.get("needs_description") == "true":
