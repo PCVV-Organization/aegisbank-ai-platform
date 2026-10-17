@@ -89,7 +89,14 @@ def map_service_request_created(
         "correlationid": correlation_id,
         "data": {
             field: domain_event["payload"][field]
-            for field in ("service_request_id", "customer_id", "category", "status")
+            for field in (
+                "service_request_id",
+                "customer_id",
+                "category",
+                "reason_code",
+                "reason_label",
+                "status",
+            )
         },
     }
     if traceparent is not None:

@@ -55,6 +55,8 @@ def canonical_outbox_event() -> dict[str, Any]:
             "service_request_id": "SR-000123",
             "customer_id": "CUST-0001",
             "category": "GENERAL",
+            "reason_code": "GENERAL_OTHER",
+            "reason_label": "Otro motivo",
             "description": "Solicitud de consulta general",
             "status": "OPEN",
             "created_at": "2026-09-01T22:55:50-05:00",
@@ -79,6 +81,8 @@ def canonical_cloud_event() -> dict[str, Any]:
             "service_request_id": "SR-000123",
             "customer_id": "CUST-0001",
             "category": "GENERAL",
+            "reason_code": "GENERAL_OTHER",
+            "reason_label": "Otro motivo",
             "status": "OPEN",
         },
     }
@@ -151,6 +155,8 @@ def test_map_service_request_created_minimizes_data_fields(
         "service_request_id",
         "customer_id",
         "category",
+        "reason_code",
+        "reason_label",
         "status",
     }
     assert "description" not in cloud_event["data"]

@@ -83,12 +83,15 @@ class AgentRunResponse(BaseModel):
     latency_ms: float = Field(ge=0)
     tool_count: int = Field(ge=0)
     approval_requests: list[dict[str, Any]] = Field(default_factory=list)
+    guided_request: dict[str, Any] | None = None
 
 
 class ServiceRequestItem(BaseModel):
     service_request_id: str
     category: str
     description: str
+    reason_code: str
+    reason_label: str
     status: str
     created_at: str
 
@@ -97,6 +100,8 @@ class ServiceRequestCreateRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
     category: str = Field(..., pattern=r"^(LOAN|INSTALLMENT|FEE|GENERAL)$")
     description: str = Field(..., min_length=5, max_length=240)
+    reason_code: str = Field(..., min_length=3, max_length=64)
+    reason_label: str = Field(..., min_length=3, max_length=120)
     customer_id: str | None = Field(
         None, description="Optional legacy caller hint; verified token identity takes precedence"
     )
@@ -601,6 +606,8 @@ def create_app(
                 "customer_id": principal.customer_id,
                 "category": payload.category,
                 "description": payload.description.strip(),
+                "reason_code": payload.reason_code,
+                "reason_label": payload.reason_label,
             }
         ).encode("utf-8")
         target = f"{core_url.rstrip('/')}/api/v1/service-requests"
@@ -735,6 +742,9 @@ def create_app(
                         type(persistence_error).__name__,
                     )
             latency_ms = round((time.perf_counter() - started_at) * 1000, 2)
+            guided_request = getattr(result, "guided_request", None)
+            if not isinstance(guided_request, dict):
+                guided_request = None
             return AgentRunResponse(
                 answer=result.answer,
                 customer_id=result.customer_id,
@@ -751,6 +761,7 @@ def create_app(
                 latency_ms=latency_ms,
                 tool_count=len(result.tool_calls),
                 approval_requests=[req.as_dict() for req in result.approval_requests],
+                guided_request=guided_request,
             )
         except Exception as exc:
             logger.error(

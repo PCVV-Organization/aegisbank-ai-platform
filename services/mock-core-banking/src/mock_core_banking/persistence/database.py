@@ -54,6 +54,26 @@ class Database:
 
     def create_schema(self) -> None:
         Base.metadata.create_all(bind=self.engine)
+        if self.engine.dialect.name == "sqlite":
+            with self.engine.begin() as connection:
+                columns = {
+                    row[1]
+                    for row in connection.execute(text("PRAGMA table_info(service_requests)"))
+                }
+                if "reason_code" not in columns:
+                    connection.execute(
+                        text(
+                            "ALTER TABLE service_requests ADD COLUMN reason_code "
+                            "VARCHAR(64) NOT NULL DEFAULT 'GENERAL_OTHER'"
+                        )
+                    )
+                if "reason_label" not in columns:
+                    connection.execute(
+                        text(
+                            "ALTER TABLE service_requests ADD COLUMN reason_label "
+                            "VARCHAR(120) NOT NULL DEFAULT 'Otro motivo'"
+                        )
+                    )
 
     def is_ready(self) -> bool:
         try:

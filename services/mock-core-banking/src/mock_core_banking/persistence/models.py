@@ -20,6 +20,7 @@ from ..domain.enums import (
     InstallmentStatus,
     LoanStatus,
     ServiceRequestCategory,
+    ServiceRequestReason,
     ServiceRequestStatus,
 )
 from .base import Base
@@ -112,6 +113,12 @@ class ServiceRequest(Base):
         Enum(ServiceRequestCategory, native_enum=False, create_constraint=True), nullable=False
     )
     description: Mapped[str] = mapped_column(String(1000), nullable=False)
+    reason_code: Mapped[ServiceRequestReason] = mapped_column(
+        Enum(ServiceRequestReason, native_enum=False, create_constraint=True),
+        nullable=False,
+        default=ServiceRequestReason.GENERAL_OTHER,
+    )
+    reason_label: Mapped[str] = mapped_column(String(120), nullable=False, default="Otro motivo")
     status: Mapped[ServiceRequestStatus] = mapped_column(
         Enum(ServiceRequestStatus, native_enum=False, create_constraint=True), nullable=False
     )

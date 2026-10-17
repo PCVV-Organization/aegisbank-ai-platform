@@ -61,6 +61,8 @@
         "service_request_id",
         "customer_id",
         "category",
+        "reason_code",
+        "reason_label",
         "status"
       ],
       "properties": {
@@ -76,6 +78,23 @@
         },
         "category": {
           "enum": ["LOAN", "INSTALLMENT", "FEE", "GENERAL"]
+        },
+        "reason_code": {
+          "enum": [
+            "LOAN_RESTRUCTURING",
+            "LOAN_BALANCE_DISPUTE",
+            "INSTALLMENT_DATE",
+            "INSTALLMENT_DUPLICATE_CHARGE",
+            "INSTALLMENT_AMOUNT_DISPUTE",
+            "FEE_UNRECOGNIZED",
+            "FEE_DUPLICATE_CHARGE",
+            "GENERAL_OTHER"
+          ]
+        },
+        "reason_label": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
         },
         "status": {
           "enum": ["OPEN", "IN_REVIEW", "RESOLVED", "REJECTED"]

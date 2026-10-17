@@ -112,9 +112,16 @@ def create_mcp_server(
         approval_id: str,
         category: str,
         description: str,
+        reason_code: str = "GENERAL_OTHER",
+        reason_label: str = "Otro motivo",
     ) -> dict[str, Any]:
         """Execute a service request only when its exact proposal is approved."""
-        arguments = {"category": category, "description": description}
+        arguments = {
+            "category": category,
+            "reason_code": reason_code,
+            "reason_label": reason_label,
+            "description": description,
+        }
         try:
             request = manager.get_request(approval_id)
             if request.tool_name != WRITE_TOOL_NAME:
@@ -125,7 +132,12 @@ def create_mcp_server(
                 )
             if request.status != ApprovalStatus.APPROVED:
                 return _error("APPROVAL_REQUIRED", "Explicit human approval is required")
-            if request.normalized_arguments != arguments:
+            expected_arguments = {
+                **request.normalized_arguments,
+                "reason_code": request.normalized_arguments.get("reason_code", "GENERAL_OTHER"),
+                "reason_label": request.normalized_arguments.get("reason_label", "Otro motivo"),
+            }
+            if expected_arguments != arguments:
                 return _error("ARGUMENT_TAMPERING", "Arguments differ from the approved proposal")
             result = registry.execute(WRITE_TOOL_NAME, arguments, context)
             if not result.success:
@@ -154,6 +166,8 @@ class MCPApprovalGateway:
         """Create the exact proposal shown to the human; customer ID is runtime-owned."""
         normalized = {
             "category": arguments.get("category"),
+            "reason_code": arguments.get("reason_code", "GENERAL_OTHER"),
+            "reason_label": arguments.get("reason_label", "Otro motivo"),
             "description": arguments.get("description"),
         }
         return self.approval_manager.create_request(
