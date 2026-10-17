@@ -1,0 +1,14 @@
+ci(images): publish core banking image with agent
+
+Problem/purpose: staging deployed an updated agent image while Core Banking remained on an older image that rejected the mandatory service-request reason fields, causing approved chat requests to surface as 503.
+
+Changes:
+- extend the existing OIDC image workflow to build and push the Core Banking image with the same immutable tag as the agent image
+- keep both service images reproducible from the merge commit used by staging deployment
+
+Validation:
+- git diff --check (expected to pass)
+- workflow syntax reviewed against the existing publish-agent-image job
+
+Remaining limits:
+- the workflow must run and staging must be redeployed before live approval evidence can pass
