@@ -439,11 +439,20 @@ class CreateServiceRequestTool(FunctionTool):
             return ToolResult(
                 tool_name=self.name,
                 success=False,
-                error="El parámetro 'category' es obligatorio (LOAN, INSTALLMENT, FEE, GENERAL).",
+                error=(
+                    "El parámetro 'category' es obligatorio (ACCOUNT, CARD, PAYMENT, "
+                    "LOAN, INSTALLMENT, FEE, GENERAL)."
+                ),
             )
 
         cat_upper = raw_category.strip().upper()
         cat_map = {
+            "ACCOUNT": ServiceRequestCategory.ACCOUNT,
+            "CUENTA": ServiceRequestCategory.ACCOUNT,
+            "CARD": ServiceRequestCategory.CARD,
+            "TARJETA": ServiceRequestCategory.CARD,
+            "PAYMENT": ServiceRequestCategory.PAYMENT,
+            "PAGO": ServiceRequestCategory.PAYMENT,
             "CLAIM": ServiceRequestCategory.GENERAL,
             "RECLAMO": ServiceRequestCategory.GENERAL,
             "GENERAL": ServiceRequestCategory.GENERAL,
@@ -466,7 +475,8 @@ class CreateServiceRequestTool(FunctionTool):
                     success=False,
                     error=(
                         f"Categoría '{raw_category}' inválida. "
-                        "Valores permitidos: LOAN, INSTALLMENT, FEE, GENERAL."
+                        "Valores permitidos: ACCOUNT, CARD, PAYMENT, LOAN, "
+                        "INSTALLMENT, FEE, GENERAL."
                     ),
                 )
 

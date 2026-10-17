@@ -23,6 +23,75 @@ class ServiceRequestReasonOption:
 
 REASON_OPTIONS: tuple[ServiceRequestReasonOption, ...] = (
     ServiceRequestReasonOption(
+        "ACCOUNT_BALANCE_DISPUTE",
+        "ACCOUNT",
+        "Saldo de cuenta incorrecto",
+        "Reportar una diferencia en el saldo de una cuenta.",
+    ),
+    ServiceRequestReasonOption(
+        "ACCOUNT_ACCESS",
+        "ACCOUNT",
+        "Acceso a la cuenta",
+        "Reportar un problema para acceder a la cuenta.",
+        True,
+    ),
+    ServiceRequestReasonOption(
+        "ACCOUNT_DATA_UPDATE",
+        "ACCOUNT",
+        "Actualización de datos de cuenta",
+        "Solicitar orientación para actualizar datos de la cuenta.",
+    ),
+    ServiceRequestReasonOption(
+        "ACCOUNT_STATEMENT",
+        "ACCOUNT",
+        "Estado de cuenta",
+        "Solicitar orientación sobre un estado de cuenta.",
+    ),
+    ServiceRequestReasonOption(
+        "CARD_UNRECOGNIZED_TRANSACTION",
+        "CARD",
+        "Consumo no reconocido",
+        "Reportar una transacción con tarjeta que no reconoces.",
+        True,
+    ),
+    ServiceRequestReasonOption(
+        "CARD_BLOCKED", "CARD", "Tarjeta bloqueada", "Solicitar revisión de una tarjeta bloqueada."
+    ),
+    ServiceRequestReasonOption(
+        "CARD_LOST_STOLEN",
+        "CARD",
+        "Tarjeta perdida o robada",
+        "Reportar pérdida o robo de una tarjeta.",
+        True,
+    ),
+    ServiceRequestReasonOption(
+        "CARD_PAYMENT_DECLINED",
+        "CARD",
+        "Pago con tarjeta rechazado",
+        "Reportar un pago con tarjeta rechazado.",
+    ),
+    ServiceRequestReasonOption(
+        "PAYMENT_NOT_RECEIVED",
+        "PAYMENT",
+        "Pago no recibido",
+        "Reportar que el beneficiario no recibió un pago.",
+    ),
+    ServiceRequestReasonOption(
+        "PAYMENT_DUPLICATE",
+        "PAYMENT",
+        "Pago duplicado",
+        "Reportar un pago registrado más de una vez.",
+    ),
+    ServiceRequestReasonOption(
+        "PAYMENT_FAILED", "PAYMENT", "Pago fallido", "Reportar un pago que no pudo completarse."
+    ),
+    ServiceRequestReasonOption(
+        "PAYMENT_REFUND",
+        "PAYMENT",
+        "Devolución de pago",
+        "Solicitar revisión de una devolución de pago.",
+    ),
+    ServiceRequestReasonOption(
         "LOAN_RESTRUCTURING",
         "LOAN",
         "Reprogramación del préstamo",

@@ -350,7 +350,19 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         return None
     normalized = _normalize(query)
     category = ""
-    if any(
+    if any(term in normalized for term in ("tarjeta", "tarjetas", "card")):
+        category = "CARD"
+    elif (
+        any(
+            term in normalized
+            for term in ("pago", "pagos", "transferencia", "transferencias", "payment")
+        )
+        and "cuota" not in normalized
+    ):
+        category = "PAYMENT"
+    elif any(term in normalized for term in ("cuenta", "cuentas", "account")):
+        category = "ACCOUNT"
+    elif any(
         term in normalized
         for term in ("cuota", "cuotas", "pago", "vencida", "vencimiento", "installment")
     ):
@@ -369,6 +381,9 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         category = "GENERAL"
 
     category_chip_selection = normalized in {
+        "quiero registrar un reclamo sobre cuentas",
+        "quiero registrar un reclamo sobre tarjetas",
+        "quiero registrar un reclamo sobre pagos y transferencias",
         "quiero registrar un reclamo sobre prestamos",
         "quiero registrar un reclamo sobre cuotas y pagos",
         "quiero registrar un reclamo sobre comisiones y cargos",
@@ -382,6 +397,18 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
     )
     if reason is None:
         reason_terms = {
+            "saldo de cuenta": "ACCOUNT_BALANCE_DISPUTE",
+            "acceso a la cuenta": "ACCOUNT_ACCESS",
+            "estado de cuenta": "ACCOUNT_STATEMENT",
+            "consumo no reconocido": "CARD_UNRECOGNIZED_TRANSACTION",
+            "tarjeta bloqueada": "CARD_BLOCKED",
+            "tarjeta perdida": "CARD_LOST_STOLEN",
+            "tarjeta robada": "CARD_LOST_STOLEN",
+            "pago con tarjeta rechazado": "CARD_PAYMENT_DECLINED",
+            "pago no recibido": "PAYMENT_NOT_RECEIVED",
+            "pago duplicado": "PAYMENT_DUPLICATE",
+            "pago fallido": "PAYMENT_FAILED",
+            "devolucion de pago": "PAYMENT_REFUND",
             "reprogram": "LOAN_RESTRUCTURING",
             "saldo": "LOAN_BALANCE_DISPUTE",
             "fecha": "INSTALLMENT_DATE",
