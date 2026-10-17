@@ -566,8 +566,8 @@ class AgentOrchestrator:
                 if service_draft.get("needs_category") == "true":
                     return AgentExecutionResult(
                         answer=(
-                            "Para registrar el reclamo, selecciona primero la "
-                            "categoría correspondiente."
+                            "Para registrar el reclamo, selecciona una categoría. "
+                            "Después te mostraré los motivos disponibles."
                         ),
                         customer_id=customer_id,
                         rounds=0,
@@ -589,7 +589,10 @@ class AgentOrchestrator:
                 if service_draft.get("needs_reason") == "true":
                     category = service_draft["category"]
                     return AgentExecutionResult(
-                        answer="Selecciona el motivo que mejor describe tu reclamo.",
+                        answer=(
+                            "Estos son los motivos disponibles para tu categoría. "
+                            "Selecciona el que mejor describe tu reclamo."
+                        ),
                         customer_id=customer_id,
                         rounds=0,
                         success=True,
