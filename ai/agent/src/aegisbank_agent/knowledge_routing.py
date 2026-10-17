@@ -353,10 +353,7 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
         for term in ("cuota", "cuotas", "pago", "vencida", "vencimiento", "installment")
     ):
         category = "INSTALLMENT"
-    elif any(
-        term in normalized
-        for term in ("prestamo", "prestamos", "loan", "reprogram")
-    ):
+    elif any(term in normalized for term in ("prestamo", "prestamos", "loan", "reprogram")):
         category = "LOAN"
     elif any(
         term in normalized
