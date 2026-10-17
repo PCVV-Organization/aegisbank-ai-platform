@@ -555,7 +555,11 @@ class AgentOrchestrator:
             # The write still requires the same approval endpoint and deterministic
             # Core Banking tool execution; no state is changed in this branch.
             service_draft = extract_service_request_draft(user_message)
-            if service_draft is not None and active_approval_cb is None:
+            if (
+                service_draft is not None
+                and active_approval_cb is None
+                and self._hotl.is_write_allowed
+            ):
                 if service_draft.get("needs_clarification") == "true":
                     return AgentExecutionResult(
                         answer=(
