@@ -1,6 +1,0 @@
-chore(repo): remove temporary commit artifact
-
-Remove the UTF-8 commit message file used to author the previous change.
-
-Validation:
-- git diff --check: PASS
