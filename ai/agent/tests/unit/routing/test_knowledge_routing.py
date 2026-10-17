@@ -190,6 +190,17 @@ def test_human_category_labels_cover_installments_and_fees() -> None:
     ) == {"needs_reason": "true", "category": "FEE"}
 
 
+def test_guided_reason_selection_requires_detail_before_approval() -> None:
+    draft = extract_service_request_draft("Selecciono el motivo: Reprogramación del préstamo.")
+
+    assert draft == {
+        "needs_description": "true",
+        "category": "LOAN",
+        "reason_code": "LOAN_RESTRUCTURING",
+        "reason_label": "Reprogramación del préstamo",
+    }
+
+
 @pytest.mark.parametrize(
     "text",
     [
