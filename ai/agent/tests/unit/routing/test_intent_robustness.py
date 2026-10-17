@@ -152,6 +152,27 @@ def test_malformed_function_serialization_is_not_exposed_to_customer() -> None:
     assert "interpretar" in result.answer or "información suficiente" in result.answer
 
 
+def test_malformed_normalizer_function_serialization_is_not_exposed() -> None:
+    """A provider function named '.' must be rejected before reaching the UI."""
+    db = create_default_database()
+    registry = ToolRegistry([GetMyLoansTool(db), GetLoanDetailsTool(db)])
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = _Response(
+        _Message(
+            content=(
+                'Funcion normalizar::{"type":"function","function":{"name":".","arguments":{}}}'
+            )
+        )
+    )
+
+    orchestrator = AgentOrchestrator(client=mock_client, registry=registry)
+    result = orchestrator.run("Resume mi situación financiera", customer_id="CUST-0001")
+
+    assert result.success is False
+    assert "normalizar" not in result.answer
+    assert "función" not in result.answer.lower()
+
+
 def test_loan_detail_without_id_disambiguates_multi_loans() -> None:
     """Query without ID must not guess an ID when customer has multiple loans."""
     db = create_default_database()

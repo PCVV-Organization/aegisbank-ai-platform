@@ -9,6 +9,7 @@ from aegisbank_agent.knowledge_routing import (
     classify_service_inquiry,
     detect_loan_details_request,
     extract_loan_id,
+    extract_service_request_draft,
     is_capability_query,
     is_greeting,
     requires_account_data,
@@ -128,6 +129,26 @@ def test_classify_service_inquiry_rejects_clear_queries() -> None:
     """Clear informational queries do not trigger false clarification prompts."""
     assert classify_service_inquiry("Dame mis prestamos") != "CLARIFICATION"
     assert classify_service_inquiry("Que requiero para un credito vehicular") != "CLARIFICATION"
+
+
+def test_extract_service_request_draft_is_deterministic_and_bounded() -> None:
+    draft = extract_service_request_draft(
+        "Quiero registrar un reclamo de préstamo por una cuota cobrada incorrectamente"
+    )
+
+    assert draft == {
+        "category": "LOAN",
+        "description": (
+            "Quiero registrar un reclamo de préstamo por una cuota cobrada incorrectamente"
+        ),
+    }
+
+
+def test_extract_service_request_draft_requires_detail_for_generic_request() -> None:
+    assert extract_service_request_draft("Quiero registrar un reclamo de servicio") == {
+        "needs_clarification": "true",
+        "category": "GENERAL",
+    }
 
 
 @pytest.mark.parametrize(
