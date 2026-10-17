@@ -405,6 +405,16 @@ def extract_service_request_draft(query: str) -> dict[str, str] | None:
     # Keep this deterministic so the UI can advance immediately without
     # accidentally creating an approval with the chip label as the description.
     if reason is not None and normalized.startswith("selecciono el motivo"):
+        detail_marker = "mi detalle es"
+        if detail_marker in normalized:
+            detail = normalized.split(detail_marker, 1)[1].strip(" :.")
+            if not detail:
+                return {
+                    "needs_description": "true",
+                    "category": reason.category,
+                    "reason_code": reason.code,
+                    "reason_label": reason.label,
+                }
         selected_text = normalized.removeprefix("selecciono el motivo").strip(" :.")
         if selected_text in {_normalize(reason.label), reason.code.lower()}:
             return {

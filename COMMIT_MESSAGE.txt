@@ -1,0 +1,18 @@
+fix(agent): require detail for empty other reason
+
+Problem/purpose: selecting the guided "Otro motivo" chip with an empty detail
+was incorrectly advanced to a HITL proposal, allowing an incomplete service
+request draft to be prepared.
+
+Changes:
+- detect the explicit "Mi detalle es:" marker in guided reason selections
+- keep GENERAL_OTHER on the description step when the detail is empty
+- add a regression test for the empty chip selection
+
+Validation:
+- .venv\\Scripts\\ruff.exe format --check changed files (passed)
+- .venv\\Scripts\\ruff.exe check changed files (passed)
+- .venv\\Scripts\\python.exe -m pytest ai/agent/tests/unit/routing/test_knowledge_routing.py -q (47 passed)
+
+Remaining limits:
+- CI, image publication, staging deployment, and live browser acceptance are pending.

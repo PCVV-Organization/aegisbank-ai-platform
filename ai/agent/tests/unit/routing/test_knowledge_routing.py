@@ -213,6 +213,18 @@ def test_guided_reason_selection_requires_detail_before_approval() -> None:
     }
 
 
+def test_other_reason_chip_without_detail_stays_on_description_step() -> None:
+    """An empty Otro motivo chip cannot advance to HITL approval."""
+    draft = extract_service_request_draft("Selecciono el motivo: Otro motivo. Mi detalle es:")
+
+    assert draft == {
+        "needs_description": "true",
+        "category": "GENERAL",
+        "reason_code": "GENERAL_OTHER",
+        "reason_label": "Otro motivo",
+    }
+
+
 @pytest.mark.parametrize(
     "text",
     [
